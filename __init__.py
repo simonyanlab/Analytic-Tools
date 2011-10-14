@@ -1,4 +1,5 @@
 # Make shortcuts to imports if from mypy import * is done
+from blendedges import blendedges
 from canny import canny
 from chambolle import chambolle
 from fidop2d import fidop2d
