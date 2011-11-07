@@ -15,16 +15,16 @@ def blendedges(Im,chim):
     chim: NumPy ndarray
         Edge map (has to be a 2D array)
        
-    Returns
-    -------
-    None 
-
-    Notes
-    -----
-    None 
-
-    See also
+    Returns:
     --------
+    None 
+
+    Notes:
+    ------
+    None 
+
+    See also:
+    ---------
     imview.py
     Matplotlib's imshow and contour
     
