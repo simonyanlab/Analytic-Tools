@@ -16,4 +16,3 @@ from myvec import myquiv
 from normalize import normalize
 from recmovie import recmovie
 from view01 import view01
-from view_image import view_image
