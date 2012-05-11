@@ -15,4 +15,5 @@ from myvec import mygrid
 from myvec import myquiv
 from normalize import normalize
 from recmovie import recmovie
+import tools1d
 from view01 import view01
