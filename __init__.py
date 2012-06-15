@@ -1,21 +1,26 @@
 # Make shortcuts to imports if from mypy import * is done
-from blendedges import blendedges
 from canny import canny
 from chambolle import chambolle
-from df_tools import df2arr
-from df_tools import arr2df
-from fidop2d import fidop2d
-from imview import imview
+try:
+    import dolfin as df
+    from df_tools import df2arr
+    from df_tools import arr2df
+except:
+    print "WARNING: Import Error for DOLFIN - no FEniCS funcitonality available!"
+from difftools import fidop2d
+from difftools import myff2n
+from difftools import mygrad
+from imtools import blendedges
+from imtools import imview
+from imtools import imload
+from imtools import imwrite
+from imtools import normalize
+from imtools import recmovie
 from kmeans import kmeans
+import makeimg as mi 
 from myat import myat
-from myff2n import myff2n
-from mygrad import mygrad
-from myphantom import myphantom
 from myvec import makegrid
 from myvec import mywire
 from myvec import mygrid
 from myvec import myquiv
-from normalize import normalize
-from recmovie import recmovie
 import tools1d
-from view01 import view01

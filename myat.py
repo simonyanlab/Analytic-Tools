@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 from numpy.linalg import norm
 from scipy.sparse import spdiags, linalg
 
-from mypy.fidop2d import fidop2d
-from mypy.imview import imview
+from mypy.difftools import fidop2d
+from mypy.imtools import imview
 
 def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=None):
     """

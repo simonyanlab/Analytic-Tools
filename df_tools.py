@@ -5,12 +5,35 @@
 
 from __future__ import division
 import numpy as np
-import dolfin as df
 
-# ------------------------------------------------------------------- #
-# Given a digital image (a NumPy array) setup the DOLFIN framework
-# ------------------------------------------------------------------- #
 def arr2df(f_arr):
+    """
+    ARR2DF converts a digital image (NumPy array) into a DOLFIN Function
+
+    Parameters:
+    -----------
+    f_arr : NumPy ndarray
+        Array representation of the image (2D array, has to be square!!!)
+       
+    Returns
+    -------
+    f_dol : DOLFIN Function
+        A cell-wise constant function representing the given input image 
+        in the DOLFIN framework. 
+    mesh : DOLFIN Mesh
+        A discretization of the unit square (0,1)x(0,1) using NxN 
+        rectangles (the DOLFIN routine UnitSquare is used). 
+
+    Notes
+    -----
+    Note that DOLFIN at the moment only supports simplex meshes. Thus each 
+    pixel is divided into two triangles. Then both triangles covering one 
+    pixel are assigned the same intensity value. 
+
+    See also
+    --------
+    DOLFIN's UnitSquare 
+    """
 
     # Some sanity checks assuring that f_arr is indeed a numpy array
     if type(f_arr).__name__ != "ndarray":
@@ -57,6 +80,29 @@ def arr2df(f_arr):
 # Given a DOLFIN function return a NumPy array (a digital image)
 # ------------------------------------------------------------------- #
 def df2arr(f_dol):
+    """
+    DF2ARR converts a DOLFIN function into a digital image (NumPy array)
+
+    Parameters:
+    -----------
+    f_dol : DOLFIN Function
+        A DOLFIN function given on an square(!!!) grid. 
+       
+    Returns
+    -------
+    f_arr : NumPy ndarray
+        Array representation of the image (2D array)
+
+    Notes
+    -----
+    Note that DOLFIN at the moment only supports simplex meshes. Thus two 
+    neighboring triangles cover one pixel. Hence the mean value of "upper" 
+    and "lower" triangle is used as intensity value of the compound pixel. 
+
+    See also
+    --------
+    None
+    """
 
     # Some sanity checks assuring that f_dol is indeed a DOLFIN function
     if type(f_dol).__name__!="Function":
@@ -69,7 +115,7 @@ def df2arr(f_dol):
     else:
         f0 = f_dol
     
-    # Get cellwise function values
+    # Get cell-wise function values
     fa = f0.vector().array()
 
     # Get (discrete) image dimension
@@ -78,5 +124,5 @@ def df2arr(f_dol):
     # Take the mean value of "upper" and "lower" triangles as pixelwise intensities
     f_arr = ((fa[::2] + fa[1::2])/2.0).reshape(N,N,order="F")
 
-    # Throw back NumPy array holding NxN pixelwise intensity values
+    # Throw back NumPy array holding NxN pixel-wise intensity values
     return f_arr

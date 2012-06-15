@@ -5,7 +5,7 @@ from __future__ import division
 import numpy as np
 import scipy as sp
 
-from mypy.fidop2d import fidop2d
+from mypy.difftools import fidop2d
 
 def chambolle(ut, Dx=None, Dy=None, mu=1.0e-5, dt=0.25, itmax=10000, tol=1.0e-3):
     """
