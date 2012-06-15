@@ -1,12 +1,6 @@
 # Make shortcuts to imports if from mypy import * is done
 from canny import canny
 from chambolle import chambolle
-try:
-    import dolfin as df
-    from df_tools import df2arr
-    from df_tools import arr2df
-except:
-    print "WARNING: Import Error for DOLFIN - no FEniCS funcitonality available!"
 from difftools import fidop2d
 from difftools import myff2n
 from difftools import mygrad

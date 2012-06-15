@@ -5,6 +5,7 @@
 
 from __future__ import division
 import numpy as np
+import dolfin as df
 
 def arr2df(f_arr):
     """
