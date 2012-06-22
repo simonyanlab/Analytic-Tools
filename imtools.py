@@ -79,7 +79,7 @@ def imview(Im,interpolation="nearest",vmin=None,vmax=None):
 
     return
 
-def imload(fstr):
+def imload(fstr,nrm=False):
     """
     IMLOAD loads an image using Matplotlib's imread
 
@@ -89,6 +89,9 @@ def imload(fstr):
         String holding path and filename (including filename extension!) 
         of the image to load. Note that this code only calls imread thus
         only image formats supported by imread will work. 
+    nrm : bool
+        If nrm = True the loaded image is normalized, such that It.max() = 1
+        and It.min() = 0. Default nrm = False. 
        
     Returns
     -------
@@ -108,6 +111,8 @@ def imload(fstr):
     # Sanity checks
     if type(fstr).__name__ != "str":
         raise TypeError("fstr has to be a string!")
+    if type(nrm).__name__ != "bool":
+        raise TypeError("nrm has to be True or False!")
 
     # Get the extension of the image to be loaded
     try:
@@ -125,7 +130,9 @@ def imload(fstr):
 
     # Convert it to float and normalize it s.t. It.max() = 1.0
     It = It.astype(float)
-    It = It/255.0
+
+    # Normalize the image if wanted
+    if nrm: It = normalize(It)
 
     return It
 

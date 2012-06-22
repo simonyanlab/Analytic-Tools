@@ -6,6 +6,11 @@
 from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
+# Set loading path for images
+IMGPATH = os.path.realpath(__file__)
+IMGPATH = IMGPATH.replace(os.path.basename(__file__),"")
 
 def onesquare(N,ns=0.0):
     """
@@ -398,7 +403,7 @@ def barbara(N,ns=0.0):
     N = getN(N)
 
     # Load image
-    It = plt.imread(str(N)+"x"+str(N)+"/barbara_"+str(N)+".tif") 
+    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"barbara_"+str(N)+".tif") 
     It = It.astype(float)
     It = It[::-1,:]
     It = It/255.0
@@ -445,7 +450,7 @@ def boat(N,ns=0.0):
     N = getN(N)
 
     # Load image
-    It = plt.imread(str(N)+"x"+str(N)+"/boat_"+str(N)+".tif") 
+    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"boat_"+str(N)+".tif") 
     It = It.astype(float)
     It = It[::-1,:]
     It = It/255.0
@@ -492,7 +497,7 @@ def fingerprint(N,ns=0.0):
     N = getN(N)
 
     # Load image
-    It = plt.imread(str(N)+"x"+str(N)+"/fingerprint_"+str(N)+".tif") 
+    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"fingerprint_"+str(N)+".tif") 
     It = It.astype(float)
     It = It[::-1,:]
     It = It/255.0
@@ -539,7 +544,7 @@ def house(N,ns=0.0):
     N = getN(N)
 
     # Load image
-    It = plt.imread(str(N)+"x"+str(N)+"/house_"+str(N)+".tif") 
+    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"house_"+str(N)+".tif") 
     It = It.astype(float)
     It = It[::-1,:]
     It = It/255.0
@@ -586,7 +591,7 @@ def I0mri(N,ns=0.0):
     N = getN(N)
 
     # Load image
-    It = plt.imread(str(N)+"x"+str(N)+"/I0mri_"+str(N)+".tif") 
+    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"I0mri_"+str(N)+".tif") 
     It = It.astype(float)
     It = It[::-1,:]
     It = It/255.0
@@ -633,7 +638,7 @@ def I1mri(N,ns=0.0):
     N = getN(N)
 
     # Load image
-    It = plt.imread(str(N)+"x"+str(N)+"/I1mri_"+str(N)+".tif") 
+    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"I1mri_"+str(N)+".tif") 
     It = It.astype(float)
     It = It[::-1,:]
     It = It/255.0
@@ -682,7 +687,7 @@ def lena(N,ns=0.0):
     N = getN(N)
 
     # Load image
-    It = plt.imread(str(N)+"x"+str(N)+"/lena_"+str(N)+".tif") 
+    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"lena_"+str(N)+".tif") 
     It = It.astype(float)
     It = It[::-1,:]
     It = It/255.0
@@ -729,7 +734,7 @@ def peppers(N,ns=0.0):
     N = getN(N)
 
     # Load image
-    It = plt.imread(str(N)+"x"+str(N)+"/peppers_"+str(N)+".tif") 
+    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+"/peppers_"+str(N)+".tif") 
     It = It.astype(float)
     It = It[::-1,:]
     It = It/255.0
