@@ -7,7 +7,7 @@ from __future__ import division
 import numpy as np
 from scipy.sparse import spdiags, eye, kron 
 
-def fidop2d(N, drt='x', fds='c'):
+def fidop2d(N, drt='xy', fds='c'):
     """
     FIDOP2D computes 2D finite difference operators
 
