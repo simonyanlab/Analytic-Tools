@@ -1,5 +1,4 @@
 # Make shortcuts to imports if from mypy import * is done
-from canny import canny
 from chambolle import chambolle
 from difftools import fidop2d
 from difftools import myff2n

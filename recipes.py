@@ -4,11 +4,9 @@
 # June 25 2013
 
 from __future__ import division
-import numpy as np
-import scipy as sp
-import matplotlib.pyplot as plt
+import sys
 
-def query_yes_no(question, default="yes"):
+def query_yes_no(question, default=None):
     """Ask a yes/no question via raw_input() and return their answer.
 
     "question" is a string that is presented to the user.
