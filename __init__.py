@@ -17,4 +17,5 @@ from myvec import makegrid
 from myvec import mywire
 from myvec import mygrid
 from myvec import myquiv
+import recipes
 import tools1d
