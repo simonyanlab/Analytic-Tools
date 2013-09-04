@@ -1,6 +1,6 @@
 # tools1d.py - Stuff that makes one-dimensional life easier
 # 
-# (C) Stefan Fuertinger
+# Author: Stefan Fuertinger
 # Mai 10 2012
 
 from __future__ import division

@@ -1,6 +1,6 @@
 # recipes.py - Here are some convenience functions that are used often
 # 
-# (C) Stefan Fuertinger [stefan.fuertinger@mssm.edu]
+# Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # June 25 2013
 
 from __future__ import division

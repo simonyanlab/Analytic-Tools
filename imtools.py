@@ -1,6 +1,6 @@
 # imtools.py - Simple but often used load/save/show shortcuts for images
 # 
-# (C) Stefan Fuertinger
+# Author: Stefan Fuertinger
 # Juni 13 2012
 
 from __future__ import division

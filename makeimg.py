@@ -1,6 +1,6 @@
 # makeimg.py - Create/load 2D test images
 # 
-# (C) Stefan Fuertinger
+# Author: Stefan Fuertinger
 # Juni  6 2012
 
 from __future__ import division
