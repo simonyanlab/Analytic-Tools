@@ -84,3 +84,38 @@ def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
     return sorted(l, key = alphanum_key)
+
+def get_lineno(fname):
+    """
+    Get number of lines of a txt-file
+
+    Parameters: 
+    -----------
+    fname : str
+        Path to file to be read
+
+    Returns:
+    --------
+    lineno : int
+        Number of lines in the file
+
+    Notes:
+    ------
+    This code was written by Mark Byers as part of a Stackoverflow submission, 
+    see http://stackoverflow.com/questions/845058/how-to-get-line-count-cheaply-in-python
+
+    See also:
+    ---------
+    None
+    """
+
+    # Check if input makes sense
+    if type(fname).__name__ != "str":
+        raise TypeError("Filename has to be a string!")
+
+    # Cycle through lines of files and do nothing
+    with open(fname) as f:
+        for lineno, l in enumerate(f):
+            pass
+
+    return lineno + 1
