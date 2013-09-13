@@ -5,6 +5,7 @@
 
 from __future__ import division
 import sys
+import re
 
 def query_yes_no(question, default=None):
     """
@@ -61,11 +62,11 @@ def natural_sort(l):
 
     For instance, a usual glob will give you a file listing sorted in this way 
 
-        ['elm0', 'elm1', 'Elm2', 'elm9', 'elm10', 'Elm11', 'Elm12', 'elm13']
+        ['Elm11', 'Elm12', 'Elm2', 'elm0', 'elm1', 'elm10', 'elm13', 'elm9']
 
     Calling natural_sort on that list results in 
 
-        ['Elm11', 'Elm12', 'Elm2', 'elm0', 'elm1', 'elm10', 'elm13', 'elm9']
+        ['elm0', 'elm1', 'Elm2', 'elm9', 'elm10', 'Elm11', 'Elm12', 'elm13']
 
     Notes:
     ------
