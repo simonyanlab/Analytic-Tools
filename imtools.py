@@ -138,16 +138,17 @@ def imload(fstr,nrm=False):
 
 def imwrite(figobj,fstr):
     """
-    IMWRITE saves a Matplotlib figure using a "tight" bounding box
+    IMWRITE saves a Matplotlib figure camera-ready using a "tight" bounding box
 
     Parameters:
     -----------
     figobj : matplotlib figure
         Matplotlib figure object to be saved as image. 
     fstr : string
-        String holding the filename to be used to save the figure. 
-        of the image to load. Note that this code only calls imread thus
-        only image formats supported by imread will work. 
+        String holding the filename to be used to save the figure 
+        (WITHOUT extension). This code will attempt to generate 
+        a high quality tiff file (300 dpi). However, this may not 
+        work with all backends. 
        
     Returns
     -------
@@ -173,7 +174,7 @@ def imwrite(figobj,fstr):
         raise TypeError("fstr has to be a string!")
 
     # Save the figure using "tight" options for the bounding box
-    fig.savefig(fstr,bbox_inches="tight",ppad_inches=0)
+    figobj.savefig(fstr,bbox_inches="tight",ppad_inches=0,dpi=300,format="tiff")
 
     return
 

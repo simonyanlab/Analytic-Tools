@@ -6,6 +6,7 @@
 from __future__ import division
 import sys
 import re
+from numpy.linalg import norm
 
 def query_yes_no(question, default=None):
     """
@@ -119,3 +120,13 @@ def get_numlines(fname):
             pass
 
     return lineno + 1
+
+def issym(A,tol=1e-9):
+
+    # Check if Frobenius norm of A - A.T is sufficiently small (respecting round-off errors)
+    try:
+        is_sym = (norm(A-A.T,ord='fro') <= tol*norm(A,ord='fro'))
+    except:
+        raise TypeError('Input argument has to be a square matrix and a scalar tol (optional)!')
+
+    return is_sym
