@@ -18,3 +18,4 @@ from myvec import mygrid
 from myvec import myquiv
 import recipes
 import tools1d
+import nws_tools as nwt
