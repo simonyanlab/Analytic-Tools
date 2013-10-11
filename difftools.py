@@ -7,12 +7,13 @@ from __future__ import division
 import numpy as np
 from scipy.sparse import spdiags, eye, kron 
 
+##########################################################################################
 def fidop2d(N, drt='xy', fds='c'):
     """
     FIDOP2D computes 2D finite difference operators
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : integer
         Positive integer holding the grid dimension (has to be square, i.e.
         N-by-N!)
@@ -23,15 +24,15 @@ def fidop2d(N, drt='xy', fds='c'):
         String determining the employed finite difference scheme. Can be 
         either 'c' for centered, 'f' for forward or 'b' for backward. 
        
-    Returns
-    -------
+    Returns:
+    --------
     D : SciPy sparse matrix/matrices
         Depending on the given input one or two sparse matrices 
         corresponding to the wanted discrete derivative operators are 
         returned. 
 
-    Notes
-    -----
+    Notes:
+    ------
     Dx,Dy = FIDOP2D(N) returns the sparse N^2-by-N^2 matrices Dx and Dy such that
     Dh = [Dx,Dy] is the discrete gradient operator in lexicographic 
     ordering for a function F given on a grid of size NxN.
@@ -87,8 +88,8 @@ def fidop2d(N, drt='xy', fds='c'):
         Div_h ~ -Dh.T
     as approximation for the Divergence. 
 
-    See also
-    --------
+    See also:
+    ---------
     None
     """
 
@@ -147,22 +148,23 @@ def fidop2d(N, drt='xy', fds='c'):
         # Two outputs: order of directions is always d/dx,d/dy]
         return kron(IN,A,format='csr'), kron(A,IN,format='csr')
 
+##########################################################################################
 def myff2n(n):
     """
     MYFF2N gives factor settings dFF2 for a two-level full factorial 
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     n : integer
         Positive integer holding the number of factors (i.e. n >= 1)
        
-    Returns
-    -------
-    dff2 : NumPy ndarray
+    Returns:
+    --------
+    dff2 : NumPy 2darray
         m-by-n array holding the factor settings 
 
-    Notes
-    -----
+    Notes:
+    ------
     From the MATLAB(TM) help:
     dFF2 = ff2n(n) gives factor settings dFF2 for a two-level full factorial 
     design with n factors. dFF2 is m-by-n, where m is the number of treatments 
@@ -172,9 +174,7 @@ def myff2n(n):
 
     Examples:    
     ---------
-
     dFF2 = ff2n(3)
-
     dFF2 =
        0   0   0
 
@@ -191,8 +191,9 @@ def myff2n(n):
        1   1   0
 
        1   1   1
-    See also
-    --------
+
+    See also:
+    ---------
     None
     """
 
@@ -223,20 +224,21 @@ def myff2n(n):
 
     return dff2
 
+##########################################################################################
 def mygrad(F):
     """
     MYGRAD computes the numerical gradient of a 2D function using central differences
 
-    Parameters:
-    -----------
-    F: NumPy ndarray
+    Inputs:
+    -------
+    F: NumPy 2darray
        A function defined on a M-by-N grid, i.e. a two-dimensional NumPy array
 
     Returns:
     --------
-    Fx: NumPy ndarray
+    Fx: NumPy 2darray
        Array of the same dimension as F containing the x-derivatives of F
-    Fy: NumPy ndarray
+    Fy: NumPy 2darray
        Array of the same dimension as F containing the y-derivatives of F
 
     Notes:
@@ -247,7 +249,7 @@ def mygrad(F):
     See also:
     ---------
     MATLAB's gradient function 
-    http://www.mathworks.de/help/techdoc/ref/gradient.html
+    .. http://www.mathworks.de/help/techdoc/ref/gradient.html
     """
 
     # Sanity checks

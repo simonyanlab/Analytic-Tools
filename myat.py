@@ -11,13 +11,14 @@ from scipy.sparse import spdiags, linalg
 from mypy.difftools import fidop2d
 from mypy.imtools import imview
 
+##########################################################################################
 def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=None):
     """
     MYAT solves the Ambrosio-Tortorelli approximation to the Mumford-Shah functional
 
-    Parameters:
-    -----------
-    f : NumPy ndarray
+    Inputs:
+    -------
+    f : NumPy 2darray
        Raw (noisy) input image to be segmented. Note that f has to be square!
     ep : float
        Positive edge-"thickness" parameter in the approximation functional. For ep -> 0
@@ -48,9 +49,9 @@ def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=N
 
     Returns:
     --------
-    u : NumPy ndarray
+    u : NumPy 2darray
        The smoothed version of f. 
-    v : NumPy ndarray
+    v : NumPy 2darray
        The fuzzy edge map of f. 
 
     Notes:
@@ -77,7 +78,7 @@ def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=N
 
     # Sanity checks
     if type(f).__name__ != "ndarray":
-        raise TypeError("f has to be a (square) NumPy ndarray!")
+        raise TypeError("f has to be a (square) NumPy 2darray!")
     else:
         if len(f.shape) > 2: raise ValueError("f has to be 2-dimensional!")
         N = f.shape[0]
@@ -242,6 +243,7 @@ def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=N
 
     return u,v
 
+##########################################################################################
 def getfig(f,de,la,nu,ep):
     """
     Set up Figure for interactive plotting
@@ -265,6 +267,7 @@ def getfig(f,de,la,nu,ep):
 
     return fig
 
+##########################################################################################
 def showit(fig,u,v):
     """
     Show iteration process

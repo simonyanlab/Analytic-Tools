@@ -7,17 +7,18 @@ from __future__ import division
 import numpy as np
 import dolfin as df
 
+##########################################################################################
 def arr2df(f_arr):
     """
     ARR2DF converts a digital image (NumPy array) into a DOLFIN Function
 
-    Parameters:
-    -----------
-    f_arr : NumPy ndarray
+    Inputs:
+    -------
+    f_arr : NumPy 2darray
         Array representation of the image (2D array, has to be square!!!)
        
-    Returns
-    -------
+    Returns:
+    --------
     f_dol : DOLFIN Function
         A cell-wise constant function representing the given input image 
         in the DOLFIN framework. 
@@ -25,14 +26,14 @@ def arr2df(f_arr):
         A discretization of the unit square (0,1)x(0,1) using NxN 
         rectangles (the DOLFIN routine UnitSquare is used). 
 
-    Notes
-    -----
+    Notes:
+    ------
     Note that DOLFIN at the moment only supports simplex meshes. Thus each 
     pixel is divided into two triangles. Then both triangles covering one 
     pixel are assigned the same intensity value. 
 
-    See also
-    --------
+    See also:
+    ---------
     DOLFIN's UnitSquare 
     """
 
@@ -77,31 +78,29 @@ def arr2df(f_arr):
     # Throw back DOLFIN function and generated mesh
     return f_dol, mesh
 
-# ------------------------------------------------------------------- #
-# Given a DOLFIN function return a NumPy array (a digital image)
-# ------------------------------------------------------------------- #
+##########################################################################################
 def df2arr(f_dol):
     """
     DF2ARR converts a DOLFIN function into a digital image (NumPy array)
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     f_dol : DOLFIN Function
         A DOLFIN function given on an square(!!!) grid. 
        
-    Returns
-    -------
-    f_arr : NumPy ndarray
+    Returns:
+    --------
+    f_arr : NumPy 2darray
         Array representation of the image (2D array)
 
-    Notes
-    -----
+    Notes:
+    ------
     Note that DOLFIN at the moment only supports simplex meshes. Thus two 
     neighboring triangles cover one pixel. Hence the mean value of "upper" 
     and "lower" triangle is used as intensity value of the compound pixel. 
 
-    See also
-    --------
+    See also:
+    ---------
     None
     """
 

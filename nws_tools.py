@@ -35,7 +35,7 @@ def degrees_und(CIJ):
     See also:
     ---------
     degrees_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
-    https://sites.google.com/site/bctnet/
+    .. https://sites.google.com/site/bctnet/
     
     A C++ version of the BCT can be found on the same site. Python bindings are provided 
     in the module bct_py/bct_gsl
@@ -65,7 +65,7 @@ def density_und(CIJ):
     See also:
     ---------
     density_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
-    https://sites.google.com/site/bctnet/
+    .. https://sites.google.com/site/bctnet/
     
     A C++ version of the BCT can be found on the same site. Python bindings are provided 
     in the module bct_py/bct_gsl
@@ -388,7 +388,7 @@ def get_meannw(nws,percval=0.75):
     ---------
     get_meannw.m and 
     Sporns' rich club paper, currently available at
-    http://www.jneurosci.org/content/31/44/15775.full
+    .. http://www.jneurosci.org/content/31/44/15775.full
     """
 
     # Sanity checks
@@ -658,8 +658,8 @@ def normalize(I,a=0,b=1):
     """
     Rescales a numpy ndarray
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     I: NumPy ndarray
         An array of size > 1 (shape can be arbitrary)
     a : float
@@ -730,8 +730,8 @@ def csv2dict(csvfile):
     """
     Converts a csv file of nodal coordinates to a Python dictionary
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     csvfile : string 
         Filename (or path) of the csv file holding the nodal coordinates.
         The format of this file HAS to be 
@@ -786,8 +786,8 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
     """
     Plots a 3d graph using Mayavi
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     A : NumPy 2darray
         Square N-by-N connectivity matrix of the graph
     coords: dictionary 
@@ -828,7 +828,7 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
     Notes:
     ------
     See the Mayavi docu for more info. Currently available at 
-    http://docs.enthought.com/mayavi/mayavi/auto/mlab_helper_functions.html
+    .. http://docs.enthought.com/mayavi/mayavi/auto/mlab_helper_functions.html
 
     See also:
     ---------
@@ -955,8 +955,8 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
     """
     Matplotlib-based plotting routine for networks
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     A : NumPy 2darray
         Square N-by-N connectivity matrix of the graph
     coords: dictionary 
@@ -1007,7 +1007,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
     Notes:
     ------
     See matplotlib's mplot3d tutorial. Currently available at
-    http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
+    .. http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
 
     See also:
     ---------

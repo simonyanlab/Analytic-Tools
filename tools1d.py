@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 from scipy.sparse import linalg, spdiags, eye
 
+##########################################################################################
 def makegrid(N,xmin=0,xmax=1):
     """
     MAKEGRID generates a grid on unit interval
@@ -21,6 +22,7 @@ def makegrid(N,xmin=0,xmax=1):
 
     return x1
 
+##########################################################################################
 def getimg(x1,img="2spikes",ns=0.0):
     """
     GETIMG makes an artificial image
@@ -74,6 +76,7 @@ def getimg(x1,img="2spikes",ns=0.0):
 
     return It
     
+##########################################################################################
 def getchi(I,koff=3):
 
     # Make an educated guess for chi given an image I
@@ -84,6 +87,7 @@ def getchi(I,koff=3):
     
     return chi
 
+##########################################################################################
 def makeopers(N):
     """
     MAKEOPERS builds finite difference operators in 1D 

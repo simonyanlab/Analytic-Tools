@@ -11,9 +11,9 @@ def chambolle(ut, Dx=None, Dy=None, mu=1.0e-5, dt=0.25, itmax=10000, tol=1.0e-3)
     """
     CHAMBOLLE solves the nonlinear TV-denoising problem using Chambolle's approach
 
-    Parameters:
-    -----------
-    ut : NumPy ndarray
+    Inputs:
+    -------
+    ut : NumPy 2darray
         Raw greyscale image to denoise. Note that ut has to be square!
     Dx : NumPy/SciPy matrix
         Disrecte derivative operator in direction x (foward differences are recommended). 
@@ -30,22 +30,21 @@ def chambolle(ut, Dx=None, Dy=None, mu=1.0e-5, dt=0.25, itmax=10000, tol=1.0e-3)
     tol : positive real scalar
         Error tolerance in Chambolle iterations. Note that tol has to satisfy 0 < tol << 1!
 
-    Returns
-    -------
-    u : NumPy ndarray
+    Returns:
+    --------
+    u : NumPy 2darray
         Denoised Chambolle-image. Has the same dimension as ut. 
-    p : NumPy ndarray
+    p : NumPy 3darray
         Dual variable ("Chambolle-edge-set"). If ut is N-by-N then p is 2-by-N-by-N, i.e. 
         a tensor. 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
-    http://dl.acm.org/citation.cfm?id=964985
-
+    See also:
+    ---------
+    .. http://dl.acm.org/citation.cfm?id=964985
     """
 
     # Sanity checks

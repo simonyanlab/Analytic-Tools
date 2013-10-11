@@ -12,12 +12,13 @@ import os
 IMGPATH = os.path.realpath(__file__)
 IMGPATH = IMGPATH.replace(os.path.basename(__file__),"")
 
+##########################################################################################
 def onesquare(N,ns=0.0):
     """
     ONESQUARE creates a simple NxN grey-scale image consisting only of one square
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension
     ns : float
@@ -25,17 +26,17 @@ def onesquare(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -51,12 +52,13 @@ def onesquare(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def fivesquares(N,ns=0.0):
     """
     FIVESQUARES creates an NxN grey-scale image consisting of five squares
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension
     ns : float
@@ -64,17 +66,17 @@ def fivesquares(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -106,12 +108,13 @@ def fivesquares(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def twospikes(N,ns=0.0):
     """
     TWOSPIKES creates an NxN grey-scale image consisting of two spikes
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension
     ns : float
@@ -119,17 +122,17 @@ def twospikes(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -157,12 +160,13 @@ def twospikes(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def bars(N,ns=0.0):
     """
     BARS creates the beloved NxN grey-scale image consisting of vertical and horizontal bars
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension
     ns : float
@@ -170,17 +174,17 @@ def bars(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -209,12 +213,13 @@ def bars(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def manysquares(N,ns=0.0):
     """
     MANYSQUARES creates an NxN grey-scale image consisting of many squares
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension
     ns : float
@@ -222,16 +227,16 @@ def manysquares(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
+    See also:
     --------
     None 
     """
@@ -257,12 +262,13 @@ def manysquares(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def tgvtest(N,ns=0.0):
     """
     TGVTEST creates the famous NxN grey-scale image consisting of one shaded square
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension
     ns : float
@@ -270,17 +276,17 @@ def tgvtest(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -297,12 +303,13 @@ def tgvtest(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def myphantom(N,ns=0.0):
     """
     MYPHANTOM creates the famous Shepp--Logan phantom as NxN grey-scale image
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension
     ns : float
@@ -310,17 +317,17 @@ def myphantom(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     Jain, Anil K., Fundamentals of Digital Image Processing, Englewood Cliffs, NJ, Prentice Hall, 1989, p. 439
     """
     
@@ -366,12 +373,13 @@ def myphantom(N,ns=0.0):
 
     return It
 
+##########################################################################################
 def barbara(N,ns=0.0):
     """
     BARBARA loads the famous "Barbara"-testing image
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension. Note that 
         the image is only available in 64x64, 128x128, 256x256 and 512x512. 
@@ -382,17 +390,17 @@ def barbara(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -413,12 +421,13 @@ def barbara(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def boat(N,ns=0.0):
     """
     BOAT loads the famous "boat"-testing image
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension. Note that 
         the image is only available in 64x64, 128x128, 256x256 and 512x512. 
@@ -429,17 +438,17 @@ def boat(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -460,12 +469,13 @@ def boat(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def fingerprint(N,ns=0.0):
     """
     FINGERPRINT loads a sample image of a fingerprint
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension. Note that 
         the image is only available in 64x64, 128x128, 256x256 and 512x512. 
@@ -476,17 +486,17 @@ def fingerprint(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -507,12 +517,13 @@ def fingerprint(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def house(N,ns=0.0):
     """
     HOUSE loads a sample image of a house
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension. Note that 
         the image is only available in 64x64, 128x128, 256x256 and 512x512. 
@@ -523,17 +534,17 @@ def house(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -554,12 +565,13 @@ def house(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def I0mri(N,ns=0.0):
     """
     I0MRI loads a sample image of an DCE-MRI sequence
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension. Note that 
         the image is only available in 64x64, 128x128, 256x256 and 512x512. 
@@ -570,17 +582,17 @@ def I0mri(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -601,12 +613,13 @@ def I0mri(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def I1mri(N,ns=0.0):
     """
     I1MRI loads a sample image of an DCE-MRI sequence
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension. Note that 
         the image is only available in 64x64, 128x128, 256x256 and 512x512. 
@@ -617,17 +630,17 @@ def I1mri(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -650,12 +663,13 @@ def I1mri(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def lena(N,ns=0.0):
     """
     LENA loads the famous "Lena"-image
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension. Note that 
         the image is only available in 64x64, 128x128, 256x256 and 512x512. 
@@ -666,18 +680,18 @@ def lena(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
-    http://ndevilla.free.fr/lena/
+    See also:
+    ---------
+    .. http://ndevilla.free.fr/lena/
     """
 
     # Check if input parameters make sense
@@ -697,12 +711,13 @@ def lena(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def peppers(N,ns=0.0):
     """
     PEPPERS loads the "peppers"-image
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension. Note that 
         the image is only available in 64x64, 128x128, 256x256 and 512x512. 
@@ -713,17 +728,17 @@ def peppers(N,ns=0.0):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Array representation of the image (2D array). 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -744,20 +759,21 @@ def peppers(N,ns=0.0):
 
     return It 
 
+##########################################################################################
 def gengrid(N):
     """
     GENGRID creates an N-by-N grid needed to construct most artificial images
 
-    Parameters:
-    -----------
+    Inputs:
+    -------
     N : int
         Positive integer determining the wanted image dimension
        
-    Returns
-    -------
-    x : NumPy ndarray
+    Returns:
+    --------
+    x : NumPy 2darray
         2D grid array of x-values on the domain [xmin,xmax]x[ymin,ymax]. 
-    y : NumPy ndarray
+    y : NumPy 2darray
         2D grid array of y-values on the domain [xmin,xmax]x[ymin,ymax]. 
     xmin : float
         The left boundary of the (rectangular) domain. By default xmin = 1. 
@@ -768,17 +784,17 @@ def gengrid(N):
         The lower boundary of the (rectangular) domain. By default ymin = 1. 
     ymin : float
         The lower boundary of the (rectangular) domain. By default ymin = 1. 
-    x1 : NumPy ndarray
+    x1 : NumPy 1darray
         1D array holding the x-spacing on the domain 
-    y1 : NumPy ndarray
+    y1 : NumPy 1darray
         1D array holding the y-spacing on the domain 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     NumPy's meshgrid. 
     makegrid from myvec
     """
@@ -801,13 +817,14 @@ def gengrid(N):
 
     return x,y,xmin,xmax,ymin,ymax,x1,y1
 
+##########################################################################################
 def addnoise(It,N,ns):
     """
     ADDNOISE imposes additive Gaussian noise to an image
 
-    Parameters:
-    -----------
-    It : NumPy ndarray
+    Inputs:
+    -------
+    It : NumPy 2darray
         Array representation of an image (2D array). 
     N : int
         Positive integer determining the image dimension
@@ -816,17 +833,17 @@ def addnoise(It,N,ns):
         image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
         satisfy 0 <= ns <= 1. By default ns = 0.0. 
        
-    Returns
-    -------
-    It : NumPy ndarray
+    Returns:
+    --------
+    It : NumPy 2darray
         Noisy version of the input array 
 
-    Notes
-    -----
+    Notes:
+    ------
     None 
 
-    See also
-    --------
+    See also:
+    ---------
     None 
     """
 
@@ -839,6 +856,7 @@ def addnoise(It,N,ns):
 
     return It
 
+##########################################################################################
 def checkinput(N,ns):
     """
     Perform sanity checks on the inputs N and ns
@@ -859,6 +877,7 @@ def checkinput(N,ns):
 
     return
 
+##########################################################################################
 def getN(N):
     """
     Check if N is either 64, 128, 256 or 512. If not set N to be the 
