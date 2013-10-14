@@ -122,6 +122,7 @@ def get_corr(txtpath):
         raise TypeError('Input has to be a string specifying the path to the txt-file directory!')
 
     # Get list of all txt-files in txtpath and order them lexigraphically
+    if txtpath[-1] == ' '  or txtpath[-1] == os.sep: txtpath = txtpath[:-1]
     txtfiles = natsort.natsorted(glob(txtpath+os.sep+"*.txt"), key=lambda y: y.lower())
 
     # Load very first file to get length of time-series
