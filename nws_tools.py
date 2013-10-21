@@ -1149,6 +1149,82 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
     return 
 
 ##########################################################################################
+def generate_randnws(nw,M=100):
+    """
+    Generate random networks given an input network
+
+    Inputs:
+    -------
+    nw : NumPy 2darray
+        Undirected binary/weighted connection matrix
+    M : integer > 1
+        Number of random networks to generate
+
+    Returns:
+    --------
+    rnws : NumPy 3darray
+        Random networks based on input graph nw. Format is
+                rnws.shape = (N,N,M)
+        s.t.
+                rnws[:,:,m] = m-th N x N random network
+
+    Notes:
+    ------
+    This function requires bct_py to be installed!
+
+    See also:
+    ---------
+    The docstring of randmio_und_connected in bct_py
+    generate_randnws.m for a MATLAB version of this code
+    """
+
+    # Try to import bct
+    try: import bct_py
+    except: raise ImportError("Could not import bct_py...")
+
+    # Sanity checks
+    try:
+        shn = nw.shape; N = shn[0]
+    except:
+        raise TypeError('Input must be a N-by-N NumPy array, not '+type(nw).__name__+'!')
+    if len(shn) != 2:
+        raise ValueError('Input must be a N-by-N NumPy array')
+    if (min(shn)==1) or (shn[0]!=shn[1]):
+        raise ValueError('Input must be a N-by-N NumPy array!')
+    if np.isnan(nw).max()==True or np.isinf(nw).max()==True or np.isreal(nw).min()==False:
+        raise ValueError('Input must be a real valued NumPy array without Infs or NaNs!')
+    try:
+        if (round(M) != M) or (M < 1):
+            raise ValueError("M has to be a natural number > 1!")
+    except: raise TypeError("M has to be a natural number > 1!")
+
+    # Try to import progressbar module
+    try: 
+        import progressbar as pb
+        showbar = True
+    except: 
+        print "WARNING: progressbar module not found - consider installing it using pip install progressbar"
+        showbar = False
+
+    # Allocate space for random networks and convert input network to list
+    rnws = np.zeros((N,N,M))
+    nwl  = nw.tolist()
+
+    # If available, initialize progressbar
+    if (showbar): 
+        widgets = ['Calculating Random Networks: ',pb.Percentage(),' ',pb.Bar(marker='#'),' ',pb.ETA()]
+        pbar = pb.ProgressBar(widgets=widgets,maxval=M)
+
+    # Populate tensor
+    if (showbar): pbar.start()
+    for m in xrange(M):
+        rnws[:,:,m] = bct_py.randmio_und_connected(nwl,5)
+        if (showbar): pbar.update(m)
+    if (showbar): pbar.finish()
+
+    return rnws
+
+##########################################################################################
 def tensorcheck(corrs):
     """
     Local helper function performing sanity checks on a N-by-N-by-k tensor
