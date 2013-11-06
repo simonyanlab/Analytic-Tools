@@ -39,6 +39,9 @@ def degrees_und(CIJ):
     
     A C++ version of the BCT can be found on the same site. Python bindings are provided 
     in the module bct_py/bct_gsl
+
+    An inofficial Python port of the BCT is currently available at the Python Package Index 
+    and can be installed using pip. 
     """
 
     return (CIJ != 0).sum(1)
@@ -69,6 +72,9 @@ def density_und(CIJ):
     
     A C++ version of the BCT can be found on the same site. Python bindings are provided 
     in the module bct_py/bct_gsl
+
+    An inofficial Python port of the BCT is currently available at the Python Package Index 
+    and can be installed using pip. 
     """
 
     N = CIJ.shape[0]                    # no. of nodes
@@ -652,6 +658,9 @@ def thresh_nws(nws,userdens=None):
     # Compute group average network
     th_mnw = get_meannw(th_nws)
 
+    # Be polite and dismiss the user 
+    print "Done...\n"
+
     return th_nws, tau_levels, den_values, th_mnw
 
 ##########################################################################################
@@ -1170,17 +1179,17 @@ def generate_randnws(nw,M=100):
 
     Notes:
     ------
-    This function requires bct_py to be installed!
+    This function requires bctpy to be installed!
 
     See also:
     ---------
-    The docstring of randmio_und_connected in bct_py
+    The docstring of randmio_und_connected in bct.py
     generate_randnws.m for a MATLAB version of this code
     """
 
     # Try to import bct
-    try: import bct_py
-    except: raise ImportError("Could not import bct_py...")
+    try: import bct
+    except: raise ImportError("Could not import bctpy! Consider installing it using pip install bctpy")
 
     # Sanity checks
     try:
@@ -1208,7 +1217,6 @@ def generate_randnws(nw,M=100):
 
     # Allocate space for random networks and convert input network to list
     rnws = np.zeros((N,N,M))
-    nwl  = nw.tolist()
 
     # If available, initialize progressbar
     if (showbar): 
@@ -1216,9 +1224,11 @@ def generate_randnws(nw,M=100):
         pbar = pb.ProgressBar(widgets=widgets,maxval=M)
 
     # Populate tensor
+    counter = 0
     if (showbar): pbar.start()
     for m in xrange(M):
-        rnws[:,:,m] = bct_py.randmio_und_connected(nwl,5)
+        rnws[:,:,m],eff = bct.randmio_und_connected(nwl,5)
+        counter += eff
         if (showbar): pbar.update(m)
     if (showbar): pbar.finish()
 
