@@ -241,7 +241,8 @@ def corrcheck(*args,**kwargs):
     if myin == 0: raise ValueError('At least one input required!')
 
     # Assign global name for all figures if provided by additional keyword argument 'title'
-    figtitle = kwargs.get('title',None)
+    figtitle = kwargs.get('title',None); nofigname = False
+    if figtitle == None: nofigname = True
 
     # If labels have been provided, exract them now
     if type(args[-1]).__name__ == 'list':
@@ -302,7 +303,8 @@ def corrcheck(*args,**kwargs):
 
     # Now let's actually do something and plot the correlation matrices (show warning matrix if is not symmetric)
     fig = plt.figure(figsize=(8,8))
-    fig.canvas.set_window_title(figtitle+' '+str(N)+' Nodes',)
+    if nofigname: figtitle = fig.canvas.get_window_title()
+    fig.canvas.set_window_title(figtitle+': '+str(N)+' Nodes',)
     for i in xrange(nmat):
         plt.subplot(rplot,cplot,i+1)
         im = plt.imshow(corrs[:,:,i],cmap='jet',interpolation='nearest',vmin=-1,vmax=1)
@@ -319,7 +321,8 @@ def corrcheck(*args,**kwargs):
     idx = np.nonzero(np.triu(np.ones((N,N)),1))
     NN  = (N**2 - N)/2
     fig = plt.figure(figsize=(8,8))
-    fig.canvas.set_window_title(figtitle+' '+"Correlation Histograms")
+    if nofigname: figtitle = fig.canvas.get_window_title()
+    fig.canvas.set_window_title(figtitle+': '+"Correlation Histograms")
     bars = []; ylims = []
     for i in xrange(nmat):
         cvec = corrs[idx[0],idx[1],i]
@@ -337,7 +340,8 @@ def corrcheck(*args,**kwargs):
 
     # Show negative correlations
     fig = plt.figure(figsize=(8,8))
-    fig.canvas.set_window_title(figtitle+' '+"Negative Correlations Are BLACK")
+    if nofigname: figtitle = fig.canvas.get_window_title()
+    fig.canvas.set_window_title(figtitle+': '+"Negative Correlations Are BLACK")
     for i in xrange(nmat):
         plt.subplot(rplot,cplot,i+1)
         plt.imshow((corrs[:,:,i]>0).astype(float),cmap='gray',interpolation='nearest',vmin=0,vmax=1)
@@ -347,7 +351,8 @@ def corrcheck(*args,**kwargs):
 
     # Diversity
     fig = plt.figure(figsize=(8,8))
-    fig.canvas.set_window_title(figtitle+' '+"Diversity of Correlations")
+    if nofigname: figtitle = fig.canvas.get_window_title()
+    fig.canvas.set_window_title(figtitle+': '+"Diversity of Correlations")
     xsteps = np.arange(1,N+1)
     stems = []; ylims = []
     for i in xrange(nmat):
