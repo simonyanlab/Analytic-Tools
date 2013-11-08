@@ -381,7 +381,7 @@ def get_meannw(nws,percval=0.75):
                 nws[:,:,i] = N x N conn. matrix of i-th subject 
     percval : float
         Percentage value, s.t. connections not present in at least percval
-        percent of subjects are not considered, thus 0 < percval < 1.
+        percent of subjects are not considered, thus 0 <= percval <= 1.
         Default setting is percval = 0.75 (following Sporns' rich club
         paper).
        
@@ -405,6 +405,10 @@ def get_meannw(nws,percval=0.75):
 
     # Sanity checks
     tensorcheck(nws)
+    try:
+        if percval > 1 or percval < 0:
+            raise ValueError("Percentage value must be >= 0 and <= 1!")
+    except: raise TypeError("Percentage value must be a floating point number >= 0 and <= 1!")
     
     # Get shape of input tensor
     N       = nws.shape[0]
@@ -414,14 +418,36 @@ def get_meannw(nws,percval=0.75):
     mean_binary = np.zeros((N,N))
     mean_wghted = np.zeros((N,N))
 
-    # Cycle through subjects to compute average network
-    for i in xrange(numsubs):
-        mean_binary = mean_binary + (nws[:,:,i]>0)
-        mean_wghted = mean_wghted + nws[:,:,i]
+    # Compute mean network and keep increasing percval until we get a connected mean network
+    docalc = True
+    while docalc:
 
-    # Kick out connections not present in at least percval% of subjects (both in binary and weighted NWs)
-    mean_binary = (mean_binary/numsubs >= percval)
-    mean_wghted = mean_wghted/numsubs * mean_binary
+        # Reset matrices 
+        mean_binary[:] = 0
+        mean_wghted[:] = 0
+
+        # Cycle through subjects to compute average network
+        for i in xrange(numsubs):
+            mean_binary = mean_binary + (nws[:,:,i]>0).astype(float)
+            mean_wghted = mean_wghted + nws[:,:,i]
+
+        # Kick out connections not present in at least percval% of subjects (in binary and weighted NWs)
+        mean_binary = (mean_binary/numsubs >= percval).astype(float)
+        mean_wghted = mean_wghted/numsubs * mean_binary
+
+        # Check connectedness of mean network
+        if degrees_und(mean_binary).min() == 0:
+            print "WARNING: Mean network disconnected for percval = "+str(np.round(1e2*percval))+"%"
+            if percval < 1:
+                print "Decreasing percval by 5%..."
+                percval -= 0.05
+                print "New value for percval is now "+str(np.round(1e2*percval))+"%"
+            else:
+                msg = "Mean network disconnected for percval = 0%. That means at least one node is "+\
+                      "disconnected in ALL per-subject networks..."
+                raise ValueError(msg)
+        else:
+            docalc = False
 
     return mean_wghted
 
@@ -1232,7 +1258,7 @@ def generate_randnws(nw,M=100):
     counter = 0
     if (showbar): pbar.start()
     for m in xrange(M):
-        rnws[:,:,m],eff = bct.randmio_und_connected(nwl,5)
+        rnws[:,:,m],eff = bct.randmio_und_connected(nw,5)
         counter += eff
         if (showbar): pbar.update(m)
     if (showbar): pbar.finish()
