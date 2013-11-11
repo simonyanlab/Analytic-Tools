@@ -391,6 +391,8 @@ def get_meannw(nws,percval=0.75):
         NxN mean value matrix of numsubs matrices stored in nws where
         only connections present in at least percval percent of subjects
         are considered
+    percval : float
+        Percentage value used to generate mean_wghted
        
     Notes:
     ------
@@ -449,7 +451,7 @@ def get_meannw(nws,percval=0.75):
         else:
             docalc = False
 
-    return mean_wghted
+    return mean_wghted, percval
 
 ##########################################################################################
 def rm_negatives(corrs):
@@ -527,6 +529,9 @@ def thresh_nws(nws,userdens=None):
         Same format as tau_levels but holding the density values for each subject
     th_mnw : NumPy 2darray
         The group averaged (across all subjects) weighted network
+    mnw_percval: float
+        Percentage value used to compute th_mnw (see documentation of get_meannw for
+        details)
 
     Notes
     -----
@@ -576,8 +581,8 @@ def thresh_nws(nws,userdens=None):
     if min_raw == 0: raise ValueError('Network '+str(raw_den.argmin())+' has density 0%!')
     if userdens >= max_raw:
         print "All networks have density lower than desired density "+str(userdens)+"%"
-        th_nws = nws; tau_levels = None; den_values = raw_den; threshmnw = get_meannw(nws) 
-        return th_nws, tau_levels, den_values, th_mnw
+        th_nws = nws; tau_levels = None; den_values = raw_den; th_mnw,mnw_percval = get_meannw(nws) 
+        return th_nws, tau_levels, den_values, th_mnw, mnw_percval
 
     # Inform user about minimal/maximal density in raw data
     print "\nRaw data has following density values: \n"
@@ -636,7 +641,6 @@ def thresh_nws(nws,userdens=None):
     # Assign thresholding density level
     if userdens == None:
         thresh_dens = min_den
-        # return th_nws, tau_levels, den_values, th_mnw
     else:
         if userdens < min_den:
             print "\n User provided density of "+str(int(userdens))+"% lower than minimal admissible density of "+str(min_den)+"%. "
@@ -687,12 +691,12 @@ def thresh_nws(nws,userdens=None):
             den_values[i] = den
 
     # Compute group average network
-    th_mnw = get_meannw(th_nws)
+    th_mnw,mnw_percval = get_meannw(th_nws)
 
     # Be polite and dismiss the user 
     print "Done...\n"
 
-    return th_nws, tau_levels, den_values, th_mnw
+    return th_nws, tau_levels, den_values, th_mnw, mnw_percval
 
 ##########################################################################################
 def normalize(I,a=0,b=1):
