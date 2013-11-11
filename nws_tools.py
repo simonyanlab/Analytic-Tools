@@ -11,7 +11,14 @@ import natsort
 import os
 import csv
 
-from mypy.recipes import get_numlines, issym
+try:
+    # On my computer
+    from mypy.recipes import get_numlines, issym
+except:
+    # On the server
+    from recipes import get_numlines, issym
+
+from mpl_toolkits.mplot3d import Axes3D
 
 ##########################################################################################
 def degrees_und(CIJ):
