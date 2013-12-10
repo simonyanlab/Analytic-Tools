@@ -143,7 +143,7 @@ def issym(A,tol=1e-9):
 
     Notes:
     ------
-    None
+    An absolute-value based comparison is readily provided by np.isclose
 
     See also:
     ---------

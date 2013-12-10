@@ -414,10 +414,9 @@ def get_meannw(nws,percval=0.75):
 
     # Sanity checks
     tensorcheck(nws)
-    try:
-        if percval > 1 or percval < 0:
-            raise ValueError("Percentage value must be >= 0 and <= 1!")
+    try: tmp = percval > 1 or percval < 0
     except: raise TypeError("Percentage value must be a floating point number >= 0 and <= 1!")
+    if (tmp): raise ValueError("Percentage value must be >= 0 and <= 1!")
     
     # Get shape of input tensor
     N       = nws.shape[0]
@@ -552,12 +551,11 @@ def thresh_nws(nws,userdens=None):
     # Sanity checks
     tensorcheck(nws)
     if userdens != None:
-        try:
-            if np.round(userdens) != userdens:
-                raise ValueError('The density level must be an integer!')
-                if (userdens <= 0) or (userdens >= 100):
-                    raise ValueError('The density level must be between 0 and 100!')
+        try: tmp = np.round(userdens) != userdens 
         except: raise TypeError('Density level has to be a number between 0 and 100!')
+        if (tmp): raise ValueError('The density level must be an integer!')
+        if (userdens <= 0) or (userdens >= 100):
+            raise ValueError('The density level must be between 0 and 100!')
 
     # Get dimension of per-subject networks
     N       = nws.shape[0]
@@ -745,18 +743,16 @@ def normalize(I,a=0,b=1):
     """
 
     # Ensure that I is a numpy-ndarray
-    try: 
-        if I.size == 1:
-            raise ValueError('I has to be a numpy ndarray of size > 1!')
+    try: tmp = I.size == 1
     except TypeError: raise TypeError('I has to be a numpy ndarray!')
+    if (tmp): raise ValueError('I has to be a numpy ndarray of size > 1!')
 
     # If normalization bounds are user specified, check them
-    try:
-        if b <= a:
-            raise ValueError('a has to be strictly smaller than b!')
-        elif np.absolute(a - b) < np.finfo(float).eps:
-            raise ValueError('|a-b|<eps, no normalization possible')
+    try: tmp = b <= a
     except TypeError: raise TypeError('a and b have to be scalars satisfying a < b!')
+    if (tmp): raise ValueError('a has to be strictly smaller than b!')
+    if np.absolute(a - b) < np.finfo(float).eps:
+            raise ValueError('|a-b|<eps, no normalization possible')
 
     # Get min and max of I
     Imin   = I.min()
@@ -898,20 +894,21 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
     # Sanity checks and assign default values
     try:
         (N,M) = A.shape
-        if N != M: raise ValueError('A has to be square!')
-        if np.isnan(A).max() == True or np.isinf(A).max() == True or np.isreal(A).min() == False:
-            raise ValueError("A must be real-valued without NaNs or Infs!")
-    except: raise TypeError('A has to be a square NumPy array!')
+    except: 
+        raise TypeError('A has to be a square NumPy array!')
+    if N != M: raise ValueError('A has to be square!')
+    if np.isnan(A).max() == True or np.isinf(A).max() == True or np.isreal(A).min() == False:
+        raise ValueError("A must be real-valued without NaNs or Infs!")
+
     if type(coords).__name__ != 'dict':
         raise TypeError("The coordinates have to be a dictionary!")
-        if len(coords.keys()) != N:
-            raise ValueError('The coordinate dictionary has to have N keys!')
+    if len(coords.keys()) != N:
+        raise ValueError('The coordinate dictionary has to have N keys!')
 
     if colorvec != None:
-        try: 
-            if colorvec.size != N:
-                raise ValueError('colorvec has to have length N!')
+        try: tmp = colorvec.size != N
         except: raise TypeError('colorvec has to be a NumPy array!')
+        if (tmp): raise ValueError('colorvec has to have length N!')
         if np.isnan(colorvec).max() == True or np.isinf(colorvec).max() == True or np.isreal(colorvec).min()==False:
             raise ValueError("colorvec must be real-valued without NaNs or Infs!")
         if colorvec.min() < 0 or colorvec.max() > 1:
@@ -919,10 +916,9 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
     else: colorvec = np.ones((N,))
 
     if sizevec != None:
-        try: 
-            if sizevec.size != N:
-                raise ValueError('sizevec has to have length N!')
+        try: tmp = sizevec.size != N
         except: raise TypeError('sizevec has to be a NumPy array!')
+        if (tmp): raise ValueError('sizevec has to have length N!')
         if np.isnan(sizevec).max() == True or np.isinf(sizevec).max() == True or np.isreal(sizevec).min()==False:
             raise ValueError("sizevec must be real-valued without NaNs or Infs!")
         if sizevec.min() < 0:
@@ -1069,20 +1065,19 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
     # Sanity checks and assign default values
     try:
         (N,M) = A.shape
-        if N != M: raise ValueError('A has to be square!')
-        if np.isnan(A).max() == True or np.isinf(A).max() == True or np.isreal(A).min() == False:
-            raise ValueError("A must be real-valued without NaNs or Infs!")
     except: raise TypeError('A has to be a square NumPy array!')
+    if N != M: raise ValueError('A has to be square!')
+    if np.isnan(A).max() == True or np.isinf(A).max() == True or np.isreal(A).min() == False:
+        raise ValueError("A must be real-valued without NaNs or Infs!")
     if type(coords).__name__ != 'dict':
         raise TypeError("The coordinates have to be a dictionary!")
         if len(coords.keys()) != N:
             raise ValueError('The coordinate dictionary has to have N keys!')
 
     if colorvec != None:
-        try: 
-            if colorvec.size != N:
-                raise ValueError('colorvec has to have length N!')
+        try: tmp = colorvec.size != N
         except: raise TypeError('colorvec has to be a NumPy array!')
+        if (tmp): raise ValueError('colorvec has to have length N!')
         if np.isnan(colorvec).max() == True or np.isinf(colorvec).max() == True or np.isreal(colorvec).min()==False:
             raise ValueError("colorvec must be real-valued without NaNs or Infs!")
         if colorvec.min() < 0 or colorvec.max() > 1:
@@ -1090,10 +1085,9 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
     else: colorvec = np.ones((N,))
 
     if sizevec != None:
-        try: 
-            if sizevec.size != N:
-                raise ValueError('sizevec has to have length N!')
+        try: tmp = sizevec.size != N
         except: raise TypeError('sizevec has to be a NumPy array!')
+        if (tmp): raise ValueError('sizevec has to have length N!')
         if np.isnan(sizevec).max() == True or np.isinf(sizevec).max() == True or np.isreal(sizevec).min()==False:
             raise ValueError("sizevec must be real-valued without NaNs or Infs!")
         if sizevec.min() < 0:
@@ -1112,10 +1106,10 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
     if linewidths != None:
         try:
             (N,M) = linewidths.shape
-            if N != M: raise ValueError('Linewidths have to be provided as square matrix!')
-            if np.isnan(linewidths).max() == True or np.isinf(linewidths).max() == True or np.isreal(linewidths).min() == False:
-                raise ValueError("Linewidths must be real-valued without NaNs or Infs!")
         except: raise TypeError('Linewidths have to be a square NumPy array!')
+        if N != M: raise ValueError('Linewidths have to be provided as square matrix!')
+        if np.isnan(linewidths).max() == True or np.isinf(linewidths).max() == True or np.isreal(linewidths).min() == False:
+                raise ValueError("Linewidths must be real-valued without NaNs or Infs!")
 
     if type(nodes3d).__name__ != 'bool':
         raise TypeError('The nodes3d flag has to be a boolean variable!')
@@ -1244,10 +1238,9 @@ def generate_randnws(nw,M=100):
         raise ValueError('Input must be a N-by-N NumPy array!')
     if np.isnan(nw).max()==True or np.isinf(nw).max()==True or np.isreal(nw).min()==False:
         raise ValueError('Input must be a real valued NumPy array without Infs or NaNs!')
-    try:
-        if (round(M) != M) or (M < 1):
-            raise ValueError("M has to be a natural number > 1!")
+    try: tmp = (round(M) != M) or (M < 1)
     except: raise TypeError("M has to be a natural number > 1!")
+    if (tmp): raise ValueError("M has to be a natural number > 1!")
 
     # Try to import progressbar module
     try: 

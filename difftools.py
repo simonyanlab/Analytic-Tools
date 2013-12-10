@@ -94,12 +94,10 @@ def fidop2d(N, drt='xy', fds='c'):
     """
 
     # Check correctness of input
-    try: 
-        if int(N) != N:
-            raise ValueError("N has to be a positive integer")
-        elif N <= 0:
-            raise ValueError("N has to be a positive integer")
+    try: tmp = int(N) != N
     except TypeError: raise TypeError("N has to be a positive integer")
+    if (tmp): raise ValueError("N has to be a positive integer")
+    if N <= 0: raise ValueError("N has to be a positive integer")
 
     if drt != 'x' and drt != 'y' and drt != 'xy':
         raise ValueError("drt has to be x, y or xy")
@@ -198,12 +196,10 @@ def myff2n(n):
     """
 
     # Check correctness of input
-    try: 
-        if int(n) != n:
-            raise ValueError("n has to be a positive integer")
-        elif n <= 0:
-            raise ValueError("n has to be a positive integer")
+    try: tmp = int(n) != n
     except TypeError: raise TypeError("n has to be a positive integer")
+    if tmp: raise ValueError("n has to be a positive integer")
+    if n <= 0: raise ValueError("n has to be a positive integer")
 
     # Output array dff2 has 2^n rows 
     rows = 2**n

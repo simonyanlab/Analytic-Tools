@@ -237,18 +237,17 @@ def normalize(I,a=0,b=1):
     """
 
     # Ensure that I is a numpy-ndarray
-    try: 
-        if I.size == 1:
-            raise ValueError('I has to be a numpy ndarray of size > 1!')
+    try: tmp = I.size == 1
     except TypeError: raise TypeError('I has to be a numpy ndarray!')
+    if (tmp): raise ValueError('I has to be a numpy ndarray of size > 1!')
 
     # If normalization bounds are user specified, check them
-    try:
-        if b <= a:
-            raise ValueError('a has to be strictly smaller than b!')
-        elif np.absolute(a - b) < np.finfo(float).eps:
-            raise ValueError('|a-b|<eps, no normalization possible')
+    try: tmp = b <= a
     except TypeError: raise TypeError('a and b have to be scalars satisfying a < b!')
+    if (tmp):
+        raise ValueError('a has to be strictly smaller than b!')
+    if np.absolute(a - b) < np.finfo(float).eps:
+        raise ValueError('|a-b|<eps, no normalization possible')
 
     # Get min and max of I
     Imin   = I.min()
