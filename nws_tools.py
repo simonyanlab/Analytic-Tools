@@ -21,6 +21,39 @@ except:
 from mpl_toolkits.mplot3d import Axes3D
 
 ##########################################################################################
+def strengths_und(CIJ):
+    """
+    Compute nodal strength of undirected graph
+
+    Inputs:
+    -------
+    CIJ : NumPy 2darray
+        Undirected binary/weighted connection matrix
+
+    Returns:
+    --------
+    st : NumPy 1darray
+        Nodal strength vector
+
+    Notes:
+    ------
+    This function does *not* do any error checking and assumes you know what you are doing
+
+    See also:
+    ---------
+    strengths_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
+    .. https://sites.google.com/site/bctnet/
+    
+    A C++ version of the BCT can be found on the same site. Python bindings are provided 
+    in the module bct_py/bct_gsl
+
+    An inofficial Python port of the BCT is currently available at the Python Package Index 
+    and can be installed using pip. 
+    """
+
+    return np.sum(CIJ,axis=0)
+
+##########################################################################################
 def degrees_und(CIJ):
     """
     Compute nodal degree of undirected graph
