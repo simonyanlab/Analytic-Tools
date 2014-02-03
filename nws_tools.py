@@ -45,9 +45,6 @@ def strengths_und(CIJ):
     strengths_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
     .. https://sites.google.com/site/bctnet/
     
-    A C++ version of the BCT can be found on the same site. Python bindings are provided 
-    in the module bct_py/bct_gsl
-
     An inofficial Python port of the BCT is currently available at the Python Package Index 
     and can be installed using pip. 
     """
@@ -78,9 +75,6 @@ def degrees_und(CIJ):
     degrees_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
     .. https://sites.google.com/site/bctnet/
     
-    A C++ version of the BCT can be found on the same site. Python bindings are provided 
-    in the module bct_py/bct_gsl
-
     An inofficial Python port of the BCT is currently available at the Python Package Index 
     and can be installed using pip. 
     """
@@ -111,9 +105,6 @@ def density_und(CIJ):
     density_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
     .. https://sites.google.com/site/bctnet/
     
-    A C++ version of the BCT can be found on the same site. Python bindings are provided 
-    in the module bct_py/bct_gsl
-
     An inofficial Python port of the BCT is currently available at the Python Package Index 
     and can be installed using pip. 
     """
@@ -1322,9 +1313,35 @@ def generate_randnws(nw,M=100):
 
 def hdfburp(f):
     """
+    Pump out everything stored in a HDF5 file. 
+
+    Inputs:
+    -------
+    f : h5py file object
+        File object created using h5py.File()
+
+    Returns:
+    --------
+    None 
+
+    Notes:
+    ------
+    This function takes an h5py file object and creates variables in the caller's
+    local namespace corresponding to the respective dataset-names in the file. 
+    The naming format of the generated variable is 
+        groupname_datasetname,
+    where the groupname is empty for datasets in the root directory of the file. 
+    
+    WARNING: EXISTING VARIABLES IN THE CALLER WILL BE OVERWRITTEN!!!
+
+    See also:
+    ---------
+    The black magic part of the code was taken from Pykler's answer to this 
+    stackoverflow question 
+    .. http://stackoverflow.com/questions/2515450/injecting-variables-into-the-callers-scope
     """
 
-    # Sanity checks...
+    # Sanity checks
     if str(f).find('HDF5 file') < 0:
         raise TypeError('Input must be a valid HDF5 file identifier!')
 
