@@ -10,6 +10,7 @@ from glob import glob
 import natsort
 import os
 import csv
+import inspect
 
 try:
     # On my computer
@@ -1252,8 +1253,8 @@ def generate_randnws(nw,M=100):
 
     See also:
     ---------
-    The docstring of randmio_und_connected in bct.py
-    generate_randnws.m for a MATLAB version of this code
+    The docstring of randmio_und_connected and null_model_und_sign in bct.py
+    generate_randnws.m for a trimmed down MATLAB version of this code
     """
 
     # Try to import bct
@@ -1286,21 +1287,84 @@ def generate_randnws(nw,M=100):
     # Allocate space for random networks and convert input network to list
     rnws = np.zeros((N,N,M))
 
+    # Check if input network is fully connected
+    if density_und(nw) > .95:
+        print "Network has maximal density. Using null_model_und_sign instead of randmio_und_connected..."
+        mthd = 1
+    else:
+        mthd = 0
+
     # If available, initialize progressbar
     if (showbar): 
         widgets = ['Calculating Random Networks: ',pb.Percentage(),' ',pb.Bar(marker='#'),' ',pb.ETA()]
         pbar = pb.ProgressBar(widgets=widgets,maxval=M)
 
-    # Populate tensor
-    counter = 0
+    # Populate tensor either using randmio (mthd = 0) or null_model_und (mthd = 1)
     if (showbar): pbar.start()
-    for m in xrange(M):
-        rnws[:,:,m],eff = bct.randmio_und_connected(nw,5)
-        counter += eff
-        if (showbar): pbar.update(m)
+    if mthd == 0:
+        counter  = 0
+        for m in xrange(M):
+            rnws[:,:,m], eff = bct.randmio_und_connected(nw,5)
+            counter += eff
+            if (showbar): pbar.update(m)
+    else:
+        counter = 1
+        for m in xrange(M):
+            rnws[:,:,m] = bct.null_model_und_sign(nw)[0]
+            if (showbar): pbar.update(m)
     if (showbar): pbar.finish()
 
+    # If networks have not been randomized, let the user know
+    if counter == 0:
+        print "WARNING: Number of effective re-wirings is zero. Networks have not been randomized!"
+
     return rnws
+
+def hdfburp(f):
+    """
+    """
+
+    # Sanity checks...
+    if str(f).find('HDF5 file') < 0:
+        raise TypeError('Input must be a valid HDF5 file identifier!')
+
+    # Initialize necessary variables
+    mymap      = {}
+    grplist    = [f]
+    nameprefix = ''
+
+    # As long as we find groups in the file, keep iterating
+    while len(grplist) > 0:
+
+        # Get current group (in the first iteration, that's just the file itself)
+        mygrp = grplist[0]
+
+        # If it actually is a group, extract the group name to prefix to variable names
+        if len(mygrp.name) > 1:
+            nameprefix = mygrp.name[1::]+'_'
+
+        # Iterate through group items
+        for it in mygrp.items():
+
+            # If the current item is a group, add it to the list and keep going
+            if str(it[1]).find('HDF5 group') >= 0:
+                grplist.append(f[it[0]])
+
+            # If we found a variable, name it following the scheme: groupname_varname 
+            else:
+                varname = nameprefix + it[0]
+                mymap[varname] = it[1].value
+
+        # Done with the current group, pop it from list
+        grplist.pop(grplist.index(mygrp))
+
+    # Update caller's variable scope (this is black magic...)
+    stack = inspect.stack()
+    try:
+        locals_ = stack[1][0].f_locals
+    finally:
+        del stack
+    locals_.update(mymap)
 
 ##########################################################################################
 def tensorcheck(corrs):
