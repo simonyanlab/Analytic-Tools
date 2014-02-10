@@ -1,25 +1,16 @@
 # nws_tools.py - Collection of network creation/processing/analysis/plotting routines
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
-# September 25 2013
+# February 10 2014
 
 from __future__ import division
 import numpy as np
 from scipy import weave
 import matplotlib.pyplot as plt
 from glob import glob 
-import natsort
 import os
 import csv
 import inspect
-
-try:
-    # On my computer
-    from mypy.recipes import get_numlines, issym
-except:
-    # On the server
-    from recipes import get_numlines, issym
-
 from mpl_toolkits.mplot3d import Axes3D
 
 ##########################################################################################
@@ -46,7 +37,7 @@ def strengths_und(CIJ):
     strengths_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
     .. https://sites.google.com/site/bctnet/
     
-    An unofficial Python port of the BCT is currently available at the Python Package Index 
+    An unofficial Python port of the BCT is currently available in the Python Package Index 
     and can be installed using pip. 
     """
 
@@ -76,7 +67,7 @@ def degrees_und(CIJ):
     degrees_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
     .. https://sites.google.com/site/bctnet/
     
-    An unofficial Python port of the BCT is currently available at the Python Package Index 
+    An unofficial Python port of the BCT is currently available in the Python Package Index 
     and can be installed using pip. 
     """
 
@@ -106,7 +97,7 @@ def density_und(CIJ):
     density_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
     .. https://sites.google.com/site/bctnet/
     
-    An unofficial Python port of the BCT is currently available at the Python Package Index 
+    An unofficial Python port of the BCT is currently available in the Python Package Index 
     and can be installed using pip. 
     """
 
@@ -163,7 +154,6 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
 
     See also:
     ---------
-    get_corr.m and references therein and
     NumPy's corrcoef, mutual_info in this module
     """
 
@@ -176,7 +166,7 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
 
     # Get list of all txt-files in txtpath and order them lexicographically
     if txtpath[-1] == ' '  or txtpath[-1] == os.sep: txtpath = txtpath[:-1]
-    txtfiles = natsort.natsorted(glob(txtpath+os.sep+"*.txt"), key=lambda y: y.lower())
+    txtfiles = natural_sort(glob(txtpath+os.sep+"*.txt"))
 
     # Load very first file to get length of time-series
     firstsub = txtfiles[0]
@@ -281,7 +271,7 @@ def corrcheck(*args,**kwargs):
     
     See also
     --------
-    corrcheck.m and references therein
+    None
     """
 
     # Plotting params used later (max. #plots per row)
@@ -452,7 +442,6 @@ def get_meannw(nws,percval=0.75):
     
     See also:
     ---------
-    get_meannw.m and 
     M. van den Heuvel, O. Sporns: "Rich-Club Organization of the Human Connectome" (2011), J. Neurosci. 
     Currently available at
     .. http://www.jneurosci.org/content/31/44/15775.full
@@ -529,7 +518,7 @@ def rm_negatives(corrs):
 
     See also:
     ---------
-    rm_negatives.m
+    None
     """
 
     # Sanity checks
@@ -604,7 +593,7 @@ def thresh_nws(nws,userdens=None):
 
     See also
     --------
-    binarize.m and thresh_nws.m
+    None
     """
 
     # Sanity checks
@@ -920,8 +909,8 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
         thickest, weights > threshs[1] are thinner and so on. Note that if threshs[-1]>0 not all 
         edges of the network are plotted (since edges with 0 < weight < threshs[-1] will be ignored). 
     lwdths : list 
-        List of linewidths associated to the list of thresholds. Edges with weights larger than 
-        threshs[0] are drawn with linewidth lwdths[0], edges with weights > threshs[1] have linewidth 
+        List of line-widths associated to the list of thresholds. Edges with weights larger than 
+        threshs[0] are drawn with line-width lwdths[0], edges with weights > threshs[1] have line-width 
         lwdths[1] and so on. Thus len(lwdths) == len(threshs). 
     nodecmap : string 
         Mayavi colormap to be used for plotting nodes. See Notes for details. 
@@ -995,9 +984,9 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
         raise TypeError("Thresholds have to be provided as list!")
 
     if type(lwdths).__name__ != 'list':
-        raise TypeError("Linewidths have to be provided as list!")
+        raise TypeError("Line-widths have to be provided as list!")
     if len(lwdths) != len(threshs):
-        raise ValueError("Same number of thresholds and linewidths required!")
+        raise ValueError("Same number of thresholds and line-widths required!")
 
     if type(nodecmap).__name__ != 'str':
         raise TypeError("Colormap for nodes has to be provided as string!")
@@ -1117,7 +1106,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
 
     Notes:
     ------
-    See matplotlib's mplot3d tutorial. Currently available at
+    See Matplotlib's mplot3d tutorial. Currently available at
     .. http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
 
     See also:
@@ -1283,7 +1272,6 @@ def generate_randnws(nw,M=100):
     See also:
     ---------
     The docstring of randmio_und_connected and null_model_und_sign in bct.py
-    generate_randnws.m for a trimmed down MATLAB version of this code
     """
 
     # Try to import bct
@@ -1558,10 +1546,10 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True):
     if (tmp): raise ValueError('Bin number must be an integer!')
 
     if type(normalized).__name__ != 'bool':
-        raise TypeError('The normalized flag must be Boolean!')
+        raise TypeError('The normalized flag must be boolean!')
 
     if type(fast).__name__ != 'bool':
-        raise TypeError('The fast flag must be Boolean!')
+        raise TypeError('The fast flag must be boolean!')
     
     #  Get faster reference to length of time series = number of samples
     #  per grid point.
@@ -1778,7 +1766,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True):
     # Python version of (N)MI computation (slower)
     else:
 
-        #  Define references to numpy functions for faster function calls
+        #  Define references to NumPy functions for faster function calls
         histogram = np.histogram
         histogram2d = np.histogram2d
         log = np.log 
@@ -1835,6 +1823,129 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True):
 
     # Return (N)MI matrix
     return mi
+
+##########################################################################################
+def natural_sort(l): 
+    """
+    Sort a Python list l in a "natural" way
+
+    From the documentation of sort_nat.m:
+
+    "Natural order sorting sorts strings containing digits in a way such that
+    the numerical value of the digits is taken into account.  It is
+    especially useful for sorting file names containing index numbers with
+    different numbers of digits.  Often, people will use leading zeros to get
+    the right sort order, but with this function you don't have to do that."
+
+    For instance, a usual glob will give you a file listing sorted in this way 
+
+        ['Elm11', 'Elm12', 'Elm2', 'elm0', 'elm1', 'elm10', 'elm13', 'elm9']
+
+    Calling natural_sort on that list results in 
+
+        ['elm0', 'elm1', 'Elm2', 'elm9', 'elm10', 'Elm11', 'Elm12', 'elm13']
+
+    Inputs:
+    -------
+    l : Python list 
+        Python list of strings
+
+    Returns:
+    --------
+    l_sort : Python list
+        Lexicographically sorted version of the input list l
+
+    Notes:
+    ------
+    This function does *not* do any error checking and assumes you know what you are doing!
+    The code below was written by Mark Byers as part of a Stackoverflow submission, see
+    .. http://stackoverflow.com/questions/4836710/does-python-have-a-built-in-function-for-string-natural-sort
+
+    See also:
+    ---------
+    MATLAB File Exchange submission sort_nat.m, currently available at 
+    .. http://www.mathworks.com/matlabcentral/fileexchange/10959-sortnat-natural-order-sort
+    
+    Coding Horror's note on natural sorting of file listings
+    .. http://www.codinghorror.com/blog/2007/12/sorting-for-humans-natural-sort-order.html
+    """
+    convert = lambda text: int(text) if text.isdigit() else text.lower() 
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(l, key = alphanum_key)
+
+##########################################################################################
+def get_numlines(fname):
+    """
+    Get number of lines of a txt-file
+
+    Inputs:
+    -------
+    fname : str
+        Path to file to be read
+
+    Returns:
+    --------
+    lineno : int
+        Number of lines in the file
+
+    Notes:
+    ------
+    This code was written by Mark Byers as part of a Stackoverflow submission, 
+    see .. http://stackoverflow.com/questions/845058/how-to-get-line-count-cheaply-in-python
+
+    See also:
+    ---------
+    None
+    """
+
+    # Check if input makes sense
+    if type(fname).__name__ != "str":
+        raise TypeError("Filename has to be a string!")
+
+    # Cycle through lines of files and do nothing
+    with open(fname) as f:
+        for lineno, l in enumerate(f):
+            pass
+
+    return lineno + 1
+
+##########################################################################################
+def issym(A,tol=1e-9):
+    """
+    Check for symmetry of a 2d NumPy array A
+
+    Inputs:
+    -------
+    A : square NumPy 2darray
+        A presumably symmetric matrix
+    tol : positive real scalar
+        Tolerance for checking if (A - A.T) is sufficiently small
+
+    Returns:
+    --------
+    is_sym : bool
+        True if A satisfies
+                |A - A.T| <= tol * |A|,
+        where |.| denotes the Frobenius norm. Thus, if the above inequality 
+        holds, A is approximately symmetric. 
+
+    Notes:
+    ------
+    An absolute-value based comparison is readily provided by NumPy's isclose
+
+    See also:
+    ---------
+    The following thread at MATLAB central
+    .. http://www.mathworks.com/matlabcentral/newsreader/view_thread/252727
+    """
+
+    # Check if Frobenius norm of A - A.T is sufficiently small (respecting round-off errors)
+    try:
+        is_sym = (norm(A-A.T,ord='fro') <= tol*norm(A,ord='fro'))
+    except:
+        raise TypeError('Input argument has to be a square matrix and a scalar tol (optional)!')
+
+    return is_sym
 
 ##########################################################################################
 def tensorcheck(corrs):

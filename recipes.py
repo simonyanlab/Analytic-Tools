@@ -71,17 +71,28 @@ def natural_sort(l):
 
         ['elm0', 'elm1', 'Elm2', 'elm9', 'elm10', 'Elm11', 'Elm12', 'elm13']
 
+    Inputs:
+    -------
+    l : Python list 
+        Python list of strings
+
+    Returns:
+    --------
+    l_sort : Python list
+        Lexicographically sorted version of the input list l
+
     Notes:
     ------
-    This code was written by Mark Byers as part of a Stackoverflow submission, 
-    see .. http://stackoverflow.com/questions/4836710/does-python-have-a-built-in-function-for-string-natural-sort
+    This function does *not* do any error checking and assumes you know what you are doing!
+    The code below was written by Mark Byers as part of a Stackoverflow submission, see
+    .. http://stackoverflow.com/questions/4836710/does-python-have-a-built-in-function-for-string-natural-sort
 
     See also:
     ---------
     MATLAB File Exchange submission sort_nat.m, currently available at 
     .. http://www.mathworks.com/matlabcentral/fileexchange/10959-sortnat-natural-order-sort
     
-    Coding Horror's note on natural sorting of file lists
+    Coding Horror's note on natural sorting of file listings
     .. http://www.codinghorror.com/blog/2007/12/sorting-for-humans-natural-sort-order.html
     """
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
@@ -139,11 +150,14 @@ def issym(A,tol=1e-9):
     Returns:
     --------
     is_sym : bool
-        True if A is symmetric
+        True if A satisfies
+                |A - A.T| <= tol * |A|,
+        where |.| denotes the Frobenius norm. Thus, if the above inequality 
+        holds, A is approximately symmetric. 
 
     Notes:
     ------
-    An absolute-value based comparison is readily provided by np.isclose
+    An absolute-value based comparison is readily provided by NumPy's isclose
 
     See also:
     ---------
