@@ -115,9 +115,9 @@ def density_und(CIJ):
     return K/((N**2 - N)/2.0)
 
 ##########################################################################################
-def get_corr(txtpath):
+def get_corr(txtpath,corrtype='pearson',**kwargs):
     """
-    Compute correlation matrices of time-series using Pearson's correlation coefficient
+    Compute correlation matrices of time-series using corrtype as measure of statistical dependence
 
     Inputs:
     -------
@@ -129,6 +129,17 @@ def get_corr(txtpath):
         (01,02,...,99 or 001,002,...,999) and anything else is separated 
         by an underscore. The files will be read in lexicographic order,
         i.e., s101_1.txt, s101_2.txt,... or s101_Amygdala.txt, s101_Beemygdala,...
+    corrtype : string
+        Specifier which type of statistical dependence to use to compute 
+        pairwise correlations. Currently supported options are 
+                'pearson': the classical zero-lage Pearson correlation coefficient
+                           (see NumPy's corrcoef for details)
+                'mi': (normalized) mutual information 
+                      (see the docstring of mutual_info in this moduel for details)
+    **kwargs : keyword arguments
+        Additional keyword arguments to be passed on to the function computing 
+        the pairwise correlations (currently either NumPy's corrcoef or mutual_info
+        in this function). 
        
     Returns:
     --------
@@ -153,12 +164,15 @@ def get_corr(txtpath):
     See also:
     ---------
     get_corr.m and references therein and
-    NumPy's corrcoef
+    NumPy's corrcoef, mutual_info in this module
     """
 
     # Sanity checks 
     if type(txtpath).__name__ != 'str':
         raise TypeError('Input has to be a string specifying the path to the txt-file directory!')
+    try:
+        corrtype = corrtype.lower()
+    except: raise TypeError('Correlation type input must be a string!')
 
     # Get list of all txt-files in txtpath and order them lexigraphically
     if txtpath[-1] == ' '  or txtpath[-1] == os.sep: txtpath = txtpath[:-1]
@@ -209,8 +223,12 @@ def get_corr(txtpath):
         if col == 0: 
             raise ValueError("Subject "+sub+" is missing!")
 
-        # Compute correlation coefficients for current subject
-        corrs[:,:,k] = np.corrcoef(bigmat[:,:,k],rowvar=0)
+        # Compute correlations based on corrtype
+        if corrtype == 'pearson':
+            corrs[:,:,k] = np.corrcoef(bigmat[:,:,k],rowvar=0,**kwargs)
+        elif corrtype == 'mi':
+            corrs[:,:,k] = mutual_info(bigmat[:,:,k],**kwargs)
+            
 
     # Happy breakdown
     return bigmat, corrs, sublist
