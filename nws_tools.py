@@ -1,10 +1,11 @@
-# nws_tools.py - Collection of network processing/analysis routines
+# nws_tools.py - Collection of network creation/processing/analysis/plotting routines
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # September 25 2013
 
 from __future__ import division
 import numpy as np
+from scipy import weave
 import matplotlib.pyplot as plt
 from glob import glob 
 import natsort
@@ -24,7 +25,7 @@ from mpl_toolkits.mplot3d import Axes3D
 ##########################################################################################
 def strengths_und(CIJ):
     """
-    Compute nodal strength of undirected graph
+    Compute nodal strengths in an undirected graph
 
     Inputs:
     -------
@@ -54,7 +55,7 @@ def strengths_und(CIJ):
 ##########################################################################################
 def degrees_und(CIJ):
     """
-    Compute nodal degree of undirected graph
+    Compute nodal degrees in an undirected graph
 
     Inputs:
     -------
@@ -84,7 +85,7 @@ def degrees_und(CIJ):
 ##########################################################################################
 def density_und(CIJ):
     """
-    Compute density of undirected graph
+    Compute the connection density of an undirected graph
 
     Inputs:
     -------
@@ -1311,6 +1312,7 @@ def generate_randnws(nw,M=100):
 
     return rnws
 
+##########################################################################################
 def hdfburp(f):
     """
     Pump out everything stored in a HDF5 file. 
@@ -1382,6 +1384,404 @@ def hdfburp(f):
     finally:
         del stack
     locals_.update(mymap)
+
+##########################################################################################
+def normalize_time_series(time_series_array):
+    """
+    Normalizes a (real/complex) time series to zero mean and unit variance. 
+    WARNING: Modifies the given array in place!
+    
+    Inputs:
+    -------
+    time_series_array : NumPy 2d array
+        Array of data values per time point. Format is: timepoints-by-N
+
+    Returns:
+    --------
+    None
+
+    Notes:
+    ------
+    This function does *not* do any error checking and assumes you know what you are doing
+
+    See also:
+    ---------
+    This function is part of the pyunicorn package, developed by 
+    Jonathan F. Donges (donges@pik-potsdam.de) and Jobst Heitzig (heitzig@pik-potsdam.de). 
+    It is currently available at  
+    .. http://www.pik-potsdam.de/~donges/pyunicorn/index.html
+
+    Examples:
+    ---------
+    >>> ts = np.arange(16).reshape(4,4).astype("float")
+    >>> normalize_time_series(ts)
+    >>> ts.mean(axis=0)
+    array([ 0.,  0.,  0.,  0.])
+    >>> ts.std(axis=0)
+    array([ 1.,  1.,  1.,  1.])
+    >>> ts[:,0]
+    array([-1.34164079, -0.4472136 ,  0.4472136 ,  1.34164079])
+    """
+
+    #  Remove mean value from time series at each node (grid point)
+    time_series_array -= time_series_array.mean(axis=0)
+    
+    #  Normalize the variance of anomalies to one
+    time_series_array /= np.sqrt((time_series_array * 
+                                time_series_array.conjugate()).mean(axis=0))
+        
+    #  Correct for grid points with zero variance in their time series
+    time_series_array[np.isnan(time_series_array)] = 0
+    
+##########################################################################################
+def mutual_info(tsdata, n_bins=32, normalized=True, fast=True):
+    """
+    Calculate the (normalized) mutual information matrix at zero lag
+
+    Inputs:
+    -------
+    tsdata : NumPy 2d array
+        Array of data values per time point. Format is: timepoints-by-N
+    n_bins : int 
+        Number of bins for estimating probability distributions
+    normalized : bool
+        If True, the normalized mutual information is computed
+                NMI(X,Y) = MI(X,Y)/sqrt(H(X),H(Y)),
+        otherwise the raw mutual information (not bounded from above) ist calculated
+                MI(X,Y) = H(X) + H(Y) - H(X,Y),
+        where H(X) and H(Y) denote the Shannon entropies of the 
+        random variables X and Y respectively and H(X,Y) is their joint 
+        entropy. 
+    fast : bool
+        Use C++ code to calculate (N)MI. If False, then 
+        a (significantly) slower Python implementation is employed 
+        (provided in case the compilation of the C++ code snippets 
+        fails on a system)
+
+    Returns:
+    --------
+    mi : NumPy 2d array
+        N-by-N matrix of pairwise (N)MI coefficients of the input time-series
+
+    Notes:
+    ------
+    The heavy lifting in this function is mainly done by code parts taken from 
+    the pyunicorn package, developed by Jonathan F. Donges (donges@pik-potsdam.de) 
+    and Jobst Heitzig (heitzig@pik-potsdam.de). It is currently available at 
+    .. http://www.pik-potsdam.de/~donges/pyunicorn/index.html
+    The code has been modified so that weave and pure Python codes are now 
+    part of the same function. Further, the original code computes the raw mutual information 
+    only. Both Python and C++ parts have been extended by the normalization of MI with the 
+    geometric mean of H(X) and H(Y). 
+
+    See also:
+    ---------
+    The function mutual_info_climate_network in the pyunicorn package:
+    .. http://www.pik-potsdam.de/~donges/pyunicorn/_modules/pyclimatenetwork/mutual_info_climate_network.html
+
+    Examples:
+    ---------
+    >>> tsdata = np.random.rand(150,2) # 2 time-series of length 150
+    >>> MI = mutual_info(tsdata)
+    """
+
+    # Sanity checks
+    try:
+        shtsdata = tsdata.shape
+    except:
+        raise TypeError('Input must be a timepoint-by-index NumPy 2d array, not '+type(tsdata).__name__+'!')
+    if len(shtsdata) != 2:
+        raise ValueError('Input must be a timepoint-by-index NumPy 2d array')
+    if (min(shtsdata)==1):
+        raise ValueError('At least two time-series/two time-points are required to compute (N)MI!')
+    if np.isnan(tsdata).max()==True or np.isinf(tsdata).max()==True or np.isreal(tsdata).min()==False:
+        raise ValueError('Input must be a real valued NumPy 2d array without Infs or NaNs!')
+
+    try:
+        tmp = (n_bins != int(n_bins))
+    except:
+        raise TypeError('Bin number must be an integer!')
+    if (tmp): raise ValueError('Bin number must be an integer!')
+
+    if type(normalized).__name__ != 'bool':
+        raise TypeError('The normalized flag must be boolean!')
+
+    if type(fast).__name__ != 'bool':
+        raise TypeError('The fast flag must be boolean!')
+    
+    #  Get faster reference to length of time series = number of samples
+    #  per grid point.
+    (n_samples,N) = tsdata.shape
+    # (N, n_samples) = tsdata.shape
+
+    #  Normalize tsdata time series to zero mean and unit variance
+    normalize_time_series(tsdata)
+
+    #  Initialize mutual information array
+    mi = np.zeros((N,N), dtype="float32")
+
+    # Execute C++ code
+    if (fast):
+
+        #  Create local transposed copy of tsdata
+        tsdata = np.fastCopyAndTranspose(tsdata)
+                
+        #  Get common range for all histograms
+        range_min = float(tsdata.min())
+        range_max = float(tsdata.max())
+        
+        #  Rescale all time series to the interval [0,1], 
+        #  using the maximum range of the whole dataset.
+        scaling  = float(1. / (range_max - range_min))
+        
+        #  Create array to hold symbolic trajectories
+        symbolic = np.empty(tsdata.shape, dtype="int32")
+        
+        #  Initialize array to hold 1d-histograms of individual time series
+        hist = np.zeros((N,n_bins), dtype="int32")
+        
+        #  Initialize array to hold 2d-histogram for one pair of time series
+        hist2d = np.zeros((n_bins,n_bins), dtype="int32")
+                
+        # C++ code to compute NMI
+        code_nmi = r"""
+        int i, j, k, l, m;
+        int symbol, symbol_i, symbol_j; 
+        double norm, rescaled, hpl, hpm, plm, Hl, Hm;
+
+        //  Calculate histogram norm
+        norm = 1.0 / n_samples;
+
+        for (i = 0; i < N; i++) {
+            for (k = 0; k < n_samples; k++) {
+
+                //  Calculate symbolic trajectories for each time series, 
+                //  where the symbols are bins.
+                rescaled = scaling * (tsdata(i,k) - range_min);
+
+                if (rescaled < 1.0) {
+                    symbolic(i,k) = rescaled * n_bins;
+                }
+                else {
+                    symbolic(i,k) = n_bins - 1;
+                }
+
+                //  Calculate 1d-histograms for single time series
+                symbol = symbolic(i,k);
+                hist(i,symbol) += 1;
+            }
+        }
+
+        for (i = 0; i < N; i++) {
+            for (j = 0; j <= i; j++) {
+
+                //  The case i = j is not of interest here!
+                if (i != j) {
+                    //  Calculate 2d-histogram for one pair of time series 
+                    //  (i,j).
+                    for (k = 0; k < n_samples; k++) {
+                        symbol_i = symbolic(i,k);
+                        symbol_j = symbolic(j,k);
+                        hist2d(symbol_i,symbol_j) += 1;
+                    }
+
+                    //  Calculate mutual information for one pair of time 
+                    //  series (i,j).
+                    Hl = 0;
+                    for (l = 0; l < n_bins; l++) {
+                        hpl = hist(i,l) * norm;
+                        if (hpl > 0.0) {
+                            Hl += hpl * log(hpl);
+                            Hm = 0;
+                            for (m = 0; m < n_bins; m++) {
+                                hpm = hist(j,m) * norm;
+                                if (hpm > 0.0) {
+                                    Hm += hpm * log(hpm);
+                                    plm = hist2d(l,m) * norm;
+                                    if (plm > 0.0) {
+                                        mi(i,j) += plm * log(plm/hpm/hpl);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Divide by the marginal entropies to normalize MI
+                    mi(i,j) = mi(i,j) / sqrt(Hm * Hl);
+
+                    //  Symmetrize MI
+                    mi(j,i) = mi(i,j);
+
+                    //  Reset hist2d to zero in all bins
+                    for (l = 0; l < n_bins; l++) {
+                        for (m = 0; m < n_bins; m++) {
+                            hist2d(l,m) = 0;
+                        }
+                    }
+                }
+                // Put ones on the diagonal
+                else {
+                    mi(i,j) = 1.0;
+                }
+
+            }
+        }
+        """
+
+        # C++ code to compute MI
+        code_mi = r"""
+        int i, j, k, l, m;
+        int symbol, symbol_i, symbol_j; 
+        double norm, rescaled, hpl, hpm, plm;
+
+        //  Calculate histogram norm
+        norm = 1.0 / n_samples;
+
+        for (i = 0; i < N; i++) {
+            for (k = 0; k < n_samples; k++) {
+
+                //  Calculate symbolic trajectories for each time series, 
+                //  where the symbols are bins.
+                rescaled = scaling * (tsdata(i,k) - range_min);
+
+                if (rescaled < 1.0) {
+                    symbolic(i,k) = rescaled * n_bins;
+                }
+                else {
+                    symbolic(i,k) = n_bins - 1;
+                }
+
+                //  Calculate 1d-histograms for single time series
+                symbol = symbolic(i,k);
+                hist(i,symbol) += 1;
+            }
+        }
+
+        for (i = 0; i < N; i++) {
+            for (j = 0; j <= i; j++) {
+
+                //  The case i = j is not of interest here!
+                if (i != j) {
+                    //  Calculate 2d-histogram for one pair of time series 
+                    //  (i,j).
+                    for (k = 0; k < n_samples; k++) {
+                        symbol_i = symbolic(i,k);
+                        symbol_j = symbolic(j,k);
+                        hist2d(symbol_i,symbol_j) += 1;
+                    }
+
+                    //  Calculate mutual information for one pair of time 
+                    //  series (i,j).
+                    // Hl = 0;
+                    for (l = 0; l < n_bins; l++) {
+                        hpl = hist(i,l) * norm;
+                        if (hpl > 0.0) {
+                            // Hl += hpl * log(hpl);
+                            // Hm = 0;
+                            for (m = 0; m < n_bins; m++) {
+                                hpm = hist(j,m) * norm;
+                                if (hpm > 0.0) {
+                                    // Hm += hpm * log(hpm);
+                                    plm = hist2d(l,m) * norm;
+                                    if (plm > 0.0) {
+                                        mi(i,j) += plm * log(plm/hpm/hpl);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    //  Symmetrize MI
+                    mi(j,i) = mi(i,j);
+
+                    //  Reset hist2d to zero in all bins
+                    for (l = 0; l < n_bins; l++) {
+                        for (m = 0; m < n_bins; m++) {
+                            hist2d(l,m) = 0;
+                        }
+                    }
+                }
+                // Put ones on the diagonal
+                else {
+                    mi(i,j) = 1.0;
+                }
+
+            }
+        }
+        """
+
+        # Initialize necessary variables to pass on to C++ code snippets above
+        vars = ['tsdata', 'n_samples', 'N', 'n_bins', 'scaling', 'range_min', 
+                'symbolic', 'hist', 'hist2d', 'mi']
+
+        # Compute normalized or non-normalized mutual information
+        if (normalized):
+            weave.inline(code_nmi, vars, type_converters=weave.converters.blitz, 
+                         compiler='gcc', extra_compile_args=['-O3'])
+        else:
+            weave.inline(code_mi, vars, type_converters=weave.converters.blitz, 
+                         compiler='gcc', extra_compile_args=['-O3'])
+        
+    # Python version of (N)MI computation (slower)
+    else:
+
+        #  Define references to numpy functions for faster function calls
+        histogram = np.histogram
+        histogram2d = np.histogram2d
+        log = np.log 
+
+        #  Get common range for all histograms
+        range_min = tsdata.min()
+        range_max = tsdata.max()
+
+        #  Calculate the histograms for each time series
+        p = np.zeros((N, n_bins))
+        for i in xrange(N):
+            p[i,:] = (histogram(tsdata[:, i], bins=n_bins, 
+                            range=(range_min,range_max))[0]).astype("float64")
+
+        #  Normalize by total number of samples = length of each time series
+        p /= n_samples
+
+        #  Make sure that bins with zero estimated probability are not counted 
+        #  in the entropy measures.
+        p[p == 0] = 1
+
+        #  Compute the information entropies of each time series
+        H = - (p * log(p)).sum(axis = 1)
+
+        #  Calculate only the lower half of the MI matrix, since MI is 
+        #  symmetric with respect to X and Y.
+        for i in xrange(N):
+
+            for j in xrange(i):
+
+                #  Calculate the joint probability distribution
+                pxy = (histogram2d(tsdata[:,i], tsdata[:,j], bins=n_bins, 
+                            range=((range_min, range_max), 
+                            (range_min, range_max)))[0]).astype("float64")
+
+                #  Normalize joint distribution
+                pxy /= n_samples
+
+                #  Compute the joint information entropy
+                pxy[pxy == 0] = 1
+                HXY = - (pxy * log(pxy)).sum()
+
+                # Normalize by entropies (or not)
+                if (normalized):
+                    mi.itemset((i,j), (H.item(i) + H.item(j) - HXY)/(np.sqrt(H.item(i)*H.item(j))))
+                else:
+                    mi.itemset((i,j), H.item(i) + H.item(j) - HXY)
+
+                # Symmetrize MI
+                mi.itemset((j,i), mi.item((i,j)))
+
+        # Put ones on the diagonal
+        np.fill_diagonal(mi,1)
+
+    # Return (N)MI matrix
+    return mi
 
 ##########################################################################################
 def tensorcheck(corrs):
