@@ -18,27 +18,28 @@ def strengths_und(CIJ):
     """
     Compute nodal strengths in an undirected graph
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     CIJ : NumPy 2darray
         Undirected binary/weighted connection matrix
 
-    Returns:
-    --------
+    Returns
+    -------
     st : NumPy 1darray
         Nodal strength vector
 
-    Notes:
-    ------
+    Notes
+    -----
     This function does *not* do any error checking and assumes you know what you are doing
 
-    See also:
-    ---------
-    strengths_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
-    .. https://sites.google.com/site/bctnet/
-    
-    An unofficial Python port of the BCT is currently available in the Python Package Index 
-    and can be installed using pip. 
+    See also
+    --------
+    strengths_und.m : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                      `here <https://sites.google.com/site/bctnet/>`_
+
+    bctpy : An unofficial Python port of the BCT is currently available at the 
+            `Python Package Index <https://pypi.python.org/pypi/bctpy>`_
+            and can be installed using pip. 
     """
 
     return np.sum(CIJ,axis=0)
@@ -48,27 +49,28 @@ def degrees_und(CIJ):
     """
     Compute nodal degrees in an undirected graph
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     CIJ : NumPy 2darray
         Undirected binary/weighted connection matrix
 
-    Returns:
-    --------
+    Returns
+    -------
     deg : NumPy 1darray
         Nodal degree vector
 
-    Notes:
-    ------
+    Notes
+    -----
     This function does *not* do any error checking and assumes you know what you are doing
 
-    See also:
-    ---------
-    degrees_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
-    .. https://sites.google.com/site/bctnet/
-    
-    An unofficial Python port of the BCT is currently available in the Python Package Index 
-    and can be installed using pip. 
+    See also
+    --------
+    degrees_und.m : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                    `here <https://sites.google.com/site/bctnet/>`_
+
+    bctpy : An unofficial Python port of the BCT is currently available at the 
+            `Python Package Index <https://pypi.python.org/pypi/bctpy>`_
+            and can be installed using pip. 
     """
 
     return (CIJ != 0).sum(1)
@@ -78,27 +80,28 @@ def density_und(CIJ):
     """
     Compute the connection density of an undirected graph
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     CIJ : NumPy 2darray
         Undirected binary/weighted connection matrix
 
-    Returns:
-    --------
+    Returns
+    -------
     den : float
         density (fraction of present connections to possible connections)
 
-    Notes:
-    ------
+    Notes
+    -----
     This function does *not* do any error checking and assumes you know what you are doing
 
-    See also:
-    ---------
-    density_und.m in the Brain Connectivity Toolbox for MATLAB, currently available at
-    .. https://sites.google.com/site/bctnet/
-    
-    An unofficial Python port of the BCT is currently available in the Python Package Index 
-    and can be installed using pip. 
+    See also
+    --------
+    density_und.m : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                    `here <https://sites.google.com/site/bctnet/>`_
+
+    bctpy : An unofficial Python port of the BCT is currently available at the 
+            `Python Package Index <https://pypi.python.org/pypi/bctpy>`_
+            and can be installed using pip. 
     """
 
     N = CIJ.shape[0]                    # no. of nodes
@@ -108,53 +111,58 @@ def density_und(CIJ):
 ##########################################################################################
 def get_corr(txtpath,corrtype='pearson',**kwargs):
     """
-    Compute correlation matrices of time-series using corrtype as measure of statistical dependence
+    Compute correlation matrices of time-series using `corrtype` as measure of statistical dependence
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     txtpath : string
-        Path to directory holding ROI-averaged time-series dumped in txt files.
-        The following file-naming convention is required:
-                sNxy_bla_bla.txt,
-        where N is the group id (1,2,3,...), xy denotes the subject number 
+        Path to directory holding ROI-averaged time-series dumped in `txt` files.
+        The following file-naming convention is required
+
+                `sNxy_bla_bla.txt`,
+
+        where `N` is the group id (1,2,3,...), `xy` denotes the subject number 
         (01,02,...,99 or 001,002,...,999) and anything else is separated 
         by an underscore. The files will be read in lexicographic order,
-        i.e., s101_1.txt, s101_2.txt,... or s101_Amygdala.txt, s101_Beemygdala,...
+        i.e., `s101_1.txt`, `s101_2.txt`,... or `s101_Amygdala.txt`, `s101_Beemygdala`,...
     corrtype : string
         Specifier indicating which type of statistical dependence to use to compute 
         pairwise correlations. Currently supported options are 
-                'pearson': the classical zero-lag Pearson correlation coefficient
-                           (see NumPy's corrcoef for details)
-                'mi': (normalized) mutual information 
-                      (see the docstring of mutual_info in this module for details)
+
+                `pearson`: the classical zero-lag Pearson correlation coefficient 
+                (see NumPy's corrcoef for details)
+
+                `mi`: (normalized) mutual information 
+                (see the docstring of mutual_info in this module for details)
+
     **kwargs : keyword arguments
         Additional keyword arguments to be passed on to the function computing 
         the pairwise correlations (currently either NumPy's corrcoef or mutual_info
         in this module). 
        
-    Returns:
-    --------
+    Returns
+    -------
     corrs : NumPy 3darray
-        NxN correlation matrices of numsubs subjects. Format is 
-                corrs.shape = (N,N,numsubs),
+        `N`-by-`N` correlation matrices of numsubs subjects. Format is 
+                `corrs.shape = (N,N,numsubs)`,
         s.t.
-                corrs[:,:,i] = N x N correlation matrix of i-th subject 
+                `corrs[:,:,i]` = `N x N` correlation matrix of `i`-th subject 
     bigmat : NumPy 3darray
         Tensor holding unprocessed time series of all subjects. Format is 
-                bigmat.shape = (tlen,N,numsubs),
-        where tlen is the length of the time-series and N is the number of                 
+                `bigmat.shape = (tlen,N,numsubs)`,
+        where `tlen` is the length of the time-series and `N` is the number of                 
         regions (=nodes in a network). 
     sublist : list of strings
-        List of subjects found in folder specified by txtpath, e.g.,
-                sublist = ['s101','s103','s110','s111','s112',...]
+        List of subjects found in folder specified by `txtpath`, e.g.,
+                `sublist = ['s101','s103','s110','s111','s112',...]`
 
-    Notes:
-    ------
+    Notes
+    -----
     None
 
-    See also:
-    ---------
-    NumPy's corrcoef, mutual_info in this module
+    See also
+    --------
+    numpy.corrcoef, mutual_info
     """
 
     # Sanity checks 
@@ -228,42 +236,53 @@ def corrcheck(*args,**kwargs):
     """
     Sanity checks for correlation matrices
     
-    Inputs:
-    -------
-    Dynamic
+    Parameters
+    ----------
+    Dynamic : Usage as follows
+    corrcheck(A) : input is NumPy 2darray                    
+        shows some statistics for the correlation matrix `A`
+    corrcheck(A,label) : input is NumPy 2darray and ['string']                    
+        shows some statistics for the correlation matrix `A` and uses
+        `label`, a list containing one string, as title in figures. 
+    corrcheck(A,B,C,...) : input are many NumPy 2darrays            
+        shows some statistics for the correlation matrices `A`, `B`, `C`,....
+    corrcheck(A,B,C,...,label) : input are many NumPy 2darrays and a list of strings      
+        shows some statistics for the correlation matrices `A`, `B`, `C`,....
+        and uses the list of strings `label` to generate titles in figures. 
+        Note that `len(label)` has to be equal to the number of 
+        input matrices. 
+    corrcheck(T) : input is NumPy 3darray                    
+        shows some statistics for correlation matrices stored 
+        in the tensor `T`. The storage scheme has to be
+                `T[:,:,0] = A`
 
-    Usage:
-    ------
-    corrcheck(A)                    shows some statistics for the correlation matrix A.
-    corrcheck(A,label)              shows some statistics for the correlation matrix A and uses
-                                    label, a list containing one string, as title in figures. 
-    corrcheck(A,B,C,...)            shows some statistics for the correlation matrices A,B,C,....
-    corrcheck(A,B,C,...,label)      shows some statistics for the correlation matrices A,B,C,....
-                                    and uses the list of strings label to generate titles in figures. 
-                                    Note that len(label) has to be equal to the number of 
-                                    input matrices. 
-    corrcheck(T)                    shows some statistics for correlation matrices stored 
-                                    in the tensor T. The storage scheme has to be
-                                        T[:,:,0] = A
-                                        T[:,:,1] = B
-                                        T[:,:,2] = C
-                                        etc.
-                                    where A,B,C,... are correlation matrices. 
-    corrcheck(T,label)              shows some statistics for correlation matrices stored 
-                                    in the tensor T. The storage scheme has to be
-                                        T[:,:,0] = A
-                                        T[:,:,1] = B
-                                        T[:,:,2] = C
-                                        etc.
-                                    where A,B,C,... are correlation matrices. The list of strings label 
-                                    is used to generate titles in figures. Note that len(label)
-                                    has to be equal to T.shape[2]
-    corrcheck(...,title='mytitle')  same as above and and uses the string 'mytitle' as window name for 
-                                    figures. 
-                               
-    Returns:
-    --------
-    None 
+                `T[:,:,1] = B`
+
+                `T[:,:,2] = C`
+
+                etc.
+
+        where `A`, `B`, `C`,... are correlation matrices. 
+    corrcheck(T,label) : input is NumPy 3darray and list of strings
+        shows some statistics for correlation matrices stored 
+        in the tensor `T`. The storage scheme has to be
+                `T[:,:,0] = A`
+
+                `T[:,:,1] = B`
+
+                `T[:,:,2] = C`
+
+                etc.
+
+        where `A`, `B`, `C`,... are correlation matrices. The list of strings `label`
+        is used to generate titles in figures. Note that `len(label)`
+        has to be equal to `T.shape[2]`
+    corrcheck(...,title='mytitle') : input is any of the above
+        same as above and and uses the string `mytitle` as window name for figures. 
+
+    Returns
+    -------
+    Nothing : None
     
     Notes
     -----
@@ -413,38 +432,39 @@ def get_meannw(nws,percval=0.75):
     """
     Helper function to compute group-averaged networks
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     nws : NumPy 3darray
-        NxN connectivity matrices of numsubs subjects. Format is 
-                nws.shape = (N,N,numsubs),
+        `N`-by-`N` connectivity matrices of numsubs subjects. Format is 
+                `nws.shape = (N,N,numsubs)`,
         s.t.
-                nws[:,:,i] = N x N connectivity matrix of i-th subject 
+                `nws[:,:,i] = N x N` connectivity matrix of `i`-th subject 
     percval : float
-        Percentage value, s.t. connections not present in at least percval
-        percent of subjects are not considered, thus 0 <= percval <= 1.
-        Default setting is percval = 0.75 (following van den Heuvel's and Sporns' 
+        Percentage value, s.t. connections not present in at least `percval`
+        percent of subjects are not considered, thus `0 <= percval <= 1`.
+        Default setting is `percval = 0.75` (following van den Heuvel's and Sporns' 
         rich club paper, see below). 
        
-    Returns:
-    --------
+    Returns
+    -------
     mean_wghted : NumPy 2darray
-        NxN mean value matrix of numsubs matrices stored in nws where
-        only connections present in at least percval percent of subjects
+        `N`-by-`N` mean value matrix of `numsubs` matrices stored in `nws` where
+        only connections present in at least `percval` percent of subjects
         are considered
     percval : float
-        Percentage value used to generate mean_wghted
+        Percentage value used to generate `mean_wghted`
        
-    Notes:
-    ------
-    If the current setting of percval leads to a disconnected network, 
-    the code increases percval in 5% steps to assure connectedness of the group-averaged graph. 
-    
-    See also:
-    ---------
+    Notes
+    -----
+    If the current setting of `percval` leads to a disconnected network, 
+    the code increases `percval` in 5% steps to assure connectedness of the group-averaged graph. 
+    The concept of using only a certain percentage of edges present in subjects was taken from 
     M. van den Heuvel, O. Sporns: "Rich-Club Organization of the Human Connectome" (2011), J. Neurosci. 
-    Currently available at
-    .. http://www.jneurosci.org/content/31/44/15775.full
+    Currently available `here <http://www.jneurosci.org/content/31/44/15775.full>`_
+    
+    See also
+    --------
+    None
     """
 
     # Sanity checks
@@ -499,25 +519,25 @@ def rm_negatives(corrs):
     """
     Remove negative correlations from correlation matrices
 
-    Inputs:
+    Parameters
+    ----------
+    corrs : NumPy 3darray
+        `N`-by-`N` correlation matrices of `numsubs` subjects. Format is 
+                `corrs.shape = (N,N,numsubs)`,
+        s.t.
+                `corrs[:,:,i] = N x N` connectivity matrix of `i`-th subject 
+
+    Returns
     -------
     corrs : NumPy 3darray
-        NxN correlation matrices of numsubs subjects. Format is 
-                corrs.shape = (N,N,numsubs),
-        s.t.
-                corrs[:,:,i] = N x N connectivity matrix of i-th subject 
-
-    Returns:
-    --------
-    corrs : NumPy 3darray
-        Same format as input tensor but corrs >= 0. 
+        Same format as input tensor but `corrs >= 0`. 
 
     Notes
     -----
     None
 
-    See also:
-    ---------
+    See also
+    --------
     None
     """
 
@@ -548,47 +568,47 @@ def thresh_nws(nws,userdens=None):
     """
     Threshold networks based on connection density
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     nws : NumPy 3darray
-        Undirected NxN connectivity matrices of numsubs subjects. Format is 
-                corrs.shape = (N,N,numsubs),
+        Undirected `N`-by-`N` connectivity matrices of `numsubs` subjects. Format is 
+                `corrs.shape = (N,N,numsubs)`,
         s.t.
-                corrs[:,:,i] = N x N connectivity matrix of i-th subject 
+                `corrs[:,:,i] = N x N` connectivity matrix of `i`-th subject 
     userdens : int
         By default, the input networks are thresholded down to the lowest common 
-        connection density without disconnecting any nodes in the networks. If userdens 
-        is provided, then it is used as density level to which networks should be 
-        thresholded, i.e., 0 < userdens < 100. See Notes below for details. 
+        connection density without disconnecting any nodes in the networks. If `userdens` 
+        is provided, then it is used as density level to which all networks should be 
+        thresholded, i.e., `0 < userdens < 100`. See Notes below for details. 
                
-    Returns:
-    --------
+    Returns
+    -------
     th_nws : NumPy 3darray
-        Thresholded networks for all subjects. Format is the same as nws. 
+        Thresholded networks for all subjects. Format is the same as for `nws`. 
     tau_levels : NumPy 1darray
         The threshold values for each subject's network corresponding to the 
-        networks stored in th_nws, i.e. tau_levels[i] is the threshold that 
-        generated the network th_nws[:,:,i], i.e., the network of subject i. 
+        networks stored in `th_nws`, i.e. `tau_levels[i]` is the threshold that 
+        generated the network `th_nws[:,:,i]`, i.e., the network of subject `i`. 
     den_values : NumPy 1darray
-        Same format as tau_levels but holding the exact density values for each subject
+        Same format as `tau_levels` but holding the exact density values for each subject
     th_mnw : NumPy 2darray
         The group averaged (across all subjects) weighted network
     mnw_percval: float
-        Percentage value used to compute th_mnw (see documentation of get_meannw for
+        Percentage value used to compute `th_mnw` (see documentation of `get_meannw` for
         details)
 
     Notes
     -----
     By default, the thresholding algorithm uses the lowest common connection density 
     before a node is disconnected. 
-    That means, if networks A, B and C can be thresholded down to 40%, 50% and 60% density, 
+    That means, if networks `A`, `B` and `C` can be thresholded down to 40%, 50% and 60% density, 
     respectively, without disconnecting any nodes, then the lowest common density for thresholding 
-    A, B and C together is 60%. If, e.g., the raw network A already has a density of 
+    `A`, `B` and `C` together is 60%. If, e.g., the raw network `A` already has a density of 
     60% or lower, it is excluded from thresholding and the original network is copied 
-    into th_nws. If a density level is provided by the user, then the code tries to use 
+    into `th_nws`. If a density level is provided by the user, then the code tries to use 
     it unless it violates connectedness of all thresholded networks - in this case 
     the lowest common density of all networks is used. 
-    The code below relies on the routine get_meannw in this module to compute the group-averaged
+    The code below relies on the routine `get_meannw` in this module to compute the group-averaged
     network. 
 
     See also
@@ -756,29 +776,29 @@ def normalize(I,a=0,b=1):
     """
     Re-scales a NumPy ndarray
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     I : NumPy ndarray
         An array of size > 1 (shape can be arbitrary)
     a : float
         Floating point number representing the lower normalization bound. 
-        (Note that it has to hold that a < b)
+        (Note that it has to hold that `a < b`)
     b : float
         Floating point number representing the upper normalization bound. 
-        (Note that it has to hold that a < b)
+        (Note that it has to hold that `a < b`)
        
     Returns
     -------
     In : NumPy ndarray
-        Scaled version of the input array I, such that a = In.min() and 
-        b = In.max()
+        Scaled version of the input array `I`, such that `a = In.min()` and 
+        `b = In.max()`
 
     Notes
     -----
     None 
 
-    Examples:
-    ---------
+    Examples
+    --------
     >>> I = array([[-1,.2],[100,0]])
     >>> In = normalize(I,a=-10,b=12)
     >>> In 
@@ -826,35 +846,44 @@ def csv2dict(csvfile):
     """
     Reads 3D nodal coordinates of from a csv file into a Python dictionary
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     csvfile : string 
         File-name of (or full path to) the csv file holding the nodal coordinates.
         The format of this file HAS to be 
-                 x, y, z 
-                 x, y, z 
-                 x, y, z 
+                 `x, y, z` 
+
+                 `x, y, z` 
+
+                 `x, y, z` 
+
                  .
+
                  .
+
         for each node. Thus #rows = #nodes. 
 
-    Returns:
-    --------
+    Returns
+    -------
     mydict : dictionary 
         Nodal coordinates as read from the input csv file. Format is
-                {0: (x, y, z),
-                {1: (x, y, z),
-                {2: (x, y, z),
+                `{0: (x, y, z),`
+                `{1: (x, y, z),`
+
+                `{2: (x, y, z),`
+
                  .
+
                  .
+
         Thus the dictionary has #nodes keys. 
     
-    Notes:
-    ------
+    Notes
+    -----
     None 
 
-    See also:
-    ---------
+    See also
+    --------
     None 
     """
 
@@ -882,36 +911,41 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
     """
     Plots a 3d network using Mayavi
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     A : NumPy 2darray
-        Square N-by-N connectivity matrix of the network
+        Square `N`-by-`N` connectivity matrix of the network
     coords: dictionary 
         Nodal coordinates of the graph. Format is
-                {0: (x, y, z),
-                {1: (x, y, z),
-                {2: (x, y, z),
+                `{0: (x, y, z),`
+
+                `{1: (x, y, z),`
+
+                `{2: (x, y, z),`
+
                  .
+
                  .
-        Note that the dictionary has to have N keys. 
+
+        Note that the dictionary has to have `N` keys. 
     colorvec : NumPy 1darray
         Vector of color-values for each node. This could be nodal strength or modular information of nodes 
-        (i.e., to which module does node i belong to). Thus colorvec has to be of length N and all its
-        components must be in [0,1]. 
+        (i.e., to which module does node `i` belong to). Thus `colorvec` has to be of length `N` and all its
+        components must be in `[0,1]`. 
     sizevec : NumPy 1darray 
-        Vector of nodal sizes. This could be degree, centrality, etc. Thus sizevec has to be of length N
-        and all its components must be >= 0. 
+        Vector of nodal sizes. This could be degree, centrality, etc. Thus `sizevec` has to be of length 
+        `N` and all its components must be `>= 0`. 
     labels : list
-        Nodal labels. Format is ['Name1','Name2','Name3',...] where the ordering HAS to be the same
-        as in the coords dictionary. Note that the list has to have length N. 
+        Nodal labels. Format is `['Name1','Name2','Name3',...]` where the ordering HAS to be the same
+        as in the `coords` dictionary. Note that the list has to have length `N`. 
     threshs : list 
-        List of thresholds for visualization. Edges with weights larger than threshs[0] are drawn 
-        thickest, weights > threshs[1] are thinner and so on. Note that if threshs[-1]>0 not all 
-        edges of the network are plotted (since edges with 0 < weight < threshs[-1] will be ignored). 
+        List of thresholds for visualization. Edges with weights larger than `threshs[0]` are drawn 
+        thickest, weights `> threshs[1]` are thinner and so on. Note that if `threshs[-1]>0` not all 
+        edges of the network are plotted (since edges with `0 < weight < threshs[-1]` will be ignored). 
     lwdths : list 
         List of line-widths associated to the list of thresholds. Edges with weights larger than 
-        threshs[0] are drawn with line-width lwdths[0], edges with weights > threshs[1] have line-width 
-        lwdths[1] and so on. Thus len(lwdths) == len(threshs). 
+        `threshs[0]` are drawn with line-width `lwdths[0]`, edges with `weights > threshs[1]` 
+        have line-width `lwdths[1]` and so on. Thus `len(lwdths) == len(threshs)`. 
     nodecmap : string 
         Mayavi colormap to be used for plotting nodes. See Notes for details. 
     edgecmap : string 
@@ -919,20 +953,21 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
     textscale : positive number 
         Scaling factor for labels (larger numbers -> larger text)
 
-    Returns:
+    Returns
+    -------
+    Nothing : None
+
+    Notes
+    -----
+    A list of available colormaps in Mayavi is currently available 
+    `here <http://docs.enthought.com/mayavi/mayavi/mlab_changing_object_looks.html>`_. 
+    See the 
+    `Mayavi documentation <http://docs.enthought.com/mayavi/mayavi/auto/mlab_helper_functions.html>`_
+    for more info. 
+
+    See also
     --------
-    None 
-
-    Notes:
-    ------
-    A list of available colormaps in Mayavi is currently available at
-    .. http://docs.enthought.com/mayavi/mayavi/mlab_changing_object_looks.html
-    See the Mayavi docu for more info. Currently available at 
-    .. http://docs.enthought.com/mayavi/mayavi/auto/mlab_helper_functions.html
-
-    See also:
-    ---------
-    A Matplotlib based implementation with extended functionality (but MUCH slower rendering) is show_nw
+    show_nw : A Matplotlib based implementation with extended functionality (but MUCH slower rendering)
     """
 
     # For those lucky enough to have a running installation of Mayavi...
@@ -1055,63 +1090,77 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
     """
     Matplotlib-based plotting routine for 3d networks
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     A : NumPy 2darray
-        Square N-by-N connectivity matrix of the network
+        Square `N`-by-`N` connectivity matrix of the network
     coords: dictionary 
         Nodal coordinates of the graph. Format is
-                {0: (x, y, z),
-                {1: (x, y, z),
-                {2: (x, y, z),
+                `{0: (x, y, z),`
+
+                `{1: (x, y, z),`
+
+                `{2: (x, y, z),`
+
                  .
+
                  .
-        Note that the dictionary has to have N keys. 
+
+        Note that the dictionary has to have `N` keys. 
     colorvec : NumPy 1darray
         Vector of color-values for each node. This could be nodal strength or modular information of nodes 
-        (i.e., to which module does node i belong to). Thus colorvec has to be of length N and all its
-        components must be in [0,1]. 
+        (i.e., to which module does node i belong to). Thus `colorvec` has to be of length `N` and all its
+        components must be in `[0,1]`. 
     sizevec : NumPy 1darray 
-        Vector of nodal sizes. This could be degree, centrality, etc. Thus sizevec has to be of length N
-        and all its components must be >= 0. 
+        Vector of nodal sizes. This could be degree, centrality, etc. Thus `sizevec` has to be of 
+        length `N` and all its components must be `>= 0`. 
     labels : list
-        Nodal labels. Format is ['Name1','Name2','Name3',...] where the ordering HAS to be the same
-        as in the coords dictionary. Note that the list has to have length N. 
+        Nodal labels. Format is `['Name1','Name2','Name3',...]` where the ordering HAS to be the same
+        as in the `coords` dictionary. Note that the list has to have length `N`. 
     nodecmap : Matplotlib colormap
         Colormap to use for plotting nodes
     edgecmap : Matplotlib colormap
         Colormap to use for plotting edges
     linewidths : NumPy 2darray
-        Same format and nonzero-pattern as A. If no linewidhts are provided then the edge connecting 
-        nodes v_i and v_j is plotted using the linewidth A[i,j]. By specifying, e.g., 
-        linewidhts = (1+A)**2, the thickness of edges in the network-plot can be scaled. 
+        Same format and nonzero-pattern as `A`. If no linewidhts are provided then the edge connecting 
+        nodes `v_i` and `v_j` is plotted using the linewidth `A[i,j]`. By specifying, e.g., 
+        `linewidhts = (1+A)**2`, the thickness of edges in the network-plot can be scaled. 
     nodes3d : bool
-        If nodes3d=True then nodes are plotted using 3d spheres in space (with diameters = sizevec). If 
-        nodes3d=False then the Matplotlib scatter function is used to plot nodes as flat 2d disks (faster).
+        If `nodes3d=True` then nodes are plotted using 3d spheres in space (with `diameters = sizevec`). 
+        If `nodes3d=False` then the Matplotlib `scatter` function is used to plot nodes as flat 
+        2d disks (faster).
     viewtype : str
         Camera position. Viewtype can be one of the following
-                axial (= axial_t)       : Axial view from top down
-                axial_t                 : Axial view from top down
-                axial_b                 : Axial view from bottom up
-                sagittal (= sagittal_l) : Sagittal view from left
-                sagittal_l              : Sagittal view from left
-                sagittal_r              : Sagittal view from right
-                coronal (= coronal_f)   : Coronal view from front
-                coronal_f               : Coronal view from front
-                coronal_b               : Coronal view from back
+                `axial (= axial_t)`       : Axial view from top down
+
+                `axial_t`                 : Axial view from top down
+
+                `axial_b`                 : Axial view from bottom up
+
+                `sagittal (= sagittal_l)` : Sagittal view from left
+
+                `sagittal_l`              : Sagittal view from left
+
+                `sagittal_r`              : Sagittal view from right
+
+                `coronal (= coronal_f)`   : Coronal view from front
+
+                `coronal_f`               : Coronal view from front
+
+                `coronal_b`               : Coronal view from back
+
     
-    Returns:
+    Returns
+    -------
+    Nothing : None
+
+    Notes
+    -----
+    See Matplotlib's `mplot3d tutorial <http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html>`_
+
+    See also
     --------
-    None
-
-    Notes:
-    ------
-    See Matplotlib's mplot3d tutorial. Currently available at
-    .. http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
-
-    See also:
-    ---------
-    A Mayavi based implementation with less functionality but MUCH faster rendering is shownet
+    shownet : A Mayavi based implementation with less functionality but MUCH faster rendering
     """
 
     # Sanity checks and assign default values
@@ -1250,28 +1299,33 @@ def generate_randnws(nw,M=100):
     """
     Generate random networks given an input network
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     nw : NumPy 2darray
         Undirected binary/weighted connection matrix
     M : integer > 1
         Number of random networks to generate
 
-    Returns:
-    --------
+    Returns
+    -------
     rnws : NumPy 3darray
-        Random networks based on input graph nw. Format is
-                rnws.shape = (N,N,M)
+        Random networks based on input graph `nw`. Format is
+                `rnws.shape = (N,N,M)`
         s.t.
-                rnws[:,:,m] = m-th N x N random network
+                `rnws[:,:,m] = m-th N x N` random network
 
-    Notes:
-    ------
-    This function requires bctpy to be installed!
+    Notes
+    -----
+    This function requires `bctpy` to be installed! The `bctpy` package is 
+    an unofficial Python port of the Brain Connectivity Toolbox for MATLAB. 
+    It is currently available at the 
+    `Python Package Index <https://pypi.python.org/pypi/bctpy>`_
+    and can be installed using `pip`. 
 
-    See also:
-    ---------
-    The docstring of randmio_und_connected and null_model_und_sign in bct.py
+    See also
+    --------
+    randmio_und_connected : in bctpy
+    null_model_und_sign : in bctpy
     """
 
     # Try to import bct
@@ -1342,45 +1396,58 @@ def hdfburp(f):
     """
     Pump out everything stored in a HDF5 file. 
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     f : h5py file object
-        File object created using h5py.File()
+        File object created using `h5py.File()`
 
-    Returns:
-    --------
-    None 
+    Returns
+    -------
+    Nothing : None
 
-    Notes:
-    ------
-    This function takes an h5py file object and creates variables in the caller's
+    Notes
+    -----
+    This function takes an `h5py`-file object and creates variables in the caller's
     local namespace corresponding to the respective dataset-names in the file. 
     The naming format of the generated variable is 
-        groupname_datasetname,
-    where the groupname is empty for datasets in the root directory of the file. 
+        `groupname_datasetname`,
+    where the `groupname` is empty for datasets in the `root` directory of the file. 
     Thus, if a HDF5 file contains the datasets
-        /a
-        /b
-        /group1/c
-        /group1/d
-        /group2/a
-        /group2/b
+        `/a`
+
+        `/b`
+
+        `/group1/c`
+
+        `/group1/d`
+
+        `/group2/a`
+
+        `/group2/b`
+
     then the code below creates the variables
-        a
-        b
-        group1_c
-        group1_d
-        group2_a
-        group2_b
+        `a`
+
+        `b`
+
+        `group1_c`
+
+        `group1_d`
+
+        `group2_a`
+
+        `group2_b`
+
     in the caller's workspace. 
+
+    The black magic part of the code was taken from Pykler's answer to 
+    `this stackoverflow question <http://stackoverflow.com/questions/2515450/injecting-variables-into-the-callers-scope>`_
     
     WARNING: EXISTING VARIABLES IN THE CALLER'S WORKSPACE WILL BE OVERWRITTEN!!!
 
-    See also:
-    ---------
-    The black magic part of the code was taken from Pykler's answer to this 
-    stackoverflow question 
-    .. http://stackoverflow.com/questions/2515450/injecting-variables-into-the-callers-scope
+    See also
+    --------
+    h5py : a Pythonic interface to the HDF5 binary data format.
     """
 
     # Sanity checks
@@ -1431,28 +1498,28 @@ def normalize_time_series(time_series_array):
     Normalizes a (real/complex) time series to zero mean and unit variance. 
     WARNING: Modifies the given array in place!
     
-    Inputs:
-    -------
+    Parameters
+    ----------
     time_series_array : NumPy 2d array
-        Array of data values per time point. Format is: timepoints-by-N
+        Array of data values per time point. Format is: `timepoints`-by-`N`
 
-    Returns:
-    --------
-    None
+    Returns
+    -------
+    Nothing : None
 
-    Notes:
-    ------
+    Notes
+    -----
     This function does *not* do any error checking and assumes you know what you are doing
+    This function is part of the `pyunicorn` package, developed by 
+    Jonathan F. Donges and Jobst Heitzig. The package is currently available 
+    `here <http://www.pik-potsdam.de/~donges/pyunicorn/index.html>`_
 
-    See also:
-    ---------
-    This function is part of the pyunicorn package, developed by 
-    Jonathan F. Donges (donges@pik-potsdam.de) and Jobst Heitzig (heitzig@pik-potsdam.de). 
-    The package is currently available at  
-    .. http://www.pik-potsdam.de/~donges/pyunicorn/index.html
+    See also
+    --------
+    pyunicorn : A UNIfied COmplex Network and Recurrence aNalysis toolbox
 
-    Examples:
-    ---------
+    Examples
+    --------
     >>> ts = np.arange(16).reshape(4,4).astype("float")
     >>> normalize_time_series(ts)
     >>> ts.mean(axis=0)
@@ -1478,53 +1545,60 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True):
     """
     Calculate the (normalized) mutual information matrix at zero lag
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     tsdata : NumPy 2d array
-        Array of data values per time point. Format is: timepoints-by-N. Note that 
-        both timepoints, N >= 2 (i.e., the code needs at least two time-series 
+        Array of data values per time point. Format is: `timepoints`-by-`N`. Note that 
+        both `timepoints` and `N` have to be `>= 2` (i.e., the code needs at least two time-series 
         of minimum length 2)
     n_bins : int 
         Number of bins for estimating probability distributions
     normalized : bool
-        If True, the normalized mutual information (NMI) is computed
-                NMI(X,Y) = MI(X,Y)/sqrt(H(X),H(Y)),
+        If `True`, the normalized mutual information (NMI) is computed
         otherwise the raw mutual information (not bounded from above) is calculated
-                MI(X,Y) = H(X) + H(Y) - H(X,Y),
-        where H(X) and H(Y) denote the Shannon entropies of the 
-        random variables X and Y, respectively, and H(X,Y) is their joint 
-        entropy. 
+        (see Notes for details). 
     fast : bool
-        Use C++ code to calculate (N)MI. If False, then 
+        Use C++ code to calculate (N)MI. If `False`, then 
         a (significantly) slower Python implementation is employed 
         (provided in case the compilation of the C++ code snippets 
         fails on a system)
 
-    Returns:
-    --------
+    Returns
+    -------
     mi : NumPy 2d array
-        N-by-N matrix of pairwise (N)MI coefficients of the input time-series
+        `N`-by-`N` matrix of pairwise (N)MI coefficients of the input time-series
 
-    Notes:
-    ------
+    Notes
+    -----
+    For two random variables :math:`X` and :math:`Y` the raw mutual information 
+    is given by 
+
+    .. math:: MI(X,Y) = H(X) + H(Y) - H(X,Y),
+
+    where :math:`H(X)` and :math:`H(Y)` denote the Shannon entropies of 
+    :math:`X` and :math:`Y`, respectively, and :math:`H(X,Y)` is their joint 
+    entropy. By default, this function normalizes the raw mutual information 
+    :math:`MI(X,Y)` by the geometric mean of :math:`H(X)` and :math:`H(Y)`
+
+    .. math:: NMI(X,Y) = {MI(X,Y)\over\sqrt{H(X)H(Y)}}.
+
     The heavy lifting in this function is mainly done by code parts taken from 
-    the pyunicorn package, developed by Jonathan F. Donges (donges@pik-potsdam.de) 
-    and Jobst Heitzig (heitzig@pik-potsdam.de). It is currently available at 
-    .. http://www.pik-potsdam.de/~donges/pyunicorn/index.html
+    the `pyunicorn` package, developed by Jonathan F. Donges  
+    and Jobst Heitzig. It is currently available 
+    `here <http://www.pik-potsdam.de/~donges/pyunicorn/index.html>`_
     The code has been modified so that weave and pure Python codes are now 
     part of the same function. Further, the original code computes the raw mutual information 
-    only. Both Python and C++ parts have been extended by the normalization of MI with the 
-    geometric mean of H(X) and H(Y). 
+    only. Both Python and C++ parts have been extended to compute a normalized 
+    mutual information too. 
 
-    See also:
-    ---------
-    The function mutual_info_climate_network in the pyunicorn package:
-    .. http://www.pik-potsdam.de/~donges/pyunicorn/_modules/pyclimatenetwork/mutual_info_climate_network.html
+    See also
+    --------
+    pyunicorn.pyclimatenetwork.mutual_info_climate_network : classes in this module
 
-    Examples:
-    ---------
+    Examples
+    --------
     >>> tsdata = np.random.rand(150,2) # 2 time-series of length 150
-    >>> MI = mutual_info(tsdata)
+    >>> NMI = mutual_info(tsdata)
     """
 
     # Sanity checks
@@ -1827,7 +1901,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True):
 ##########################################################################################
 def natural_sort(l): 
     """
-    Sort a Python list l in a "natural" way
+    Sort a Python list in a "natural" way
 
     From the documentation of sort_nat.m:
 
@@ -1839,35 +1913,34 @@ def natural_sort(l):
 
     For instance, a usual glob will give you a file listing sorted in this way 
 
-        ['Elm11', 'Elm12', 'Elm2', 'elm0', 'elm1', 'elm10', 'elm13', 'elm9']
+        `['Elm11', 'Elm12', 'Elm2', 'elm0', 'elm1', 'elm10', 'elm13', 'elm9']`
 
     Calling natural_sort on that list results in 
 
-        ['elm0', 'elm1', 'Elm2', 'elm9', 'elm10', 'Elm11', 'Elm12', 'elm13']
+        `['elm0', 'elm1', 'Elm2', 'elm9', 'elm10', 'Elm11', 'Elm12', 'elm13']`
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     l : Python list 
         Python list of strings
 
-    Returns:
-    --------
+    Returns
+    -------
     l_sort : Python list
-        Lexicographically sorted version of the input list l
+        Lexicographically sorted version of the input list `l`
 
-    Notes:
-    ------
+    Notes
+    -----
     This function does *not* do any error checking and assumes you know what you are doing!
     The code below was written by Mark Byers as part of a Stackoverflow submission, see
-    .. http://stackoverflow.com/questions/4836710/does-python-have-a-built-in-function-for-string-natural-sort
+    `here <http://stackoverflow.com/questions/4836710/does-python-have-a-built-in-function-for-string-natural-sort>`_
 
-    See also:
-    ---------
-    MATLAB File Exchange submission sort_nat.m, currently available at 
-    .. http://www.mathworks.com/matlabcentral/fileexchange/10959-sortnat-natural-order-sort
-    
-    Coding Horror's note on natural sorting of file listings
-    .. http://www.codinghorror.com/blog/2007/12/sorting-for-humans-natural-sort-order.html
+    See also
+    --------
+    sort_nat.m : MATLAB File Exchange submission currently available 
+                 `here <http://www.mathworks.com/matlabcentral/fileexchange/10959-sortnat-natural-order-sort>`_
+    Sorting : Coding Horror's note on natural sorting of file listings, currently available 
+              `here <http://www.codinghorror.com/blog/2007/12/sorting-for-humans-natural-sort-order.html>`_
     """
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
@@ -1878,23 +1951,23 @@ def get_numlines(fname):
     """
     Get number of lines of a txt-file
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     fname : str
         Path to file to be read
 
-    Returns:
-    --------
+    Returns
+    -------
     lineno : int
         Number of lines in the file
 
-    Notes:
-    ------
-    This code was written by Mark Byers as part of a Stackoverflow submission, 
-    see .. http://stackoverflow.com/questions/845058/how-to-get-line-count-cheaply-in-python
+    Notes
+    -----
+    This code was written by Mark Byers as part of a Stackoverflow submission, see 
+    `here <http://stackoverflow.com/questions/845058/how-to-get-line-count-cheaply-in-python>`_
 
-    See also:
-    ---------
+    See also
+    --------
     None
     """
 
@@ -1914,29 +1987,30 @@ def issym(A,tol=1e-9):
     """
     Check for symmetry of a 2d NumPy array A
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     A : square NumPy 2darray
         A presumably symmetric matrix
     tol : positive real scalar
-        Tolerance for checking if (A - A.T) is sufficiently small
+        Tolerance for checking whether `(A - A.T)` is sufficiently small
 
-    Returns:
-    --------
+    Returns
+    -------
     is_sym : bool
-        True if A satisfies
-                |A - A.T| <= tol * |A|,
-        where |.| denotes the Frobenius norm. Thus, if the above inequality 
-        holds, A is approximately symmetric. 
+        `True` if `A` satisfies
+                `|A - A.T| <= tol * |A|,`
+        where `|.|` denotes the Frobenius norm. Thus, if the above inequality 
+        holds, `A` is approximately symmetric. 
 
-    Notes:
-    ------
-    An absolute-value based comparison is readily provided by NumPy's isclose
+    Notes
+    -----
+    For a discussion of this criterion, see, for instance, 
+    `this thread <http://www.mathworks.com/matlabcentral/newsreader/view_thread/252727>`_ at 
+    MATLAB central. 
 
-    See also:
-    ---------
-    The following thread at MATLAB central
-    .. http://www.mathworks.com/matlabcentral/newsreader/view_thread/252727
+    See also
+    --------
+    numpy.isclose : An absolute-value based comparison
     """
 
     # Check if Frobenius norm of A - A.T is sufficiently small (respecting round-off errors)
