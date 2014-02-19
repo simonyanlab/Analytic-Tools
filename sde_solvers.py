@@ -1,7 +1,7 @@
 # sde_solvers.py - Collection of numerical methods to solve (vector-valued) SDEs
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
-# September 27 2013
+# February 19 2014
 
 from __future__ import division
 import numpy as np
@@ -9,8 +9,7 @@ from scipy.stats import norm
 
 def rk_1(func,x0,tsteps,**kwargs):
     r"""
-    Explicit first order (strong and weak) Runge--Kutta method for SDEs with 
-    additive/multiplicative (non-)autonomous scalar noise
+    Explicit first order (strong and weak) Runge--Kutta method for SDEs with additive/multiplicative (non-)autonomous scalar noise
 
     Parameters
     ----------
@@ -105,9 +104,7 @@ def rk_1(func,x0,tsteps,**kwargs):
 
 def pc_1(func,x0,tsteps,**kwargs):
     r"""
-    Predictor-Corrector solver based on an 
-    implicit first order (strong and weak) Runge--Kutta method for SDEs with 
-    additive/multiplicative (non-)autonomous scalar noise
+    Predictor-Corrector solver based on an implicit first order (strong and weak) Runge--Kutta method for SDEs with additive/multiplicative (non-)autonomous scalar noise
 
     Parameters
     ----------
@@ -211,8 +208,7 @@ def pc_1(func,x0,tsteps,**kwargs):
 
 def rk_15(func,x0,tsteps,**kwargs):
     r"""
-    Explicit order 1.5 strong Runge--Kutta method for SDEs with additive 
-    (non-)autonomous scalar noise
+    Explicit order 1.5 strong Runge--Kutta method for SDEs with additive (non-)autonomous scalar noise
 
     Parameters
     ----------
@@ -320,9 +316,7 @@ def rk_15(func,x0,tsteps,**kwargs):
 
 def pc_15(func,x0,tsteps,**kwargs):
     r"""
-    Predictor-Corrector solver based on an 
-    implicit order 1.5 strong Runge--Kutta method for SDEs with additive 
-    (non-)autonomous scalar noise
+    Predictor-Corrector solver based on an implicit order 1.5 strong Runge--Kutta method for SDEs with additive (non-)autonomous scalar noise
 
     Parameters
     ----------
@@ -442,8 +436,7 @@ def pc_15(func,x0,tsteps,**kwargs):
 
 def rk_2(func,x0,tsteps,strato_p=15,strato_q=30,**kwargs):
     r"""
-    Explicit second order strong Runge--Kutta method for SDEs with additive 
-    (non-)autonomous scalar noise
+    Explicit second order strong Runge--Kutta method for SDEs with additive (non-)autonomous scalar noise
 
     Parameters
     ----------
@@ -558,9 +551,7 @@ def rk_2(func,x0,tsteps,strato_p=15,strato_q=30,**kwargs):
 
 def pc_2(func,x0,tsteps,strato_p=15,strato_q=30,**kwargs):
     r"""
-    Predictor-Corrector solver based on an 
-    implicit second order strong Runge--Kutta method for SDEs with additive 
-    (non-)autonomous scalar noise
+    Predictor-Corrector solver based on an implicit second order strong Runge--Kutta method for SDEs with additive (non-)autonomous scalar noise
 
     Parameters
     ----------
