@@ -684,8 +684,8 @@ def thresh_nws(nws,userdens=None):
     # Cycle through subjects and threshold the connectivity matrices until a node disconnects
     for i in xrange(numsubs):
         tau = -1
-        den = 1
         mnw = nws[:,:,i]
+        den = density_und(mnw)
 
         # Start with 1%-weight threshold and increase 
         for th in threshs:
