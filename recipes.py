@@ -6,6 +6,8 @@
 from __future__ import division
 import sys
 import re
+import fnmatch
+import os
 from numpy.linalg import norm
 
 ##########################################################################################
@@ -172,3 +174,49 @@ def issym(A,tol=1e-9):
         raise TypeError('Input argument has to be a square matrix and a scalar tol (optional)!')
 
     return is_sym
+
+##########################################################################################
+def myglob(flpath,spattern):
+    """
+    Return a glob-like list of paths matching a pathname pattern BUT support fancy shell syntax
+
+    Parameters
+    ----------
+    flpath : str
+        Path to search
+    spattern : str
+        Pattern to search for in `flpath`
+
+    Returns
+    -------
+    flist : list
+        A Python list of all files found in `flpath` that match the input pattern `spattern`
+
+    Examples
+    --------
+    List all png/PNG files in the folder `MyHolidayFun` found under `Documents`
+
+    >> filelist = myglob('Documents/MyHolidayFun','*.[Pp][Nn][Gg]')
+    >> print filelist
+    >> ['Documents/MyHolidayFun/img1.PNG','Documents/MyHolidayFun/img1.png']
+        
+    Notes
+    -----
+    None
+
+    See also
+    --------
+    glob
+    """
+
+    # Sanity checks
+    if type(flpath).__name__ != 'str':
+        raise TypeError('Input has to be a string specifying a path!')
+    if type(spattern).__name__ != 'str':
+        raise TypeError('Pattern has to be a string!')
+
+    # Append trailing slash to filepath
+    if flpath[-1] != os.sep: flpath = flpath + os.sep
+
+    # Return glob-like list
+    return [os.path.join(flpath, fnm) for fnm in fnmatch.filter(os.listdir(flpath),spattern)]

@@ -7,7 +7,6 @@ from __future__ import division
 import numpy as np
 from scipy import weave
 import matplotlib.pyplot as plt
-from glob import glob 
 import natsort
 import os
 import csv
@@ -15,10 +14,10 @@ import inspect
 
 try:
     # On my computer
-    from mypy.recipes import get_numlines, issym
+    from mypy.recipes import get_numlines, issym, myglob
 except:
     # On the server
-    from recipes import get_numlines, issym
+    from recipes import get_numlines, issym, myglob
 
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -183,7 +182,7 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
 
     # Get list of all txt-files in txtpath and order them lexicographically
     if txtpath[-1] == ' '  or txtpath[-1] == os.sep: txtpath = txtpath[:-1]
-    txtfiles = natsort.natsorted(glob(txtpath+os.sep+"*.txt"), key=lambda y: y.lower())
+    txtfiles = natsort.natsorted(myglob(txtpath,"*.[Tt][Xx][Tt]"), key=lambda y: y.lower())
 
     # Load very first file to get length of time-series
     firstsub = txtfiles[0]
@@ -673,7 +672,7 @@ def thresh_nws(nws,userdens=None):
 
     # Create vector of thresholds to iterate on
     dt      = 1e-3
-    threshs = np.arange(0,1+dt,dt)
+    threshs = np.arange(0,1+2*dt,dt)
 
     # Allocate space for output
     th_nws     = np.zeros(nws.shape)

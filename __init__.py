@@ -20,3 +20,4 @@ import recipes
 import tools1d
 import nws_tools as nwt
 import sde_solvers as sde
+import eeg_tools as eeg
