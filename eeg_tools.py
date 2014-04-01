@@ -5,6 +5,7 @@
 
 from __future__ import division
 import numpy as np
+import matplotlib.pyplot as plt
 import sys
 from datetime import datetime, date
 import fnmatch
@@ -90,7 +91,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
 
     Returns
     -------
-    None
+    Nothing : None
 
     Notes
     -----
@@ -416,3 +417,238 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     print " Done. "
 
     return
+
+##########################################################################################
+def catchinput(tklist,wndw):
+    """
+    Event handler to process user input
+    """
+
+    valuelist = [tv.get() for tv in tklist]
+    if valuelist.count(1) == 0:
+        errormsg = "Please make a choice to proceed!"
+        tkMessageBox.showerror(title="Invalid Choice",message=errormsg)
+    else:
+        wndw.quit()
+
+##########################################################################################
+def plot_eeg(h5file=None,electrodelist=None):
+    """
+    Plots EEG time-courses stored in an HDF5 file that was generated with read_eeg
+
+    Parameters
+    ----------
+    h5file : string
+        Path to the HDF5 file holding the EEG data. If not provided, a GUI window
+        will be opened for the user to specify a valid HDF5 file. 
+    electrodelist : list
+        A Python list holding the names of electrodes to be plotted. If not provided, 
+        the user can choose electrodes in a GUI
+
+    Returns
+    -------
+    Nothing : None
+
+    Notes
+    -----
+    This routine is a convenience function to visualize data stored in a previously generated
+    HDF5 file. This is *not* a general purpose plotting routine. Note that this plotting
+    function automatically detects if the HDF5 container was generated with the `savemat`
+    flag set or not (see `read_eeg` for details). 
+
+    Examples
+    --------
+    Suppose we want to plot the time-courses of electrodes `A` and `B` stored in the HDF5 container 
+    `myfile.h5`. Then (assuming `myfile.h5` is in the current directory) the following call 
+    can be used to visualize the data
+    
+    >>> plot_eeg(h5file='myfile.h5',electrodelist=['A','B'])
+
+    Alternatively, the call
+
+    >>> plot_eeg()
+
+    opens a GUI where the HDF5 file and corresponding electrodes can be selected. 
+
+    See also
+    --------
+    read_eeg : routine to convert EEG data from binary to HDF5 format
+    """
+
+    # If no or few inputs were given, use TK dialogues 
+    if h5file == None or electrodelist == None:
+        USEtk = True
+    else:
+        USEtk = False
+
+    # Try to import TK and exit if it is needed but cannot be imported
+    if USEtk == True:
+        try:
+            import Tkinter as tk
+            import tkFileDialog
+            import tkMessageBox
+        except:
+            msg = "ERROR: Tk seems not to be installed - you have to provide the HDF5 filename and" + \
+                  "electrodelist in the command line!"
+            raise ImportError(msg)
+
+    # Create main Tk-window and hide it immidiately
+    if USEtk:
+        try:
+            root = tk.Tk()
+            root.withdraw()
+        except:
+            print("ERROR: problem opening Tk root window, exiting... ")
+
+    # Sanity checks
+    if h5file != None:
+        if type(h5file).__name__ != 'str':
+            raise TypeError('Input has to be a string specifying the path to the HDF5 file!')
+    else:
+        h5file = tkFileDialog.askopenfilename(title='Please choose a valid HDF5 file')
+
+    # Try opening the file
+    try:
+        f = h5py.File(h5file)
+    except: 
+        errormsg = "Error opening file "+h5file
+        if USEtk: 
+            tkMessageBox.showerror(title="Invalid File",message=errormsg)
+        else:
+            print(errormsg)
+
+    # Determine if the given HDF file has the correct structure
+    try:
+        ismat = (f['EEG'].keys().count('eeg_mat') > 0)
+    except: 
+        errormsg = 'Invalid input file: '+h5file
+        if USEtk:
+            tkMessageBox.showerror(title="Invalid File",message=errormsg)
+        else:
+            raise TypeError(errormsg)
+
+    # Get list of electrodes actually present in file
+    if (ismat):
+        ec_list = f['EEG']['electrode_list'].value.tolist()
+    else:
+        ec_list = f['EEG'].keys()
+
+    # Get electrodes for plotting
+    if electrodelist != None: 
+        try: le = len(electrodelist)
+        except: raise TypeError('Input electrodlist must be a Python list!')
+        if le == 0: raise ValueError('Input electrodelist has length 0!')
+        for el in electrodelist:
+            if ec_list.count(el) == 0:
+                raise ValueError('Electrode '+el+' not present in file '+h5file)
+        plotlist = electrodelist
+    else:
+        # Make main Tk-window visible again
+        root.wm_deiconify()
+
+        # Give it a title and add some text
+        root.title("Please choose electrodes for plotting")
+        msg = "Choose which electrodes should be plotted"
+        tk.Label(root,text=msg).grid(row=0,columnspan=4,sticky=tk.N,padx=15,pady=10)
+
+        # # Create a frame in the main window
+        # myframe = tk.Frame(root)
+        # myframe.pack(fill=tk.X)
+
+        # Create a list of Tk-integers representing the on/off states of the checkboxes below
+        tklist    = []
+        i         = 0
+        numchecks = np.ceil(len(ec_list)/4)
+        collist   = [0]*numchecks + [1]*numchecks + [2]*numchecks + [3]*numchecks
+        rowlist   = range(1,int(numchecks)+1)*4
+        for el in ec_list:
+            tkvar = tk.IntVar(root)
+            tk.Checkbutton(root,text=el,variable=tkvar).grid(row=rowlist[i],column=collist[i],sticky=tk.W,padx=5)
+            tklist.append(tkvar)
+            i += 1
+
+        # Create an "OK" button to "finalize" the choice (if no choice was made warn the user)
+        tk.Button(root,text="OK",command=lambda: catchinput(tklist,root)).grid(row=int(numchecks+2),columnspan=4,pady=5)
+
+        # Everything's set up, start the Tk-mainloop that runs until the user presses "OK"
+        root.mainloop()
+        root.withdraw()
+
+        # Get names of electrodes for plotting
+        plotlist = []
+        for i in xrange(len(tklist)):
+            if tklist[i].get():
+                plotlist.append(ec_list[i])
+
+    # Based on session length and sampling rate compute sampling size for plot (nobody needs 9 mio time points)
+    sr  = f['info']['sampling_rate'].value 
+    sl  = f['info']['session_length'].value
+    psr = (sl > 24)*sr*59 + sr
+
+    # Determine subplot layout
+    numelec = len(plotlist)
+    spcol   = (numelec > 10) + (numelec > 1) + 1
+    sprow   = np.ceil(numelec/spcol)
+
+    # Get vector for x-axis
+    tmax = sl*3600*sr
+    tlog = str(tmax)
+    tlog = tlog[0:tlog.find('.')]
+    tlog = tlog.count('0')
+    tvec = np.arange(0,tmax,psr)
+    tunt = '*1e'+str(tlog)
+    tnrm = 10**tlog
+    if sl > 24: 
+        xstring = 'time [min]'
+    else:
+        xstring = 'time [sec]'
+
+    # Set up figure
+    plt.ion()
+    fig = plt.figure(figsize=(12,10))
+    fig.canvas.set_window_title('EEG Datafile: '+h5file)
+
+    # Start plotting stuff
+    plots = []
+    for i in xrange(numelec):
+        el = plotlist[i]
+        plots.append(plt.subplot(sprow,spcol,i+1))
+        if (ismat):
+            j = ec_list.index(el)
+            plt.plot(tvec,f['EEG']['eeg_mat'][j,::psr],'k')
+        else:
+            plt.plot(tvec,f['EEG'][el][::psr],'k')
+        plt.title(el,fontsize=10)
+        if i >= (numelec - spcol):
+            plt.xlabel(xstring,fontsize=10)
+
+    # Equalize ordinates and get ticking right
+    ymin = 1e15; ymax = 0
+    for p in plots:
+        ymin = min(ymin,p.get_ylim()[0])
+        ymax = max(ymax,p.get_ylim()[1])
+
+    # Get number of decimals on y-axis
+    ylog = str(ymin)
+    ylog = ylog[0:ylog.find('.')]
+    ylog = ylog.count('0')
+    ynrm = 10**max(3,ylog)
+    yunt = '*1e'+str(ylog)
+
+    # Use scientific notation to shorten x- and y-ticks
+    for p in plots:
+        p.set_ylim(bottom=ymin,top=ymax)
+        yt = p.get_yticks()
+        yt = yt/ynrm
+        if (np.round(yt)==yt).min() == True:
+            yt = yt.astype('int')
+        yl     = [str(y) for y in yt]
+        yl[-1] = yl[-1]+yunt
+        p.set_yticklabels(yl,fontsize=8)
+        xt = p.get_xticks()
+        p.set_xticks(xt[1::])
+        xt     = xt[1::]/tnrm
+        xl     = [str(t) for t in xt]
+        xl[-1] = xl[-1]+tunt
+        p.set_xticklabels(xl,fontsize=8)
+        plt.draw()
