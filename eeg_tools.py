@@ -262,7 +262,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
 
     # More scanning parameters
     numSamples  = int(actSamplerate*num100msBlocks/10)
-    AD_off      = int(np.fromfile(fid,dtype='uint16',count=1))
+    AD_off      = np.fromfile(fid,dtype='int16',count=1)[0]
     AD_val      = int(np.fromfile(fid,dtype='uint16',count=1))
     bitLen      = int(np.fromfile(fid,dtype='uint8',count=1))
     comFlag     = int(np.fromfile(fid,dtype='uint8',count=1))
@@ -332,7 +332,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     else:
         idxlist = np.nonzero(goodElec)[0].tolist()
 
-    # The data type is unsigned integer. Define that and the bytesize of uint16 here (change HERE if necessary!)
+    # The data type of the raw data is unsigned integer. Define that and the bytesize of uint16 here
     dt = np.dtype('uint16')
     ds = dt.itemsize
 
@@ -353,7 +353,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     numblocks = len(blocksize)
 
     # Allocate matrix to temporarily hold data
-    datamat = np.zeros((numChannels+1,blocksize[0]),dtype=dt)
+    datamat = np.zeros((numChannels+1,blocksize[0]),dtype='int16')
 
     # Depending on the user wanting to save stuff as matrix, prepare dataset 
     numnodes = goodElec.sum()
@@ -363,10 +363,10 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
             if goodElec[i]: 
                 nodelist.append(actualNames[i])
         eeg.create_dataset('electrode_list',data=nodelist)
-        eeg_mat = eeg.create_dataset('eeg_mat',shape=(numnodes,numSamples),chunks=(1,numSamples),dtype=dt)
+        eeg_mat = eeg.create_dataset('eeg_mat',shape=(numnodes,numSamples),chunks=(1,numSamples),dtype='int16')
     else:
         for idx in idxlist:
-            eeg.create_dataset(actualNames[idx],shape=(numSamples,),dtype=dt)
+            eeg.create_dataset(actualNames[idx],shape=(numSamples,),dtype='int16')
 
     # If available, initialize progressbar
     if (showbar): 
@@ -383,7 +383,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
 
         # Read data block-wise and save to matrix or row (depending on user choice)
         bsize   = blocksize[i]
-        datamat = np.fromfile(fid,dtype=dt,count=bsize*(numChannels+1)).reshape((numChannels+1,bsize),order='F')
+        datamat = np.fromfile(fid,dtype='uint16',count=bsize*(numChannels+1)).reshape((numChannels+1,bsize),order='F') + AD_off
         if (savemat):
             eeg_mat[:,j:j+bsize] = datamat[idxlist,0:bsize]
         else:
@@ -411,6 +411,9 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     info.create_dataset('record_date',data=[T_year,T_month,T_day,T_hour,T_minute,T_second])
     info.create_dataset('sampling_rate',data=actSamplerate)
     info.create_dataset('session_length',data=num100msBlocks/10/3600)
+    info.create_dataset('AD_off',data=AD_off)
+    info.create_dataset('AD_val',data=AD_val)
+    info.create_dataset('CAL',data=CAL)
 
     # Close and finalize HDF write process
     f.close()
@@ -598,10 +601,9 @@ def plot_eeg(h5file=None,electrodelist=None):
     tvec = np.arange(0,tmax,psr)
     tunt = '*1e'+str(tlog)
     tnrm = 10**tlog
-    if sl > 24: 
-        xstring = 'time [min]'
-    else:
-        xstring = 'time [sec]'
+    
+    # The xlabel
+    xstring = 'time [msec]'
 
     # Set up figure
     plt.ion()
