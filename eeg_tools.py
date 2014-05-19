@@ -7,13 +7,137 @@ from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-from datetime import datetime, date
+from datetime import date
 import fnmatch
 import os
 import calendar
 import csv
 import h5py
 import psutil
+from scipy.signal import buttord, butter, lfilter, filtfilt
+
+##########################################################################################
+def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0):
+    """
+    Band-/Low-/High-pass filter a 1D/2D input signal (based on Hz!!!)
+
+    Lowpass: remove high frequencies
+    Highpass: remove low frequencies
+    """
+
+    # Sanity checks: signal
+    try:
+        stu = signal.shape
+    except:
+        raise TypeError('Signal must be a 1d/2d NumPy array, not '+type(signal).__name__+'!')
+    if len(stu) > 2:
+        raise ValueError('Signal must be a 1d/2d NumPy array')
+    if max(stu) == 1:
+        raise ValueError('Signal only consists of one datapoint!')
+    if np.isnan(signal).max()==True or np.isinf(signal).max()==True or np.isreal(signal).min()==False:
+        raise ValueError('Signal must be a real valued NumPy array without Infs or NaNs!')
+
+    # Both cutoffs undefined
+    if (locut == None) and (hicut == None):
+        raise ValueError('Both cutoff frequencies are None!')
+
+    # Sampling rate
+    try:
+        bad = (srate <= 0)
+    except: 
+        raise TypeError('Sampling rate has to be a strictly positive number, not '+type(srate).__name__+'!')
+    if bad: raise ValueError('Sampling rate hast to be > 0!')
+
+    # Compute Nyquist frequency and initialize passfreq
+    nyq      = 0.5 * srate 
+    passfreq = None
+
+    # Lower cutoff frequency
+    if locut != None:
+        try:
+            bad = (locut < 0)
+        except: 
+            raise TypeError('Locut has to be None or lower cutoff frequency, not '+type(locut).__name__+'!')
+        if bad: raise ValueError('Locut frequency has to be >= 0!')
+    else:
+        passfreq = hicut/nyq
+
+    # Higher cutoff frequency
+    if hicut != None:
+        try:
+            bad = (hicut < 0)
+        except: 
+            raise TypeError('Hicut has to be None or higher cutoff frequency, not '+type(hicut).__name__+'!')
+        if bad: raise ValueError('Hicut frequency has to be >= 0!')
+    else:
+        passfreq = locut/nyq
+
+    # Offset frequency for filter
+    if offset != None:
+        try:
+            bad = (offset <= 0)
+        except:
+            raise TypeError('Frequency offset has to be a strictly positive number, not '+type(offset).__name__+'!')
+        if bad: raise ValueError('Frequency offset has to be > 0!')
+
+        # Adjust offset for Nyquist frequency
+        offset /= nyq
+
+    else:
+
+        # If no offset frequency was provided, assign default value (for low-/high-pass filters)
+        if passfreq != None: offset = 0.2*passfreq
+
+    # Passband decibel value
+    if passdB != 1.0:
+        try: 
+            bad = (passdB <= 0)
+        except:
+            raise TypeError('Passband dB has to be a strictly positive number, not '+type(passdB).__name__+'!')
+        if bad: raise ValueError('Passband dB has to be > 0!')
+
+    # Stopband decibel value
+    if stopdB != 0.5:
+        try: 
+            bad = (stopdB <= 0)
+        except:
+            raise TypeError('Stopband dB has to be a strictly positive number, not '+type(stopdB).__name__+'!')
+        if bad: raise ValueError('Stopband dB has to be > 0!')
+
+    # Determine if we do low-/high-/bandpass-filtering
+    if locut == None:
+        ftype    = 'highpass'
+        stopfreq = passfreq - offset
+        if stopfreq > passfreq: raise ValueError('Highpass stopfrequency is higher than passfrequency!')
+        if passfreq >= 1: raise ValueError('Highpass frequency >= Nyquist frequency!')
+    elif hicut == None:
+        ftype    = 'lowpass'
+        stopfreq = passfreq + offset
+        if stopfreq < passfreq: raise ValueError('Lowpass stopfrequency is lower  than passfrequency!')
+        if stopfreq >= 1: raise ValueError('Lowpass stop frequency >= Nyquist frequency!')
+    else:
+        ftype    = 'bandpass'
+        passfreq = [locut/nyq,hicut/nyq]
+        if offset == None: offset = 0.2*(passfreq[1] - passfreq[0])
+        stopfreq = [passfreq[0] - offset, passfreq[1] + offset]
+        if (stopfreq[0] > passfreq[0]) or (stopfreq[1] < passfreq[1]):
+            raise ValueError('Stopband is inside the passband!')
+        if stopfreq[1] >= 1: raise ValueError('Highpass frequency = Nyquist frequency!')
+
+    # Compute optimal order of Butterworth filter
+    order, natfreq = buttord(passfreq, stopfreq, passdB, stopdB)
+
+    # import ipdb;ipdb.set_trace()
+
+    # Compute Butterworth filter coefficients
+    b,a = butter(order,natfreq,btype=ftype)
+
+    # Filter data
+    filtered = filtfilt(b,a,signal)
+    # filtered = lfilter(b,a,signal)
+    
+    return filtered
+
 
 ##########################################################################################
 def myglob(flpath,spattern):
@@ -23,7 +147,7 @@ def myglob(flpath,spattern):
     Parameters
     ----------
     flpath : str
-        Path to search
+        Path to search (to search current directory use `flpath=''` or `flpath='.'`
     spattern : str
         Pattern to search for in `flpath`
 
@@ -55,8 +179,13 @@ def myglob(flpath,spattern):
     if type(spattern).__name__ != 'str':
         raise TypeError('Pattern has to be a string!')
 
+    # If user wants to search current directory, make sure that works as expected
+    if (flpath == '') or (flpath.count(' ') == len(flpath)):
+        flpath = '.'
+
     # Append trailing slash to filepath
-    if flpath[-1] != os.sep: flpath = flpath + os.sep
+    else:
+        if flpath[-1] != os.sep: flpath = flpath + os.sep
 
     # Return glob-like list
     return [os.path.join(flpath, fnm) for fnm in fnmatch.filter(os.listdir(flpath),spattern)]
@@ -65,7 +194,7 @@ def myglob(flpath,spattern):
 ##########################################################################################
 def bcd(int_in):
     """
-    Function used internally by read_eeg to convert unsigned integers to binaries and back again
+    Function used internally by read_eeg to convert unsigned integers to binary format and back again
     """
     int_in = "{0:08b}".format(int(int_in))
     return 10*int(int_in[0:4],2)+int(int_in[4:],2)
@@ -100,7 +229,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     (`savemat = True`) or sorted by electrode name (`savemat = False`). The `info` group holds 
     metadata of the EEG scan (record date, sampling rate, session length etc.). 
     Note: The code allocates 25% of RAM available on the machine to temporarily hold the EEG data. 
-    Thus, reading/writing may take longer on computers with few memory. 
+    Thus, reading/writing may take longer on computers with small memory. 
 
     Examples
     --------
@@ -160,10 +289,6 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     # Sanity checks
     if type(eegpath).__name__ != 'str':
         raise TypeError('Input has to be a string specifying the path to the EEG files!')
-    eegfls = myglob(eegpath,'*.[Ee][Ee][Gg]')
-    if len(eegfls) > 1: raise ValueError('Expected 1 EEG file, found '+str(len(eegfls)))
-    e21fls = myglob(eegpath,'*.21[Ee]')
-    if len(e21fls) > 1: raise ValueError('Expected 1 21E file, found '+str(len(e21fls)))
 
     if type(outfile).__name__ != 'str':
         raise TypeError('Output filename has to be a string!')
@@ -176,6 +301,32 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
         if le == 0: raise ValueError('Input electrodelist has length 0!')
 
     if type(savemat).__name__ != 'bool': raise TypeError('Input savemat has to be boolean!')
+
+    # If file extension was provided, remove it to avoid stupid case-sensitive nonsense
+    dt = eegpath.rfind('.')
+    if eegpath[dt+1:].lower() == 'eeg':
+        eegpath = eegpath[0:dt]
+
+    # Extract filename from given path (if just file was provided, path is '')
+    slash  = eegpath.rfind(os.sep)
+    flpath = eegpath[0:slash+1]
+    flname = eegpath[slash+1:]
+
+    # Try to get eeg file and raise an error if it does not exist or an x.eeg and x.EEG file is found
+    eegfls = myglob(flpath,flname+'.[Ee][Ee][Gg]')
+    if len(eegfls) > 1: 
+        raise ValueError('Filename ambiguity: found '+str(eegfls))
+    elif len(eegfls) == 0:
+        if flpath == '': flpath = 'current directory'
+        raise ValueError('File '+flname+'.EEG/eeg not found in '+flpath)
+
+    # Same for (hopefully) corresponding 21E file
+    e21fls = myglob(flpath,flname+'.21[Ee]')
+    if len(e21fls) > 1: 
+        raise ValueError('Filename ambiguity: found '+str(e21fls))
+    elif len(e21fls) == 0:
+        if flpath == '': flpath = 'current directory'
+        raise ValueError('File '+flname+'.21E/21e not found in '+flpath)
 
     # Open file handles to *.EEG, *.21E and output files
     fh = open(e21fls[0],'rU')

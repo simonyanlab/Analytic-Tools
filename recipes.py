@@ -9,6 +9,36 @@ import re
 import fnmatch
 import os
 from numpy.linalg import norm
+import numpy as np
+from texttable import Texttable
+
+##########################################################################################
+def find_contiguous_regions(condition):
+    """
+    Finds contiguous True regions of the boolean array "condition". Returns
+    a 2D array where the first column is the start index of the region and the
+    second column is the end index.
+    See http://stackoverflow.com/questions/4494404/find-large-number-of-consecutive-values-fulfilling-condition-in-a-numpy-array
+    """
+    # Find the indicies of changes in "condition"
+    d = np.diff(condition)
+    idx, = d.nonzero() 
+
+    # We need to start things after the change in "condition". Therefore, 
+    # we'll shift the index by 1 to the right.
+    idx += 1
+
+    if condition[0]:
+        # If the start of condition is True prepend a 0
+        idx = np.r_[0, idx]
+
+    if condition[-1]:
+        # If the end of condition is True, append the length of the array
+        idx = np.r_[idx, condition.size] # Edit
+
+    # Reshape the result into two columns
+    idx.shape = (-1,2)
+    return idx
 
 ##########################################################################################
 def query_yes_no(question, default=None):
@@ -183,7 +213,7 @@ def myglob(flpath,spattern):
     Parameters
     ----------
     flpath : str
-        Path to search
+        Path to search (to search current directory use `flpath=''` or `flpath='.'`
     spattern : str
         Pattern to search for in `flpath`
 
@@ -215,8 +245,298 @@ def myglob(flpath,spattern):
     if type(spattern).__name__ != 'str':
         raise TypeError('Pattern has to be a string!')
 
+    # If user wants to search current directory, make sure that works as expected
+    if (flpath == '') or (flpath.count(' ') == len(flpath)):
+        flpath = '.'
+
     # Append trailing slash to filepath
-    if flpath[-1] != os.sep: flpath = flpath + os.sep
+    else:
+        if flpath[-1] != os.sep: flpath = flpath + os.sep
 
     # Return glob-like list
     return [os.path.join(flpath, fnm) for fnm in fnmatch.filter(os.listdir(flpath),spattern)]
+
+##########################################################################################
+def printdata(data,leadrow,leadcol,fname=None):
+    """
+    Pretty-print/-save array-like data
+
+    Parameters
+    ----------
+    data : NumPy 2darray
+        An `M`-by-`N` array of data
+    leadrow : Python list or NumPy 1darray
+        List/array of length `M` providing labels to be printed in the first column of the table
+        (strings/numerals or both)
+    leadcol : Python list or NumPy 1darray
+        List/array of length `N` or `N+1` providing labels to be printed in the first row of the table
+        (strings/numerals or both). See Examples for details
+    fname : string
+        Name of a csv-file (with or without extension `.csv`) used to save the table 
+        (WARNING: existing files will be overwritten!). Can also be a path + filename 
+        (e.g., `fname='path/to/file.csv'`)
+
+    Returns
+    -------
+    Nothing : None
+
+    Notes
+    -----
+    Uses the `texttable` module to print results
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> data = np.random.rand(2,3)
+    >>> row1 = ["a","b",3]
+    >>> col1 = np.arange(2)
+    >>> printdata(data,row1,col1)
+    +--------------------+--------------------+--------------------+--------------------+
+    |                    |         a          |         b          |         3          |
+    +====================+====================+====================+====================+
+    | 0                  | 0.994018537964     | 0.707532139166     | 0.767497407803     |
+    +--------------------+--------------------+--------------------+--------------------+
+    | 1                  | 0.914193045048     | 0.758181936461     | 0.216752553325     |
+    +--------------------+--------------------+--------------------+--------------------+
+    >>> row1 = ["labels"] + row1
+    >>> printdata(data,row1,col1,fname='dummy')
+    +--------------------+--------------------+--------------------+--------------------+
+    |       labels       |         a          |         b          |         3          |
+    +====================+====================+====================+====================+
+    | 0                  | 0.994018537964     | 0.707532139166     | 0.767497407803     |
+    +--------------------+--------------------+--------------------+--------------------+
+    | 1                  | 0.914193045048     | 0.758181936461     | 0.216752553325     |
+    +--------------------+--------------------+--------------------+--------------------+
+    >>> cat dummy.csv
+    labels, a, b, 3
+    0,0.994018537964,0.707532139166,0.767497407803
+    1,0.914193045048,0.758181936461,0.216752553325
+
+    See also
+    --------
+    texttable : a module for creating simple ASCII tables (currently available at the 
+                `Python Package Index <https://pypi.python.org/pypi/texttable/0.8.1>`_)
+    printstats : a function that pretty-prints/-saves results of statistical comparisons
+    """
+
+    # Sanity checks
+    try:
+        ds = data.shape
+    except:
+        raise TypeError('Input must be a M-by-N NumPy array, not ' + type(data).__name__+'!')
+    if len(ds) > 2:
+        raise ValueError('Input must be a M-by-N NumPy array!')
+
+    try:
+        m = len(leadcol)
+    except: 
+        raise TypeError('Input must be a Python list or NumPy 1d array, not '+type(leadcol).__name__+'!')
+    try:
+        n = len(leadrow)
+    except: 
+        raise TypeError('Input must be a Python list or NumPy 1d array, not '+type(leadrow).__name__+'!')
+
+    if fname != None:
+        if type(fname).__name__ != 'str':
+            raise TypeError('Input fname has to be a string specifying an output filename, not '\
+                            +type(fname).__name__+'!')
+        if fname[-4::] != '.csv':
+            fname = fname + '.csv'
+        save = True
+    else: save = False
+
+    # Get dimension of data and corresponding leading column/row
+    if len(ds) == 1: 
+        K = ds[0]
+        if K == m:
+            N = 1; M = K
+        elif K == n or K == (n-1):
+            M = 1; N = K
+        else: 
+            raise ValueError('Number of elements in heading column/row and data don not match up!')
+        data = data.reshape((M,N))
+    else:
+        M,N = ds
+
+    if M != m:
+        raise ValueError('Number of rows and no. of elements leading column do not match up!')
+    elif N == n:
+        head = [' '] + list(leadrow)
+    elif N == (n-1):
+        head = list(leadrow)
+    else:
+        raise ValueError('Number of columns and no. of elements in head row do not match up!')
+
+    # Do something: create big data array including leading column
+    Data = np.column_stack((leadcol,data.astype('str')))
+    
+    # Initialize table object and fill it with stuff
+    table = Texttable()
+    table.set_cols_align(["l"]*(N+1))
+    table.set_cols_valign(["c"]*(N+1))
+    table.set_cols_dtype(["t"]*(N+1))
+    table.set_cols_width([18]*(N+1))
+    table.add_rows([head],header=True)
+    table.add_rows(Data.tolist(),header=False)
+    
+    # Pump out table
+    print table.draw() + "\n"
+
+    # If wanted, save stuff in a csv file
+    if save:
+        head = str(head)
+        head = head.replace("[","")
+        head = head.replace("]","")
+        head = head.replace("'","")
+        np.savetxt(fname,Data,delimiter=",",fmt="%s",header=head,comments="")
+
+    return
+
+##########################################################################################
+def printstats(variables,pvals,baseline,testset,basestr='baseline',teststr='testset',fname=None):
+    """
+    Pretty-print previously computed statistical results 
+
+    Parameters
+    ----------
+    variables : list or NumPy 1darray
+        List/array of variables that have been tested
+    pvals : Numpy 1darray
+        Aray of p-values (has to be same size as `variables`)
+    baseline : NumPy 2darray
+        An #samples-by-#variables array forming the "baseline" set for the previously 
+        computed statistical comparison
+    testset : NumPy 2darray
+        An #samples-by-#variables array forming the "test" set for the previously 
+        computed statistical comparison
+    basestr : string
+        A string to be used in the generated table to highlight computed mean/std values of 
+        the baseline dataset
+    teststr : string
+        A string to be used in the generated table to highlight computed mean/std values of 
+        the test dataset
+        Name of a csv-file (with or without extension `.csv`) used to save the table 
+        (WARNING: existing files will be overwritten!). Can also be a path + filename 
+        (e.g., `fname='path/to/file.csv'`)
+
+    Returns
+    -------
+    Nothing : None
+
+    Notes
+    -----
+    Uses the `texttable` module to print results
+
+    See also
+    --------
+    texttable : a module for creating simple ASCII tables (currently available at the 
+                `Python Package Index <https://pypi.python.org/pypi/texttable/0.8.1>`_)
+    printdata : a function that pretty-prints/-saves data given in an array
+    """
+
+    # Sanity checks
+    try:
+        m = len(variables)
+    except: 
+        raise TypeError('Input must be a Python list or NumPy 1d array, not '+type(variables).__name__+'!')
+    try: 
+        M = pvals.size
+    except: 
+        raise TypeError('Input must be a NumPy 1d array, not '+type(variables).__name__+'!')
+    if M != m:
+        raise ValueError('No. of labels and p-values do not match up!')
+
+    try:
+        N,M = baseline.shape
+    except: 
+        raise TypeError('Input must be a NumPy 2d array, not '+type(baseline).__name__+'!')
+    if M != m:
+        raise ValueError('No. of labels and baseline dimension do not match up!')
+
+    try:
+        N,M = testset.shape
+    except: 
+        raise TypeError('Input must be a NumPy 2d array, not '+type(testset).__name__+'!')
+    if M != m:
+        raise ValueError('No. of labels and testset dimension do not match up!')
+
+    if type(basestr).__name__ != 'str':
+        raise TypeError('Input basestr to be a string, not '+type(basestr).__name__+'!')
+
+    if type(teststr).__name__ != 'str':
+        raise TypeError('Input teststr to be a string, not '+type(teststr).__name__+'!')
+
+    if fname != None:
+        if type(fname).__name__ != 'str':
+            raise TypeError('Input fname has to be a string specifying an output filename, not '\
+                            +type(fname).__name__+'!')
+        if fname[-4::] != '.csv':
+            fname = fname + '.csv'
+        save = True
+    else: save = False
+
+    # Construct table head
+    head = [" ","p","mean("+basestr+")"," ","std("+basestr+")","</>",\
+            "mean("+teststr+")"," ","std("+teststr+")"]
+
+    # Compute mean/std of input data
+    basemean = baseline.mean(axis=0)
+    basestd  = baseline.std(axis=0)
+    testmean = testset.mean(axis=0)
+    teststd  = testset.std(axis=0)
+
+    # Put "<" if mean(base) < mean(test) and vice versa
+    gtlt = np.array(['<']*basemean.size)
+    gtlt[np.where(basemean > testmean)] = '>'
+
+    # Prettify table
+    pmstr = ["+/-"]*basemean.size
+
+    # Assemble data array
+    Data = np.column_stack((variables,\
+                            pvals.astype('str'),\
+                            basemean.astype('str'),\
+                            pmstr,\
+                            basestd.astype('str'),\
+                            gtlt,\
+                            testmean.astype('str'),\
+                            pmstr,\
+                            teststd.astype('str')))
+
+    # Construct texttable object
+    table = Texttable()
+    table.set_cols_align(["l","l","r","c","l","c","r","c","l"])
+    table.set_cols_valign(["c"]*9)
+    table.set_cols_dtype(["t"]*9)
+    table.set_cols_width([12,18,18,3,18,3,18,3,18])
+    table.add_rows([head],header=True)
+    table.add_rows(Data.tolist(),header=False)
+    table.set_deco(Texttable.HEADER)
+
+    # Pump out table
+    print "Summary of statistics:\n"
+    print table.draw() + "\n"
+
+    # If wanted, save stuff in a csv file
+    if save:
+        head = str(head)
+        head = head.replace("[","")
+        head = head.replace("]","")
+        head = head.replace("'","")
+        np.savetxt(fname,Data,delimiter=",",fmt="%s",header=head,comments="")
+
+    # k = 0
+    # for var in variables:
+    #     basemean = baseline[:,k].mean()
+    #     basestd  = baseline[:,k].std()
+    #     testmean = testset[:,k].mean()
+    #     teststd  = testset[:,k].std()
+    #     if basemean < testmean:
+    #         gtlt = " < "
+    #     else:
+    #         gtlt = " > "
+    #     println = var + " : p = " + str(pvals[k]) + ", " + basestr + ": " + \
+    #               str(basemean) + " +/- " + str(basestd) + gtlt + teststr + ": " + \
+    #               str(testmean) + " +/- " + str(teststd)
+    #     print println
+    #     k += 1

@@ -343,10 +343,9 @@ def corrcheck(*args,**kwargs):
     elif szin == 3:
         if myin > 1: raise ValueError('Not more than one input tensor supported!')
         shv = args[0].shape
-        if (min(shv) == 1) or (shv[0]!=shv[1]):
+        if (min(shv[0],shv[1]) == 1) or (shv[0]!=shv[1]):
             raise ValueError('Input tensor must be of the format N-by-N-by-k!')
         corrs = args[0]
-
     else:
         raise TypeError('Input has to be either a matrix/matrices or a tensor!')
 
@@ -1919,7 +1918,7 @@ def tensorcheck(corrs):
         raise TypeError('Input must be a N-by-N-by-k NumPy array, not '+type(corrs).__name__+'!')
     if len(shc) != 3:
         raise ValueError('Input must be a N-by-N-by-k NumPy array')
-    if (min(shc)==1) or (shc[0]!=shc[1]):
+    if (min(shc[0],shc[1])==1) or (shc[0]!=shc[1]):
         raise ValueError('Input must be a N-by-N-by-k NumPy array!')
     if np.isnan(corrs).max()==True or np.isinf(corrs).max()==True or np.isreal(corrs).min()==False:
         raise ValueError('Input must be a real valued NumPy array without Infs or NaNs!')
