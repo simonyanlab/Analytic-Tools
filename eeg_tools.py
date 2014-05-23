@@ -19,10 +19,137 @@ from scipy.signal import buttord, butter, lfilter, filtfilt
 ##########################################################################################
 def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0):
     """
-    Band-/Low-/High-pass filter a 1D/2D input signal (based on Hz!!!)
+    Band-/Low-/High-pass filter a 1D/2D input signal
 
-    Lowpass: remove high frequencies
-    Highpass: remove low frequencies
+    Parameters
+    ----------
+    signal : NumPy 1d/2darray
+        Input signal to be filtered. For 2d arrays it is assumed that `signal` has shape `M`-by-`N`, 
+        where `M` is the number of 1d signals (e.g., channels), and `N` is the number 
+        of samples (measurements etc.). 
+    locut : float
+        Lower cutoff frequency in Hz. If `locut` is `None` then high-pass filtering 
+        is performed. 
+    hicut : float
+        Upper cutoff frequency in Hz. If `hicut` is `None` then low-pass filtering 
+        is performed. 
+    srate : float 
+        Sampling rate of the signal in Hz.
+    offset : float
+        Offset frequency in Hz. The frequency shift used to calculate the stopband (see 
+        Notes for details). By default, the offset is a fraction of low-/high-cut 
+        frequencies. 
+    passdB : float
+        Maximal frequency loss in the passband (in dB). 
+    stopdB : float
+        Minimal frequency attentuation in the stopband (in dB). 
+
+    Returns
+    -------
+    filtered : NumPy 1d/2darray
+        Filtered version of input `signal`. 
+
+    Notes
+    -----
+    This routine uses a Butterworth filter to low-/high-/bandpass the input signal. 
+    Based on the user's input the optimal (i.e., lowest) order of a Butterworth filter
+    is calculated. Note that depending on the choice of cutoff frequencies and values 
+    of `passdB` and `stopdB` the computed filter coefficients might be very large/low 
+    causing numerical instability in the filtering routine. The code assumes you know
+    what you're doing and does not try to guess whether the combinatio of 
+    cutoff-frequencies, offset and attenuation/amplification values applied to the 
+    input signal makes sense. 
+
+    By default the offset frequency is computed as fraction of the input frequencies, 
+    i.e., for low-/high-pass filters the offset is 0.5*cutoff-frequency, for band-pass
+    filters the offset is calculated as 0.5 times the width of the pass-band. The following
+    skteches illustrate the filter's operating modes
+
+
+    Amplification 
+    (dB)
+    /\
+    ||            Low-pass
+    || ---------------------+
+    ||                      |\
+    ||                      | \
+    ||                      |  +---------
+    ||               PASS   |OS|   STOP
+    || 
+    ++===================================> Frequency (Hz)
+
+
+    Amplification 
+    (dB)
+    /\
+    ||            High-pass
+    ||           +------------------------
+    ||          /|	    
+    ||         / |	    
+    || -------+  |	    
+    || STOP   |OS|   PASS  
+    || 
+    ++===================================> Frequency (Hz)
+
+
+    Amplification 
+    (dB)
+    /\
+    ||            Band-pass
+    ||	         +----------+
+    ||	        /|	    |\
+    ||         / |	    | \
+    || -------+  |	    |  +---------
+    || STOP   |OS|   PASS   |OS|   STOP
+    ||
+    ++===================================> Frequency (Hz)
+
+
+    Where `STOP` = stop-band, `OS` = offset, `PASS` = pass-band. 
+
+    Examples
+    --------
+    We construct an artifical signal which we want to low-/high-/band-pass filter. 
+
+    >>> import numpy as np
+    >>> srate = 5000 # Sampling rate in Hz
+    >>> T = 0.05
+    >>> nsamples = T*fs
+    >>> t = np.linspace(0,T,nsamples,endpoint=False)
+    >>> a = 0.02
+    >>> f0 = 600.0
+    >>> signal = 0.1 * np.sin(2 * np.pi * 1.2 * np.sqrt(t))
+    >>> signal += 0.01 * np.cos(2 * np.pi * 312 * t + 0.1)
+    >>> signal += a * np.cos(2 * np.pi * f0 * t + .11)
+    >>> signal += 0.03 * np.cos(2 * np.pi * 2000 * t)
+
+    First, we low-pass filter the signal, i.e., we remove all high frequencies. As 
+    cutoff frequency we choose 50Hz, with an offset of 10Hz. That means frequencies 
+    [0-50] Hz "survive", frequencies in the band [50-60] Hz are gradually attenuated, 
+    all frequencies >60Hz are maximally attenuated.
+
+    >>> filtered = bandpass_filter(signal,50,None,5000,offset=10)
+
+    Now, construct a high-pass filter that removes all frequencies below 500Hz, using
+    the default offset of 0.5*`hicut` (see Notes for details). 
+
+    >>> filtered = bandpass_filter(signal,None,500,5000)
+
+    Finally, we band-pass filter the signal, so that only frequency components between
+    500Hz and 1250Hz remain
+
+    >>> filtered = bandpass_filter(signal,500,1250,5000)
+    
+    Note that ill-chosen values for the offset (e.g., very steep slopes, from the 
+    stop- to the pass-band, see Notes for a sketch) and/or attenuation/amplification 
+    dB's may lead to very large/small filter coefficients that may cause erratic 
+    results due to numerical instability. 
+
+    See also
+    --------
+    scipy.signal.buttord : routine used to calculate optimal filter order
+    scipy.signal.butter : routine used to construct Butterworth filter based on output of buttord. 
+    scipy.signal.lfilter : filters the input signal using calculated Butterworth filter design
     """
 
     # Sanity checks: signal
@@ -85,8 +212,11 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0)
 
     else:
 
+        # Multiplicator for offset
+        offmult = 0.5
+
         # If no offset frequency was provided, assign default value (for low-/high-pass filters)
-        if passfreq != None: offset = 0.2*passfreq
+        if passfreq != None: offset = offmult*passfreq
 
     # Passband decibel value
     if passdB != 1.0:
@@ -97,7 +227,7 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0)
         if bad: raise ValueError('Passband dB has to be > 0!')
 
     # Stopband decibel value
-    if stopdB != 0.5:
+    if stopdB != 30:
         try: 
             bad = (stopdB <= 0)
         except:
@@ -113,12 +243,12 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0)
     elif hicut == None:
         ftype    = 'lowpass'
         stopfreq = passfreq + offset
-        if stopfreq < passfreq: raise ValueError('Lowpass stopfrequency is lower  than passfrequency!')
+        if stopfreq < passfreq: raise ValueError('Lowpass stopfrequency is lower than passfrequency!')
         if stopfreq >= 1: raise ValueError('Lowpass stop frequency >= Nyquist frequency!')
     else:
         ftype    = 'bandpass'
         passfreq = [locut/nyq,hicut/nyq]
-        if offset == None: offset = 0.2*(passfreq[1] - passfreq[0])
+        if offset == None: offset = offmult*(passfreq[1] - passfreq[0])
         stopfreq = [passfreq[0] - offset, passfreq[1] + offset]
         if (stopfreq[0] > passfreq[0]) or (stopfreq[1] < passfreq[1]):
             raise ValueError('Stopband is inside the passband!')
@@ -127,14 +257,16 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0)
     # Compute optimal order of Butterworth filter
     order, natfreq = buttord(passfreq, stopfreq, passdB, stopdB)
 
-    # import ipdb;ipdb.set_trace()
-
+    # Show computed order and passband
+    print "Optimal order for Butterworth filter was found to be: "+str(order)
+    print "Input frequency/frequencies: "+str(locut)+"Hz, "+str(hicut)+"Hz"
+    print "Natural frequency/frequencies: "+str(natfreq*nyq)+"Hz"
+    
     # Compute Butterworth filter coefficients
     b,a = butter(order,natfreq,btype=ftype)
 
     # Filter data
-    filtered = filtfilt(b,a,signal)
-    # filtered = lfilter(b,a,signal)
+    filtered = lfilter(b,a,signal)
     
     return filtered
 
@@ -190,7 +322,6 @@ def myglob(flpath,spattern):
     # Return glob-like list
     return [os.path.join(flpath, fnm) for fnm in fnmatch.filter(os.listdir(flpath),spattern)]
 
-
 ##########################################################################################
 def bcd(int_in):
     """
@@ -207,8 +338,8 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     Parameters
     ----------
     eegpath : string
-        Path to the directory holding the EEG and 21E files. WARNING: the directory MUST only 
-        contain ONE EEG and its corresponding 21E file!
+        Path to the *.EEG/*.eeg file (the code assumes that the corresponding *.21E/*.21e file is 
+        in the same location)
     outfile : string
         Path specifying the HDF5 file to be created. WARNING: File MUST NOT exist!
     electrodelist : list
@@ -229,16 +360,16 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     (`savemat = True`) or sorted by electrode name (`savemat = False`). The `info` group holds 
     metadata of the EEG scan (record date, sampling rate, session length etc.). 
     Note: The code allocates 25% of RAM available on the machine to temporarily hold the EEG data. 
-    Thus, reading/writing may take longer on computers with small memory. 
+    Thus, reading/writing may take longer on computers with little memory. 
 
     Examples
     --------
     Suppose the files `test.eeg` and `test.21E` are in the directory `mytest`. Suppose further 
     that the EEG file contains recordings of 84 electrodes and the output HDF5 container 
-    should be `Results/test.h5`. If the entire EEG file should be piped into the HDF5 file 
+    should be `Results/test.h5`. If the entire EEG file has to be converted to HDF5 
     as a matrix then, `cd` to the parent directory of `mytest` and type
 
-    >>> read_eeg('mytest','Results/test.h5')
+    >>> read_eeg('mytest/test.eeg','Results/test.h5')
 
     The resulting HDF5 file has groups `EEG` and `info`. The `info` group holds metadata 
     (see Notes for details) while the EEG time-courses can be found in `EEG`:
@@ -269,7 +400,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     If only the electrodes 'RFA1' and 'RFA3' are of interest and the read-out should be saved
     by the respective electrode names then the following command could be used
 
-    >> read_eeg('mytest','Results/test.h5',electrodelist=['RFA1','RFA3'],savemat=False)
+    >> read_eeg('mytest/test.eeg','Results/test.h5',electrodelist=['RFA1','RFA3'],savemat=False)
 
     In this case the `EEG` group of the resulting HDF5 file looks like this
 
@@ -281,14 +412,14 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
 
     Thus, the electrode time-courses are saved using the respective electrode names. 
 
-    See also:
-    ---------
+    See also
+    --------
     None
     """
 
     # Sanity checks
     if type(eegpath).__name__ != 'str':
-        raise TypeError('Input has to be a string specifying the path to the EEG files!')
+        raise TypeError('Input has to be a string specifying the path/name of the EEG files!')
 
     if type(outfile).__name__ != 'str':
         raise TypeError('Output filename has to be a string!')
@@ -357,6 +488,10 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     blockAddress   = np.fromfile(fid,dtype='int32',count=1)
     x              = np.fromfile(fid,dtype='S1',count=16)
 
+    # If the EEG file is a container of concatenated EEG chunks, throw an error
+    if numberOfBlocks > 1:
+        raise ValueError('EEG file '+eegfls[0]+' seems to contain more than one recording. Exiting...')
+
     # Read EEG2m control block (contains names and addresses for waveform blocks)
     fid.seek(int(blockAddress),0)
     x              = np.fromfile(fid,dtype='uint8',count=1)
@@ -364,6 +499,10 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     numberOfBlocks = np.fromfile(fid,dtype='uint8',count=1)
     blockAddress   = np.fromfile(fid,dtype='int32',count=1)
     x              = np.fromfile(fid,dtype='S1',count=16)
+
+    # If the EEG file is a container of concatenated EEG chunks, throw an error
+    if numberOfBlocks > 1:
+        raise ValueError('EEG file '+eegfls[0]+' seems to contain more than one recording. Exiting...')
 
     # Read waveform blockA
     fid.seek(int(blockAddress),0)
@@ -532,9 +671,10 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     j = 0
     for i in xrange(numblocks):
 
-        # Read data block-wise and save to matrix or row (depending on user choice)
+        # Read data block-wise and save to matrix or row (depending on user choice, add offset to get int16)
         bsize   = blocksize[i]
         datamat = np.fromfile(fid,dtype='uint16',count=bsize*(numChannels+1)).reshape((numChannels+1,bsize),order='F') + AD_off
+
         if (savemat):
             eeg_mat[:,j:j+bsize] = datamat[idxlist,0:bsize]
         else:
@@ -565,6 +705,9 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     info.create_dataset('AD_off',data=AD_off)
     info.create_dataset('AD_val',data=AD_val)
     info.create_dataset('CAL',data=CAL)
+    info.create_dataset('comFlag',data=comFlag)
+    info.create_dataset('bitLen',data=bitLen)
+    info.create_dataset('numSamples',data=numSamples)
 
     # Close and finalize HDF write process
     f.close()
@@ -653,6 +796,7 @@ def plot_eeg(h5file=None,electrodelist=None):
             root.withdraw()
         except:
             print("ERROR: problem opening Tk root window, exiting... ")
+            return
 
     # Sanity checks
     if h5file != None:
@@ -805,3 +949,65 @@ def plot_eeg(h5file=None,electrodelist=None):
         xl[-1] = xl[-1]+tunt
         p.set_xticklabels(xl,fontsize=8)
         plt.draw()
+
+##########################################################################################
+def load_data(h5file,nodes=None):
+    """
+    """
+
+    # Sanity checks
+    if type(h5file).__name__ != 'str':
+        raise TypeError('Input has to be a string specifying an HDF5 file!')
+    try:
+        f = h5py.File(h5file)
+    except: raise ValueError("Error opening file "+h5file)
+
+    # Determine if the given HDF file has the correct structure
+    try:
+        ismat = (f['EEG'].keys().count('eeg_mat') > 0)
+    except: 
+        raise TypeError("Input file "+h5file+" does not seem to be an EEG data file...")
+
+    # Get list of electrodes actually present in file
+    if (ismat):
+        ec_list = f['EEG']['electrode_list'].value.tolist()
+    else:
+        ec_list = f['EEG'].keys()
+
+    # Get indices of nodes to be read
+    idx = []
+    if nodes != None:
+        if type(nodes[0]).__name__.find("str") > -1:
+            for node in nodes:
+                try: idx.append(ec_list.index(node))
+                except KeyError: raise ValueError("Node "+node+" not found in file "+h5file+"!")
+        else:
+            try:
+                if max(nodes) > len(ec_list) or min(nodes) < 0:
+                    raise ValueError("Indices not found in file "+h5file+"!")
+            except: 
+                errmsg = "Nodes have to be provided as Python list/NumPy 1darray of indices or strings!"
+                raise TypeError(errmsg)
+            for node in nodes:
+                if np.round(node) != node:
+                    raise ValueError("Found float "+str(node)+", integer required!")
+                idx.append(node)
+    else:
+        idx = range(len(ec_list))
+
+    # Get channel units and number of samples in file
+    CAL = f['info']['CAL'].value
+    N   = f['info']['numSamples'].value
+
+    # Extract data from HDF5 file and divide by upper bound of dtype (-> values b/w -1/+1), multiply by CAL
+    data = np.zeros((len(idx),N))
+    if (ismat):
+        dt   = f['EEG']['eeg_mat'].dtype
+        data = f['EEG']['eeg_mat'][idx,:]/np.iinfo(dt).max*CAL
+    else:
+        dt = f['EEG'][nodes[0]].dtype
+        for node in nodes:
+            data[i,:] = f['EEG'][node].value
+        data = data/np.iinfo(dt).max*CAL
+            
+    return data

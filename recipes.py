@@ -274,7 +274,7 @@ def printdata(data,leadrow,leadcol,fname=None):
     fname : string
         Name of a csv-file (with or without extension `.csv`) used to save the table 
         (WARNING: existing files will be overwritten!). Can also be a path + filename 
-        (e.g., `fname='path/to/file.csv'`)
+        (e.g., `fname='path/to/file.csv'`). By default output is not saved. 
 
     Returns
     -------
@@ -316,7 +316,6 @@ def printdata(data,leadrow,leadcol,fname=None):
     --------
     texttable : a module for creating simple ASCII tables (currently available at the 
                 `Python Package Index <https://pypi.python.org/pypi/texttable/0.8.1>`_)
-    printstats : a function that pretty-prints/-saves results of statistical comparisons
     """
 
     # Sanity checks
@@ -417,7 +416,7 @@ def printstats(variables,pvals,baseline,testset,basestr='baseline',teststr='test
         the test dataset
         Name of a csv-file (with or without extension `.csv`) used to save the table 
         (WARNING: existing files will be overwritten!). Can also be a path + filename 
-        (e.g., `fname='path/to/file.csv'`)
+        (e.g., `fname='path/to/file.csv'`). By default output is not saved. 
 
     Returns
     -------

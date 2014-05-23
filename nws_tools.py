@@ -5,20 +5,13 @@
 
 from __future__ import division
 import numpy as np
-from scipy import weave
 import matplotlib.pyplot as plt
 import natsort
 import os
 import csv
 import inspect
-
-try:
-    # On my computer
-    from mypy.recipes import get_numlines, issym, myglob
-except:
-    # On the server
-    from recipes import get_numlines, issym, myglob
-
+from scipy import weave
+from numpy.linalg import norm
 from mpl_toolkits.mplot3d import Axes3D
 
 ##########################################################################################
@@ -242,7 +235,7 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
 ##########################################################################################
 def corrcheck(*args,**kwargs):
     """
-    Sanity checks for correlation matrices
+    Sanity checks for correlation matrices (Pearson or NMI)
     
     Parameters
     ----------
@@ -298,7 +291,7 @@ def corrcheck(*args,**kwargs):
     
     See also
     --------
-    corrcheck.m : a MATLAB version of this code and the references therein
+    None
     """
 
     # Plotting params used later (max. #plots per row)
@@ -357,6 +350,17 @@ def corrcheck(*args,**kwargs):
     if np.isnan(corrs).max() == True or np.isinf(corrs).max() == True or np.isreal(corrs).min() == False:
         raise ValueError("All matrices must be real without NaNs or Infs!")
 
+    # Check if we're dealing with Pearson or NMI matrices (or something completely unexpected)
+    cmin = corrs.min(); cmax = corrs.max()
+    if cmax > 1 or cmin < -1:
+        msg = "Input has to have values between -1/+1 or 0/+1. Found "+str(cmin)+" to "+str(cmax)
+        raise ValueError(msg)
+    maxval = 1
+    if corrs.min() < 0:
+        minval = -1
+    else:
+        minval = 0
+
     # If labels have been provided, check if we got enough of'em; if there are no labels, generate defaults
     if (usrlbl):
         if len(labels) != nmat: raise ValueError('Numbers of labels and matrices do not match up!')
@@ -374,7 +378,7 @@ def corrcheck(*args,**kwargs):
     fig.canvas.set_window_title(figtitle+': '+str(N)+' Nodes',)
     for i in xrange(nmat):
         plt.subplot(rplot,cplot,i+1)
-        im = plt.imshow(corrs[:,:,i],cmap='jet',interpolation='nearest',vmin=-1,vmax=1)
+        im = plt.imshow(corrs[:,:,i],cmap='jet',interpolation='nearest',vmin=minval,vmax=maxval)
         plt.axis('off')
         plt.title(labels[i])
         if issym(corrs[:,:,i]) == False:
@@ -385,6 +389,7 @@ def corrcheck(*args,**kwargs):
     plt.draw()
 
     # Plot correlation histograms
+    meanval = np.mean([minval,maxval])
     idx = np.nonzero(np.triu(np.ones((N,N)),1))
     NN  = (N**2 - N)/2
     fig = plt.figure(figsize=(8,8))
@@ -393,28 +398,29 @@ def corrcheck(*args,**kwargs):
     bars = []; ylims = []
     for i in xrange(nmat):
         cvec = corrs[idx[0],idx[1],i]
-        [corrcount,corrbins] = np.histogram(cvec,bins=20,range=(-1,1))
+        [corrcount,corrbins] = np.histogram(cvec,bins=20,range=(minval,maxval))
         bars.append(plt.subplot(rplot,cplot,i+1))
         plt.bar(corrbins[:-1],corrcount/NN,width=np.abs(corrbins[0]-corrbins[1]))
         ylims.append(bars[-1].get_ylim()[1])
-        plt.xlim(-1,1)
-        plt.xticks((-1,0,1),('-1','0','1'))
+        plt.xlim(minval,maxval)
+        plt.xticks((minval,meanval,maxval),(str(minval),str(meanval),str(maxval)))
         plt.title(labels[i])
         if np.mod(i+1,cplot) == 1: plt.ylabel('Frequency')
     ymax = max(ylims)
     for mybar in bars: mybar.set_ylim(top=ymax)
     plt.draw()
 
-    # Show negative correlations
-    fig = plt.figure(figsize=(8,8))
-    if nofigname: figtitle = fig.canvas.get_window_title()
-    fig.canvas.set_window_title(figtitle+': '+"Negative Correlations Are BLACK")
-    for i in xrange(nmat):
-        plt.subplot(rplot,cplot,i+1)
-        plt.imshow((corrs[:,:,i]>0).astype(float),cmap='gray',interpolation='nearest',vmin=0,vmax=1)
-        plt.axis('off')
-        plt.title(labels[i])
-    plt.draw()
+    # Show negative correlations (for Pearson matrices)
+    if minval < 0:
+        fig = plt.figure(figsize=(8,8))
+        if nofigname: figtitle = fig.canvas.get_window_title()
+        fig.canvas.set_window_title(figtitle+': '+"Negative Correlations Are BLACK")
+        for i in xrange(nmat):
+            plt.subplot(rplot,cplot,i+1)
+            plt.imshow((corrs[:,:,i]>0).astype(float),cmap='gray',interpolation='nearest',vmin=0,vmax=1)
+            plt.axis('off')
+            plt.title(labels[i])
+        plt.draw()
 
     # Diversity
     fig = plt.figure(figsize=(8,8))
@@ -471,7 +477,7 @@ def get_meannw(nws,percval=0.75):
     
     See also
     --------
-    get_meannw.m : a MATLAB version of this code
+    None
     """
 
     # Sanity checks
@@ -545,7 +551,7 @@ def rm_negatives(corrs):
 
     See also
     --------
-    rm_negatives.m : a MATLAB version of this code
+    None
     """
 
     # Sanity checks
@@ -620,7 +626,7 @@ def thresh_nws(nws,userdens=None):
 
     See also
     --------
-    binarize.m, thresh_nws.m
+    None
     """
 
     # Sanity checks
@@ -1302,7 +1308,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
     return 
 
 ##########################################################################################
-def generate_randnws(nw,M=100):
+def generate_randnws(nw,M=100,method="auto",rwr=5):
     """
     Generate random networks given an input network
 
@@ -1312,6 +1318,15 @@ def generate_randnws(nw,M=100):
         Undirected binary/weighted connection matrix
     M : integer > 1
         Number of random networks to generate
+    method : string
+        String specifying which method to use to randomize 
+        the input network. Currently supported options are 
+        `'auto'` (default), `'randmio_und'`, and `'randmio_und_connected'`. 
+        If `'auto'` is chosen then `'randmio_und_connected'` is used
+        to compute the random networks unless the input graph is very dense
+        (then `'randmio_und'` is used). 
+    rwr : integer
+        Number of approximate rewirings per edge (default 5). 
 
     Returns
     -------
@@ -1332,8 +1347,7 @@ def generate_randnws(nw,M=100):
     See also
     --------
     randmio_und_connected : in bctpy
-    null_model_und_sign : in bctpy
-    generate_randnws.m : a trimmed down MATLAB version of this code
+    randmio_und : in bctpy
     """
 
     # Try to import bct
@@ -1355,6 +1369,22 @@ def generate_randnws(nw,M=100):
     except: raise TypeError("M has to be a natural number > 1!")
     if (tmp): raise ValueError("M has to be a natural number > 1!")
 
+    if type(method).__name__ != 'str':
+        raise TypeError("Input method must be a string, not "+type(method).__name__+"!")
+    mthopts = ["auto","randmio_und_connected","randmio_und"]
+    mthstr  = str(mthopts)
+    mthstr  = mthstr.replace("(","")
+    mthstr  = mthstr.replace(")","")
+    try:
+        mthopts.index(method)
+    except: raise ValueError("Method has to be one of: "+mthstr)
+
+    try:
+        bad = (np.round(rwr) != rwr)
+    except: TypeError("Rewiring parameter rwr has to be an integer, not "+type(rwr).__name__+"!")
+    if bad or rwr < 1: 
+        raise TypeError("Rewiring parameter has to be a strictly positve integer!")
+
     # Try to import progressbar module
     try: 
         import progressbar as pb
@@ -1367,11 +1397,12 @@ def generate_randnws(nw,M=100):
     rnws = np.zeros((N,N,M))
 
     # Check if input network is fully connected
-    if density_und(nw) > .95:
-        print "Network has maximal density. Using null_model_und_sign instead of randmio_und_connected..."
-        mthd = 1
-    else:
-        mthd = 0
+    if method == "auto":
+        if density_und(nw) > .95:
+            print "Network has maximal density. Using randmio_und instead of randmio_und_connected..."
+            method = "randmio_und"
+        else:
+            method = "randmio_und_connected"
 
     # If available, initialize progressbar
     if (showbar): 
@@ -1380,16 +1411,17 @@ def generate_randnws(nw,M=100):
 
     # Populate tensor either using randmio (mthd = 0) or null_model_und (mthd = 1)
     if (showbar): pbar.start()
-    if mthd == 0:
+    if method == "randmio_und_connected":
         counter  = 0
         for m in xrange(M):
-            rnws[:,:,m], eff = bct.randmio_und_connected(nw,5)
+            rnws[:,:,m], eff = bct.randmio_und_connected(nw,rwr)
             counter += eff
             if (showbar): pbar.update(m)
     else:
-        counter = 1
+        counter = 0
         for m in xrange(M):
-            rnws[:,:,m] = bct.null_model_und_sign(nw)[0]
+            rnws[:,:,m] = bct.randmio_und(nw,rwr)[0]
+            counter += eff
             if (showbar): pbar.update(m)
     if (showbar): pbar.finish()
 
@@ -1905,6 +1937,271 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True):
 
     # Return (N)MI matrix
     return mi
+
+##########################################################################################
+def get_numlines(fname):
+    """
+    Get number of lines of a txt-file
+
+    Inputs:
+    -------
+    fname : str
+        Path to file to be read
+
+    Returns:
+    --------
+    lineno : int
+        Number of lines in the file
+
+    Notes:
+    ------
+    This code was written by Mark Byers as part of a Stackoverflow submission, 
+    see .. http://stackoverflow.com/questions/845058/how-to-get-line-count-cheaply-in-python
+
+    See also:
+    ---------
+    None
+    """
+
+    # Check if input makes sense
+    if type(fname).__name__ != "str":
+        raise TypeError("Filename has to be a string!")
+
+    # Cycle through lines of files and do nothing
+    with open(fname) as f:
+        for lineno, l in enumerate(f):
+            pass
+
+    return lineno + 1
+
+##########################################################################################
+def issym(A,tol=1e-9):
+    """
+    Check for symmetry of a 2d NumPy array A
+
+    Inputs:
+    -------
+    A : square NumPy 2darray
+        A presumably symmetric matrix
+    tol : positive real scalar
+        Tolerance for checking if (A - A.T) is sufficiently small
+
+    Returns:
+    --------
+    is_sym : bool
+        True if A satisfies
+                |A - A.T| <= tol * |A|,
+        where |.| denotes the Frobenius norm. Thus, if the above inequality 
+        holds, A is approximately symmetric. 
+
+    Notes:
+    ------
+    An absolute-value based comparison is readily provided by NumPy's isclose
+
+    See also:
+    ---------
+    The following thread at MATLAB central
+    .. http://www.mathworks.com/matlabcentral/newsreader/view_thread/252727
+    """
+
+    # Check if Frobenius norm of A - A.T is sufficiently small (respecting round-off errors)
+    try:
+        is_sym = (norm(A-A.T,ord='fro') <= tol*norm(A,ord='fro'))
+    except:
+        raise TypeError('Input argument has to be a square matrix and a scalar tol (optional)!')
+
+    return is_sym
+
+##########################################################################################
+def myglob(flpath,spattern):
+    """
+    Return a glob-like list of paths matching a pathname pattern BUT support fancy shell syntax
+
+    Parameters
+    ----------
+    flpath : str
+        Path to search (to search current directory use `flpath=''` or `flpath='.'`
+    spattern : str
+        Pattern to search for in `flpath`
+
+    Returns
+    -------
+    flist : list
+        A Python list of all files found in `flpath` that match the input pattern `spattern`
+
+    Examples
+    --------
+    List all png/PNG files in the folder `MyHolidayFun` found under `Documents`
+
+    >> filelist = myglob('Documents/MyHolidayFun','*.[Pp][Nn][Gg]')
+    >> print filelist
+    >> ['Documents/MyHolidayFun/img1.PNG','Documents/MyHolidayFun/img1.png']
+        
+    Notes
+    -----
+    None
+
+    See also
+    --------
+    glob
+    """
+
+    # Sanity checks
+    if type(flpath).__name__ != 'str':
+        raise TypeError('Input has to be a string specifying a path!')
+    if type(spattern).__name__ != 'str':
+        raise TypeError('Pattern has to be a string!')
+
+    # If user wants to search current directory, make sure that works as expected
+    if (flpath == '') or (flpath.count(' ') == len(flpath)):
+        flpath = '.'
+
+    # Append trailing slash to filepath
+    else:
+        if flpath[-1] != os.sep: flpath = flpath + os.sep
+
+    # Return glob-like list
+    return [os.path.join(flpath, fnm) for fnm in fnmatch.filter(os.listdir(flpath),spattern)]
+
+##########################################################################################
+def printdata(data,leadrow,leadcol,fname=None):
+    """
+    Pretty-print/-save array-like data
+
+    Parameters
+    ----------
+    data : NumPy 2darray
+        An `M`-by-`N` array of data
+    leadrow : Python list or NumPy 1darray
+        List/array of length `M` providing labels to be printed in the first column of the table
+        (strings/numerals or both)
+    leadcol : Python list or NumPy 1darray
+        List/array of length `N` or `N+1` providing labels to be printed in the first row of the table
+        (strings/numerals or both). See Examples for details
+    fname : string
+        Name of a csv-file (with or without extension `.csv`) used to save the table 
+        (WARNING: existing files will be overwritten!). Can also be a path + filename 
+        (e.g., `fname='path/to/file.csv'`). By default output is not saved. 
+
+    Returns
+    -------
+    Nothing : None
+
+    Notes
+    -----
+    Uses the `texttable` module to print results
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> data = np.random.rand(2,3)
+    >>> row1 = ["a","b",3]
+    >>> col1 = np.arange(2)
+    >>> printdata(data,row1,col1)
+    +--------------------+--------------------+--------------------+--------------------+
+    |                    |         a          |         b          |         3          |
+    +====================+====================+====================+====================+
+    | 0                  | 0.994018537964     | 0.707532139166     | 0.767497407803     |
+    +--------------------+--------------------+--------------------+--------------------+
+    | 1                  | 0.914193045048     | 0.758181936461     | 0.216752553325     |
+    +--------------------+--------------------+--------------------+--------------------+
+    >>> row1 = ["labels"] + row1
+    >>> printdata(data,row1,col1,fname='dummy')
+    +--------------------+--------------------+--------------------+--------------------+
+    |       labels       |         a          |         b          |         3          |
+    +====================+====================+====================+====================+
+    | 0                  | 0.994018537964     | 0.707532139166     | 0.767497407803     |
+    +--------------------+--------------------+--------------------+--------------------+
+    | 1                  | 0.914193045048     | 0.758181936461     | 0.216752553325     |
+    +--------------------+--------------------+--------------------+--------------------+
+    >>> cat dummy.csv
+    labels, a, b, 3
+    0,0.994018537964,0.707532139166,0.767497407803
+    1,0.914193045048,0.758181936461,0.216752553325
+
+    See also
+    --------
+    texttable : a module for creating simple ASCII tables (currently available at the 
+                `Python Package Index <https://pypi.python.org/pypi/texttable/0.8.1>`_)
+    """
+
+    # Try to import Texttable object
+    try: from texttable import Texttable
+    except: 
+        raise ImportError("Could not import texttable! Consider installing it using pip install texttable")
+
+    # Sanity checks
+    try:
+        ds = data.shape
+    except:
+        raise TypeError('Input must be a M-by-N NumPy array, not ' + type(data).__name__+'!')
+    if len(ds) > 2:
+        raise ValueError('Input must be a M-by-N NumPy array!')
+
+    try:
+        m = len(leadcol)
+    except: 
+        raise TypeError('Input must be a Python list or NumPy 1d array, not '+type(leadcol).__name__+'!')
+    try:
+        n = len(leadrow)
+    except: 
+        raise TypeError('Input must be a Python list or NumPy 1d array, not '+type(leadrow).__name__+'!')
+
+    if fname != None:
+        if type(fname).__name__ != 'str':
+            raise TypeError('Input fname has to be a string specifying an output filename, not '\
+                            +type(fname).__name__+'!')
+        if fname[-4::] != '.csv':
+            fname = fname + '.csv'
+        save = True
+    else: save = False
+
+    # Get dimension of data and corresponding leading column/row
+    if len(ds) == 1: 
+        K = ds[0]
+        if K == m:
+            N = 1; M = K
+        elif K == n or K == (n-1):
+            M = 1; N = K
+        else: 
+            raise ValueError('Number of elements in heading column/row and data don not match up!')
+        data = data.reshape((M,N))
+    else:
+        M,N = ds
+
+    if M != m:
+        raise ValueError('Number of rows and no. of elements leading column do not match up!')
+    elif N == n:
+        head = [' '] + list(leadrow)
+    elif N == (n-1):
+        head = list(leadrow)
+    else:
+        raise ValueError('Number of columns and no. of elements in head row do not match up!')
+
+    # Do something: create big data array including leading column
+    Data = np.column_stack((leadcol,data.astype('str')))
+    
+    # Initialize table object and fill it with stuff
+    table = Texttable()
+    table.set_cols_align(["l"]*(N+1))
+    table.set_cols_valign(["c"]*(N+1))
+    table.set_cols_dtype(["t"]*(N+1))
+    table.set_cols_width([18]*(N+1))
+    table.add_rows([head],header=True)
+    table.add_rows(Data.tolist(),header=False)
+    
+    # Pump out table
+    print table.draw() + "\n"
+
+    # If wanted, save stuff in a csv file
+    if save:
+        head = str(head)
+        head = head.replace("[","")
+        head = head.replace("]","")
+        head = head.replace("'","")
+        np.savetxt(fname,Data,delimiter=",",fmt="%s",header=head,comments="")
+
+    return
 
 ##########################################################################################
 def tensorcheck(corrs):
