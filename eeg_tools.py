@@ -414,7 +414,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
 
     See also
     --------
-    None
+    h5py : A Pythonic interface to the HDF5 binary data format
     """
 
     # Sanity checks
@@ -953,16 +953,72 @@ def plot_eeg(h5file=None,electrodelist=None):
 ##########################################################################################
 def load_data(h5file,nodes=None):
     """
+    Load data from HDF5 container generated with read_eeg
+
+    Parameters
+    ----------
+    h5file : str or h5py.File instance
+        String specifying file name (or path + filename) or `h5py.File` instance of
+        HDF5 container to be accessed
+    nodes : list or NumPy 1darray
+        Python list or NumPy array of electrodes to be read. Can be either an array/list
+        of strings or indices. By default `nodes=None` and all electrodes are read 
+        from file
+
+    Returns
+    -------
+    data : NumPy 2darray
+        A #nodes-by-#samples array holding the data in float64 format
+
+    Notes
+    -----
+    The raw iEEG data are stored as int16. This routine normalizes (divides by max(int16))
+    and rescales the data based on the original channel sensitivity (read from the HDF5
+    container). 
+
+    Examples
+    --------
+    Suppose we want to read data stored in the file `iEEG.h5`. To access all of its contents
+    use
+    
+    >>> data = load_data('iEEG.h5')
+    >>> data.shape
+    >>> (84, 9000000)
+
+    If the HDF5 container is already open and only electrodes `RFA1` and `RFB1` should be read
+    use
+
+    >>> import h5py
+    >>> f = h5py.File('iEEG.h5')
+    >>> data = load_data(f,nodes=['RFA1','RFB1'])
+    >>> data.shape
+    >>> (2, 9000000)
+
+    Alternatively, nodes can be specified using their indices in the file 
+
+    >>> data = load_data(f,nodes=np.array([12,33]))
+    >>> data.shape
+    >>> (2, 9000000)
+
+    See also
+    --------
+    read_eeg : Read raw EEG data from binary *.EEG/*.eeg and *.21E files
     """
 
     # Sanity checks
-    if type(h5file).__name__ != 'str':
-        raise TypeError('Input has to be a string specifying an HDF5 file!')
-    try:
-        f = h5py.File(h5file)
-    except: raise ValueError("Error opening file "+h5file)
+    if type(h5file).__name__ == 'str':
+        try:
+            f = h5py.File(h5file)
+        except: raise ValueError("Error opening file "+h5file)
+        closefile = True
+    elif type(h5file).__name__ == "File":
+        try:
+            h5file.filename 
+        except: raise TypeError('Input is not a valid HDF5 file!')
+        f         = h5file
+        closefile = False
+    else: raise TypeError('Input has to be a string specifying an HDF5 file or h5py.File instance!')
 
-    # Determine if the given HDF file has the correct structure
     try:
         ismat = (f['EEG'].keys().count('eeg_mat') > 0)
     except: 
@@ -983,7 +1039,7 @@ def load_data(h5file,nodes=None):
                 except KeyError: raise ValueError("Node "+node+" not found in file "+h5file+"!")
         else:
             try:
-                if max(nodes) > len(ec_list) or min(nodes) < 0:
+                if max(nodes) > len(ec_list)-1 or min(nodes) < 0:
                     raise ValueError("Indices not found in file "+h5file+"!")
             except: 
                 errmsg = "Nodes have to be provided as Python list/NumPy 1darray of indices or strings!"
@@ -1009,5 +1065,8 @@ def load_data(h5file,nodes=None):
         for node in nodes:
             data[i,:] = f['EEG'][node].value
         data = data/np.iinfo(dt).max*CAL
+
+    # Close file if user provided just string
+    if closefile: f.close()
             
     return data

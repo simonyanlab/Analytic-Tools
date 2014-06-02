@@ -414,6 +414,7 @@ def printstats(variables,pvals,baseline,testset,basestr='baseline',teststr='test
     teststr : string
         A string to be used in the generated table to highlight computed mean/std values of 
         the test dataset
+    fname : string
         Name of a csv-file (with or without extension `.csv`) used to save the table 
         (WARNING: existing files will be overwritten!). Can also be a path + filename 
         (e.g., `fname='path/to/file.csv'`). By default output is not saved. 

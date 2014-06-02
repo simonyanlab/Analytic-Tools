@@ -10,6 +10,7 @@ import natsort
 import os
 import csv
 import inspect
+import fnmatch
 from scipy import weave
 from numpy.linalg import norm
 from mpl_toolkits.mplot3d import Axes3D
@@ -317,8 +318,10 @@ def corrcheck(*args,**kwargs):
     else:
         usrlbl = 0
 
-    # Get shape of input
-    szin = len(args[0].shape)
+    # Try to get shape of input
+    try:
+        szin = len(args[0].shape)
+    except: raise TypeError("Expected NumPy array(s) as input, found "+type(args[0]).__name__+"!")
 
     # If input is a list of matrices, store them in a tensor
     if szin == 2:
@@ -417,7 +420,7 @@ def corrcheck(*args,**kwargs):
         fig.canvas.set_window_title(figtitle+': '+"Negative Correlations Are BLACK")
         for i in xrange(nmat):
             plt.subplot(rplot,cplot,i+1)
-            plt.imshow((corrs[:,:,i]>0).astype(float),cmap='gray',interpolation='nearest',vmin=0,vmax=1)
+            plt.imshow((corrs[:,:,i]>=0).astype(float),cmap='gray',interpolation='nearest',vmin=0,vmax=1)
             plt.axis('off')
             plt.title(labels[i])
         plt.draw()
@@ -441,7 +444,7 @@ def corrcheck(*args,**kwargs):
     plt.draw()
 
 ##########################################################################################
-def get_meannw(nws,percval=0.75):
+def get_meannw(nws,percval=0.0):
     """
     Helper function to compute group-averaged networks
 
@@ -455,8 +458,7 @@ def get_meannw(nws,percval=0.75):
     percval : float
         Percentage value, s.t. connections not present in at least `percval`
         percent of subjects are not considered, thus `0 <= percval <= 1`.
-        Default setting is `percval = 0.75` (following van den Heuvel's and Sporns' 
-        rich club paper, see below). 
+        Default setting is `percval = 0.0`
        
     Returns
     -------
@@ -577,7 +579,7 @@ def rm_negatives(corrs):
     return nws
 
 ##########################################################################################
-def thresh_nws(nws,userdens=None):
+def thresh_nws(nws,userdens=None,percval=0.0):
     """
     Threshold networks based on connection density
 
@@ -593,6 +595,10 @@ def thresh_nws(nws,userdens=None):
         connection density without disconnecting any nodes in the networks. If `userdens` 
         is provided, then it is used as density level to which all networks should be 
         thresholded, i.e., `0 < userdens < 100`. See Notes below for details. 
+    percval : float
+        Percentage value, s.t. connections not present in at least `percval`
+        percent of subjects are not considered, thus `0 <= percval <= 1`.
+        Default setting is `percval = 0.0`. See `get_meannw` for details. 
                
     Returns
     -------
@@ -626,7 +632,7 @@ def thresh_nws(nws,userdens=None):
 
     See also
     --------
-    None
+    get_meannw : Helper function to compute group-averaged networks
     """
 
     # Sanity checks
@@ -637,6 +643,9 @@ def thresh_nws(nws,userdens=None):
         if (tmp): raise ValueError('The density level must be an integer!')
         if (userdens <= 0) or (userdens >= 100):
             raise ValueError('The density level must be between 0 and 100!')
+    try: tmp = percval > 1 or percval < 0
+    except: raise TypeError("Percentage value must be a floating point number >= 0 and <= 1!")
+    if (tmp): raise ValueError("Percentage value must be >= 0 and <= 1!")
 
     # Get dimension of per-subject networks
     N       = nws.shape[0]
@@ -717,7 +726,7 @@ def thresh_nws(nws,userdens=None):
                 den_values[i] = den_old
                 break
 
-    # Compute minimal density before fragmentation across all subjects (ceil is important here: min = 0.734 -> 74% NOT 73%)
+    # Compute minimal density before fragmentation across all subjects
     densities = np.round(1e2*den_values)
     print "\nDensities of per-subject networks are as follows: "
     for i in xrange(densities.size): print "Subject #"+str(i)+": "+str(int(densities[i]))+"%"
@@ -755,7 +764,7 @@ def thresh_nws(nws,userdens=None):
                 " which is already lower than thresholding density of "+str(thresh_dens)+"%"
             print "Returning original unthresholded network"
             th_nws[:,:,i] = mnw
-            tau_levels[i] = 1
+            tau_levels[i] = 0
             den_values[i] = raw_den[i]
 
         else:
@@ -1321,7 +1330,7 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
     method : string
         String specifying which method to use to randomize 
         the input network. Currently supported options are 
-        `'auto'` (default), `'randmio_und'`, and `'randmio_und_connected'`. 
+        `'auto'` (default), `'null_model_und_sign'`, `'randmio_und'`, and `'randmio_und_connected'`. 
         If `'auto'` is chosen then `'randmio_und_connected'` is used
         to compute the random networks unless the input graph is very dense
         (then `'randmio_und'` is used). 
@@ -1348,6 +1357,7 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
     --------
     randmio_und_connected : in bctpy
     randmio_und : in bctpy
+    null_model_und_sign : in bctpy
     """
 
     # Try to import bct
@@ -1371,7 +1381,7 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
 
     if type(method).__name__ != 'str':
         raise TypeError("Input method must be a string, not "+type(method).__name__+"!")
-    mthopts = ["auto","randmio_und_connected","randmio_und"]
+    mthopts = ["auto","randmio_und_connected","randmio_und","null_model_und_sign"]
     mthstr  = str(mthopts)
     mthstr  = mthstr.replace("(","")
     mthstr  = mthstr.replace(")","")
@@ -1417,10 +1427,16 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
             rnws[:,:,m], eff = bct.randmio_und_connected(nw,rwr)
             counter += eff
             if (showbar): pbar.update(m)
+    elif method == "null_model_und_sign":
+        counter = 1
+        for m in xrange(M):
+            rnws[:,:,m] = bct.null_model_und_sign(nw)[0]
+            if ((rnws[:,:,m] == nw).min()): print "WARNING: network has not been rewired!"
+            if (showbar): pbar.update(m)
     else:
         counter = 0
         for m in xrange(M):
-            rnws[:,:,m] = bct.randmio_und(nw,rwr)[0]
+            rnws[:,:,m], eff = bct.randmio_und(nw,rwr)
             counter += eff
             if (showbar): pbar.update(m)
     if (showbar): pbar.finish()
