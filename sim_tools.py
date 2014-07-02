@@ -18,7 +18,7 @@ from datetime import datetime
 from texttable import Texttable
 from scipy import ndimage
 
-# Add the Model's directoy to the path to be able to import the model
+# Add the model's directoy to the path to be able to import it
 import sys
 sys.path.append(os.path.expanduser('~')+'/Documents/job/Joel/Model/New/')
 from the_model import par, solve_model
@@ -99,7 +99,9 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed = None, paramfile='parame
         if C == None: C = f['C'].value; c_str = "from file"
         D     = f['D'].value
         names = f['names'].value
-    except: raise ValueError("HDF5 file "+param_py.matrices+" does not have the required fields!")
+        f.close()
+    except: 
+        raise ValueError("HDF5 file "+param_py.matrices+" does not have the required fields!")
 
     # Do a quick checkup of the matrices
     for mat in [C,D]:
@@ -323,6 +325,7 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
     except: raise ValueError("Cannot open "+fname+"!")
     try:
         rois_infile = f['params']['names'].value.tolist()
+        f.close()
     except: raise ValueError("HDF5 file "+fname+" does not have the required fields!")
 
     # Check if list of names to plot was provided. If yes, make sure they make sense
@@ -346,6 +349,9 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
     if figname != None:
         if type(figname).__name__ != "str":
             raise TypeError("Figure name has to be a string, not "+type(figname).__name__+"!")
+
+    # After all the error checking, reopen the file
+    f = h5py.File(fname,'r')
 
     # Turn on interactive plotting
     plt.ion()
@@ -425,7 +431,9 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         # Try to load the BOLD data from file
         try:
             BOLD = f['BOLD'].value 
-        except: raise ValueError("No BOLD data found in file "+fname+"!")
+        except: 
+            f.close()
+            raise ValueError("No BOLD data found in file "+fname+"!")
 
         # Get x-entent of data and create x-ticks vector
         xmax = BOLD.shape[1] + 1
@@ -497,7 +505,9 @@ def make_bold(fname, Psi=1.0, theta=1.0, alpha=6.0):
     except: raise ValueError("Cannot open "+fname+"!")
     try:
         V = f['V'].value
-    except: raise ValueError("HDF5 file "+fname+" does not have the required fields!")
+    except: 
+        f.close()
+        raise ValueError("HDF5 file "+fname+" does not have the required fields!")
 
     # Extract time array from file and prepend an element (to get convolution right)
     t  = f['t'].value

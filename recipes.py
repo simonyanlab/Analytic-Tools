@@ -11,6 +11,7 @@ import os
 from numpy.linalg import norm
 import numpy as np
 from texttable import Texttable
+from datetime import datetime, timedelta
 
 ##########################################################################################
 def find_contiguous_regions(condition):
@@ -525,18 +526,39 @@ def printstats(variables,pvals,baseline,testset,basestr='baseline',teststr='test
         head = head.replace("'","")
         np.savetxt(fname,Data,delimiter=",",fmt="%s",header=head,comments="")
 
-    # k = 0
-    # for var in variables:
-    #     basemean = baseline[:,k].mean()
-    #     basestd  = baseline[:,k].std()
-    #     testmean = testset[:,k].mean()
-    #     teststd  = testset[:,k].std()
-    #     if basemean < testmean:
-    #         gtlt = " < "
-    #     else:
-    #         gtlt = " > "
-    #     println = var + " : p = " + str(pvals[k]) + ", " + basestr + ": " + \
-    #               str(basemean) + " +/- " + str(basestd) + gtlt + teststr + ": " + \
-    #               str(testmean) + " +/- " + str(teststd)
-    #     print println
-    #     k += 1
+##########################################################################################
+def moveit(fname):
+    """
+    Check if a file exists, if yes, rename it
+
+    Parameters
+    ----------
+    fname : str
+        A string specifying (the path to) the file to be renamed (if existing)
+
+    Returns
+    -------
+    Nothing : None
+
+    See also
+    --------
+    None
+    """
+
+    # Check if input makes sense
+    if type(fname).__name__ != "str":
+        raise TypeError("Filename has to be a string!")
+
+    # If file already exists, rename it
+    if os.path.isfile(fname):
+        newname = fname[:-3] + "_bak_"+\
+                  str(datetime.now().year)+"_"+\
+                  str(datetime.now().month)+"_"+\
+                  str(datetime.now().day)+"_"+\
+                  str(datetime.now().hour)+"_"+\
+                  str(datetime.now().minute)+"_"+\
+                  str(datetime.now().second)+\
+                  fname[-3::]
+        print "WARNING: file "+fname+" already exists, renaming it to: "+newname+"!"
+        os.rename(fname,newname)
+
