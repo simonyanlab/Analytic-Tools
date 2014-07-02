@@ -637,7 +637,9 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     if numSamples <= maxmem:
         blocksize = [numSamples]
     else:
-        blocksize = [maxmem]*(numSamples//maxmem) + [int(np.mod(numSamples,maxmem))]
+        blocksize = [maxmem]*(numSamples//maxmem)
+        rest      = int(np.mod(numSamples,maxmem))
+        if rest > 0: blocksize = blocksize + [rest]
 
     # Count the number of blocks we split up data into
     numblocks = len(blocksize)
