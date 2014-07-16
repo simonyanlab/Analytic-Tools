@@ -18,9 +18,11 @@ from datetime import datetime
 from texttable import Texttable
 from scipy import ndimage
 
-# Add the model's directoy to the path to be able to import it
-import sys
-sys.path.append(os.path.expanduser('~')+'/Documents/job/Joel/Model/New/')
+from nipy.modalities.fmri import hrf, utils
+
+# # Add the model's directoy to the path to be able to import it
+# import sys
+# sys.path.append(os.path.expanduser('~')+'/Documents/job/Joel/Model/New/')
 from the_model import par, solve_model
 
 def run_model(V0, Z0, DA0, task, outfile, C=None, seed = None, paramfile='parameters.py', symsyn=True):
@@ -256,7 +258,7 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed = None, paramfile='parame
     # Convert blocksize and chunksize to NumPy arrays
     blocksize = np.array(blocksize)
     chunksize = np.array(chunksize)
-    
+
     # Get the number of elements that will be actually saved
     n_elems = chunksize.sum()
 
@@ -271,7 +273,7 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed = None, paramfile='parame
     f.create_dataset('DA',shape=(N,n_elems),chunks=chunks)
     f.create_dataset('QV',shape=(N,n_elems),chunks=chunks)
     f.create_dataset('Beta',shape=(N,n_elems),chunks=chunks)
-    f.create_dataset('t',data=np.linspace(tstart,tend,n_elems)*dt)
+    f.create_dataset('t',data=np.linspace(tstart,tend,n_elems))
     # f.create_dataset('t',data=tsteps[::s_step])
 
     # Save parameters (but exclude stuff imported in the parameter file)
@@ -493,7 +495,7 @@ def make_D(target,source,names,values=None):
 
     return D
 
-def make_bold(fname, Psi=1.0, theta=1.0, alpha=6.0):
+def make_bold(fname, stim_onset=None):
 
     # Sanity checks
     if type(fname).__name__ != 'str':
@@ -509,18 +511,10 @@ def make_bold(fname, Psi=1.0, theta=1.0, alpha=6.0):
         f.close()
         raise ValueError("HDF5 file "+fname+" does not have the required fields!")
 
-    # Extract time array from file and prepend an element (to get convolution right)
-    t  = f['t'].value
-    t1 = np.hstack((t[0]-t[1],t))/1000
-
-    # Compute HDR function for given parameters
-    gamma = Psi*np.exp(-t1/theta)*t1**(alpha - 1.)
-    gamma = gamma[gamma > 1e-5]
-
-    # Convolve raw model output with HDR function
-    # convV = ndimage.filters.convolve1d(V - V.mean(),gamma,mode='constant')
-    # convV = ndimage.filters.convolve1d((V.T - V.mean(axis=1)).T,gamma,mode='constant')
-    convV = ndimage.filters.convolve1d(V,gamma,mode='constant')
+    # Make sure stim_onset makes sense
+    if stim_onset != None:
+        try: np.round(stim_onset)
+        except: raise TypeError("The stimulus onset time has to be a real scalar!")
 
     # Get task from file to start subsampling procedure
     task = f['params']['task'].value
@@ -532,6 +526,31 @@ def make_bold(fname, Psi=1.0, theta=1.0, alpha=6.0):
     len_cycle = f['params']['len_cycle'].value
     cycle_idx = int(np.round(s_rate*len_cycle))
 
+    # Compute step size and (if not provided by the user) compute stimulus onset time
+    dt = 1/s_rate
+    if stim_onset == None: stim_onset = f['params']['stimulus'].value
+    
+    # Use Glover's Hemodynamic response function as convolution kernel (with default length 32)
+    hrft       = utils.lambdify_t(hrf.glover(utils.T))
+    hrf_kernel = np.hstack((np.zeros((int(s_rate*stim_onset),)),hrft(np.arange(0,32,dt))))
+
+    # t1 = np.arange(0,32+stim_onset,dt)
+    # gamma = Psi*np.exp(-t1/theta)*t1**(alpha - 1.)
+    # hrf_kernel = gamma.copy()
+    # plt.figure();plt.plot(gamma)
+
+    # t1 = np.arange(0,32+stim_onset,dt)
+    # plt.ion();plt.figure();plt.plot(t1,hrf_kernel)
+    # plt.figure();plt.plot(gamma)
+
+    # V  = (V.T - V.mean(axis=1)).T
+    # qq = np.abs(np.diff(V,axis=1))
+    # convV = ndimage.filters.convolve1d(V,hrf_kernel,mode='constant')
+    # convV = ndimage.filters.convolve1d((qq.T - qq.mean(axis=1)).T,hrf_kernel,mode='constant')
+
+    # Convolve the de-meaned model time-series with the kernel 
+    convV = ndimage.filters.convolve1d((V.T - V.mean(axis=1)).T,hrf_kernel,mode='constant')
+
     # Allocate space for BOLD signal
     BOLD = np.zeros((N,n_cycles))
 
@@ -540,7 +559,7 @@ def make_bold(fname, Psi=1.0, theta=1.0, alpha=6.0):
 
         # Get interval to be considered for boldification
         start = int(np.round(f['params']['speechoff'].value*s_rate))
-        stop  = start + int(np.round(f['params']['acquisition'].value*cycle_idx))
+        stop  = start + int(np.round(f['params']['acquisition'].value*s_rate))
 
     elif task == 'rest':
 
@@ -557,11 +576,15 @@ def make_bold(fname, Psi=1.0, theta=1.0, alpha=6.0):
         start += cycle_idx
         stop  += cycle_idx
 
-    # De-mean the signal
-    BOLD = 0.02*(BOLD.T - BOLD.mean(axis=1)).T
+    # Re-scale the the signal
+    BOLD = BOLD*0.02
+    # BOLD = (BOLD.T - BOLD.mean(axis=1)).T
 
     # Save it to the file
-    f.create_dataset('BOLD',data=BOLD)
+    try:
+        f.create_dataset('BOLD',data=BOLD)
+    except:
+        f['BOLD'].write_direct(BOLD)
     f.close()
 
 
