@@ -17,15 +17,12 @@ import psutil
 from datetime import datetime
 from texttable import Texttable
 from scipy import ndimage
-
 from nipy.modalities.fmri import hrf, utils
 
-# # Add the model's directoy to the path to be able to import it
-# import sys
-# sys.path.append(os.path.expanduser('~')+'/Documents/job/Joel/Model/New/')
 from the_model import par, solve_model
 
-def run_model(V0, Z0, DA0, task, outfile, C=None, seed = None, paramfile='parameters.py', symsyn=True):
+##########################################################################################
+def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='parameters.py', symsyn=True, **kwargs):
 
     # Sanity checks
     n = np.zeros((3,)); i = 0
@@ -291,6 +288,10 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed = None, paramfile='parame
     p_dict['C'] = C
     p_dict['D'] = D
 
+    # If user provided some additional parameters as keyword arguments, now's the time to assign them
+    for key, value in kwargs.items():
+        p_dict[key] = value
+
     # Initialize parameter C-class (struct) for the model
     params = par(p_dict)
 
@@ -298,12 +299,19 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed = None, paramfile='parame
     VZD0 = np.hstack((np.hstack((V0.squeeze(),Z0.squeeze())),DA0.squeeze()))
 
     # Let the user know what's going to happen...
+    pstr = "--"
+    if len(kwargs) > 0:
+        pstr = str(kwargs.keys())
+        pstr = pstr.replace("[","")
+        pstr = pstr.replace("]","")
+        pstr = pstr.replace("'","")
     table = Texttable()
     table.set_deco(Texttable.HEADER)
     table.set_cols_align(["l", "l"])
     table.add_rows([["Simulating ",task.upper()],\
                     ["#cycles: ",str(param_py.n_cycles)],\
                     ["parameter file:",paramfile+".py"],\
+                    ["keyword args:",pstr],\
                     ["matrix file:",param_py.matrices],\
                     ["Coupling matrix:",c_str],\
                     ["Output:",outfile]])
@@ -315,11 +323,18 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed = None, paramfile='parame
     # Done!
     print "\nDone\n"
 
+##########################################################################################
 def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
 
     # Sanity checks
     if type(fname).__name__ != 'str':
         raise TypeError("Name of HDF5 file has to be a string!")
+
+    if raw != True and raw != False:
+        raise TypeError("The switch `raw` has to be boolean!")
+
+    if bold != True and bold != False:
+        raise TypeError("The switch `bold` has to be boolean!")
 
     # Try to open given HDF5 container
     try:
@@ -351,6 +366,13 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
     if figname != None:
         if type(figname).__name__ != "str":
             raise TypeError("Figure name has to be a string, not "+type(figname).__name__+"!")
+
+    # Fix sorting of idx so that smart indexing below works
+    idx    = np.array(idx)
+    names  = np.array(names)
+    sorted = idx.argsort()
+    names  = names[sorted]
+    idx    = idx[sorted]
 
     # After all the error checking, reopen the file
     f = h5py.File(fname,'r')
@@ -388,6 +410,8 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
 
         sp = plt.subplot(4,1,1)
         plt.plot(t,V)
+        if (names == "all").min() == False:
+            plt.legend(names)
         plt.ylabel('mV',fontsize=16)
         [ymin,ymax] = sp.get_ylim()
         plt.yticks([ymin,0,ymax],fontsize=10)
@@ -447,6 +471,8 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         plt.title("BOLD data "+fname,fontsize=18)
         sp = plt.subplot(111)
         plt.plot(BOLD.T)
+        if (names == "all").min() == False:
+            plt.legend(names)
         plt.xticks(xtv,fontsize=10)
         [ymin,ymax] = sp.get_ylim()
         plt.yticks([ymin,0,ymax],fontsize=10)
@@ -454,6 +480,7 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
     # Close file and return
     f.close()
 
+##########################################################################################
 def make_D(target,source,names,values=None):
 
     # Sanity checks
@@ -468,7 +495,7 @@ def make_D(target,source,names,values=None):
     if len(source) != len(target):
         raise ValueError("Length of source and target lists/arrays does not match up!")
 
-    if values != none:
+    if values != None:
         if len(values) != len(target):
             raise ValueError("Length of values list/array does not match up!")
     else:
@@ -484,7 +511,7 @@ def make_D(target,source,names,values=None):
     D = np.zeros((N,N))
 
     # Fill the matrix
-    for i in len(source):
+    for i in xrange(len(source)):
 
         # Get row and column indices
         row = names.index(target[i])
@@ -495,6 +522,7 @@ def make_D(target,source,names,values=None):
 
     return D
 
+##########################################################################################
 def make_bold(fname, stim_onset=None):
 
     # Sanity checks
@@ -587,4 +615,96 @@ def make_bold(fname, stim_onset=None):
         f['BOLD'].write_direct(BOLD)
     f.close()
 
+##########################################################################################
+def get_LI(fname,raw=True):
 
+    # Sanity checks
+    if type(fname).__name__ != 'str':
+        raise TypeError("Name of HDF5 file has to be a string!")
+
+    if raw != True and raw != False:
+        raise TypeError("The switch `raw` has to be boolean!")
+
+    # Try to open given HDF5 container
+    try:
+        f = h5py.File(fname,'r')
+    except: raise ValueError("Cannot open "+fname+"!")
+    try:
+        names = f['params']['names'].value
+        f.close()
+    except: raise ValueError("HDF5 file "+fname+" does not have the required fields!")
+
+    # After all the error checking, reopen the file
+    f = h5py.File(fname,'r')
+
+    # Find left-hemisphere indices
+    l_ind = regexfind(names,"[Ll]_*")
+    n     = l_ind[-1]
+
+    # Load regional membrane potentials or BOLD signals
+    if (raw):
+        X = f['V'].value
+    else:
+        X = f['BOLD'].value
+        
+    # Compute TV norm for each region
+    XTV = np.sum(np.abs(np.diff(X,axis=1)),axis=1)
+
+    # Return LI
+    return (XTV[:n].sum() - XTV[n:].sum())/XTV.sum()
+    
+##########################################################################################
+def regexfind(arr,expr):
+    """
+    Find regular expression in a NumPy array
+
+    Parameters
+    ----------
+    arr : NumPy 1darray
+        Array of strings to search 
+    expr : str
+        Regular expression to search for in the components of `arr`
+
+    Returns
+    -------
+    ind : NumPy 1darray
+        Index array of elements in `arr` that contain expression `expr`. If `expr` was not found
+        anywhere in `arr` an empty array is returned
+
+    Examples
+    --------
+    Suppose the array `arr` is given by
+
+    >>> arr
+    array(['L_a', 'L_b', 'R_a', 'R_b'], 
+      dtype='|S3')
+
+    If we want to find all elements of `arr` starting with `l_` or `L_` we could use
+
+    >>> regexfind(arr,"[Ll]_*")
+    array([0, 1])
+
+    See also
+    --------
+    None
+    """
+
+    # Sanity checks
+    try:
+        arr = np.array(arr)
+    except: raise TypeError("Input must be a NumPy array/Python list, not "+type(arr).__name__+"!")
+    sha = arr.shape
+    if len(sha) > 2 or (len(sha) == 2 and min(sha) != 1):
+        raise ValueError("Input must be a NumPy 1darray or Python list!")
+
+    if type(expr).__name__ != "str":
+        raise TypeError("Input expression has to be a string, not "+type(expr).__name__+"!")
+
+    # Now do something: start by compiling the input expression
+    regex = re.compile(expr)
+
+    # Create a generalized function to find matches
+    match = np.vectorize(lambda x:bool(regex.match(x)))(arr)
+
+    # Get matching indices and return
+    return np.where(match == True)[0]

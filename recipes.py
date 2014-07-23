@@ -562,3 +562,58 @@ def moveit(fname):
         print "WARNING: file "+fname+" already exists, renaming it to: "+newname+"!"
         os.rename(fname,newname)
 
+##########################################################################################
+def regexfind(arr,expr):
+    """
+    Find regular expression in a NumPy array
+
+    Parameters
+    ----------
+    arr : NumPy 1darray
+        Array of strings to search 
+    expr : str
+        Regular expression to search for in the components of `arr`
+
+    Returns
+    -------
+    ind : NumPy 1darray
+        Index array of elements in `arr` that contain expression `expr`. If `expr` was not found
+        anywhere in `arr` an empty array is returned
+
+    Examples
+    --------
+    Suppose the array `arr` is given by
+
+    >>> arr
+    array(['L_a', 'L_b', 'R_a', 'R_b'], 
+      dtype='|S3')
+
+    If we want to find all elements of `arr` starting with `l_` or `L_` we could use
+
+    >>> regexfind(arr,"[Ll]_*")
+    array([0, 1])
+
+    See also
+    --------
+    None
+    """
+
+    # Sanity checks
+    try:
+        arr = np.array(arr)
+    except: raise TypeError("Input must be a NumPy array/Python list, not "+type(arr).__name__+"!")
+    sha = arr.shape
+    if len(sha) > 2 or (len(sha) == 2 and min(sha) != 1):
+        raise ValueError("Input must be a NumPy 1darray or Python list!")
+
+    if type(expr).__name__ != "str":
+        raise TypeError("Input expression has to be a string, not "+type(expr).__name__+"!")
+
+    # Now do something: start by compiling the input expression
+    regex = re.compile(expr)
+
+    # Create a generalized function to find matches
+    match = np.vectorize(lambda x:bool(regex.match(x)))(arr)
+
+    # Get matching indices and return
+    return np.where(match == True)[0]
