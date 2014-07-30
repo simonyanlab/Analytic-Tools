@@ -1393,7 +1393,7 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
         bad = (np.round(rwr) != rwr)
     except: TypeError("Rewiring parameter rwr has to be an integer, not "+type(rwr).__name__+"!")
     if bad or rwr < 1: 
-        raise TypeError("Rewiring parameter has to be a strictly positve integer!")
+        raise TypeError("Rewiring parameter has to be a strictly positive integer!")
 
     # Try to import progressbar module
     try: 
@@ -1464,7 +1464,7 @@ def hdfburp(f):
     Notes
     -----
     This function takes an `h5py`-file object and creates variables in the caller's
-    local namespace corresponding to the respective dataset-names in the file. 
+    local name-space corresponding to the respective dataset-names in the file. 
     The naming format of the generated variable is 
         `groupname_datasetname`,
     where the `groupname` is empty for datasets in the `root` directory of the file. 
@@ -1896,7 +1896,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True):
     # Python version of (N)MI computation (slower)
     else:
 
-        #  Define references to numpy functions for faster function calls
+        #  Define references to NumPy functions for faster function calls
         histogram = np.histogram
         histogram2d = np.histogram2d
         log = np.log 
@@ -2012,7 +2012,7 @@ def issym(A,tol=1e-9):
 
     Notes:
     ------
-    An absolute-value based comparison is readily provided by NumPy's isclose
+    An absolute-value based comparison is readily provided by NumPy's `isclose`
 
     See also:
     ---------
@@ -2031,7 +2031,7 @@ def issym(A,tol=1e-9):
 ##########################################################################################
 def myglob(flpath,spattern):
     """
-    Return a glob-like list of paths matching a pathname pattern BUT support fancy shell syntax
+    Return a glob-like list of paths matching a path-name pattern BUT support fancy shell syntax
 
     Parameters
     ----------
@@ -2049,9 +2049,9 @@ def myglob(flpath,spattern):
     --------
     List all png/PNG files in the folder `MyHolidayFun` found under `Documents`
 
-    >> filelist = myglob('Documents/MyHolidayFun','*.[Pp][Nn][Gg]')
-    >> print filelist
-    >> ['Documents/MyHolidayFun/img1.PNG','Documents/MyHolidayFun/img1.png']
+    >>> filelist = myglob('Documents/MyHolidayFun','*.[Pp][Nn][Gg]')
+    >>> print filelist
+    >>> ['Documents/MyHolidayFun/img1.PNG','Documents/MyHolidayFun/img1.png']
         
     Notes
     -----

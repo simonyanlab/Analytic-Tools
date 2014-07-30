@@ -12,6 +12,7 @@ from numpy.linalg import norm
 import numpy as np
 from texttable import Texttable
 from datetime import datetime, timedelta
+from scipy import ndimage
 
 ##########################################################################################
 def find_contiguous_regions(condition):
@@ -559,7 +560,7 @@ def moveit(fname):
                   str(datetime.now().minute)+"_"+\
                   str(datetime.now().second)+\
                   fname[-3::]
-        print "WARNING: file "+fname+" already exists, renaming it to: "+newname+"!"
+        print "WARNING: File "+fname+" already exists, renaming it to: "+newname+"!"
         os.rename(fname,newname)
 
 ##########################################################################################
@@ -617,3 +618,52 @@ def regexfind(arr,expr):
 
     # Get matching indices and return
     return np.where(match == True)[0]
+
+##########################################################################################
+def MA(signal, window_size):
+    """
+    Smooth 1d/2darray using a moving average filter along one axis
+
+    Parameters
+    ----------
+    signal : NumPy 1d/2darray
+        Input signal of shape `M`-by-`N`, where `M` is the number of signal sources (regions, measuring
+        devices, etc.) and `N` is the number of observations/measurements. Smoothing is performed along the 
+        second axis, i.e., for each source all `N` observations are smoothed independently of each other
+        using the same moving average window. 
+    window_size : scalar
+        Positive scalar defining the size of the window to average over
+
+    Returns
+    -------
+    ma_signal : NumPy 1d/2darray
+        Smoothed signal (same shape as input)
+
+    See also
+    --------
+    None
+
+    Notes
+    -----
+    None
+    """
+
+    # Sanity checks
+    try:
+        shs = signal.shape
+    except: raise TypeError("Input `signal` must be a NumPy 2darray, not "+type(signal).__name__+"!")
+    if len(shs) > 2:
+        raise ValueError("Input `signal` must be a NumPy 2darray!")
+    if np.sum(shs) <= 2:
+        raise ValueError("Input `signal` is an array of only one element! ")
+    if np.isnan(signal).max() == True or np.isinf(signal).max() == True or np.isreal(signal).min() == False:
+        raise ValueError("Input `signal` must be real without NaNs or Infs!")
+
+    try:
+        bad = window_size <= 0
+    except: raise TypeError("Input window-size must be a positive scalar!")
+    if bad: raise ValueError("Input window-size must be a positive scalar!")
+        
+    # Assemble window and compute moving average of signal
+    window = np.ones(int(window_size))/float(window_size)
+    return ndimage.filters.convolve1d(signal,window,mode='nearest')

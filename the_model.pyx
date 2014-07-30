@@ -284,9 +284,7 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
 
     # Dopamine model
     r              = (p.rmax - p.rmin)*isspeech + p.rmin
-    # A[2*p.N:3*p.N] = r*p.QV - p.v_m*(1 + p.k_m/p.DA)**(-1)
     A[2*p.N:3*p.N] = r*p.QV - (p.v_m*p.DA)*((p.DA + p.k_m)**(-1))
-    # A[2*p.N:3*p.N] = r*p.QV - (p.v_m*p.DA*(1 + p.k_m/p.DA)**(-1))
 
     # Stochastic (diffusion) parts for V and Z (note that diffusion for DA is 0)
     B[0:p.N]     = p.ane*p.delta
@@ -339,6 +337,7 @@ cpdef np.ndarray[DTYPE_t, ndim = 2] solve_model(np.ndarray[DTYPE_t, ndim = 1] x0
     # Generate pair of correlated normally distributed random variables and a linear combination of them
     np.random.seed(seed)
     zeta1   = norm.rvs(size=(tsteps.size,),loc=0,scale=1)
+    np.random.seed(seed+tsteps.size)
     zeta2   = norm.rvs(size=(tsteps.size,),loc=0,scale=1)
     DW      = zeta1*sqrtdt
     DZ      = 0.5*(zeta1 + sqrt(3)**(-1)*zeta2)*sqrtdt**3

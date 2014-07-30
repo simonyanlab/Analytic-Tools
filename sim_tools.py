@@ -58,6 +58,8 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
         except: raise TypeError("Random number seed has to be an integer!")
         if bad: raise ValueError("Random number seed has to be an integer!")
         seed = int(seed)
+    else:
+        seed = np.random.get_state()[1][0]
 
     if type(paramfile).__name__ != 'str':
         raise TypeError('Parameter file has to be specified using a string!')
@@ -91,7 +93,7 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
 
     # Try to load the coupling matrix
     try:
-        f = h5py.File(param_py.matrices)
+        f = h5py.File(param_py.matrices,'r')
     except: raise ValueError("Could not open HDF5 file holding the coupling matrix")
     try:
         c_str = "from argument"
@@ -153,11 +155,12 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
         ani[l_ind] = ani[r_ind]
         ane[l_ind] = ane[r_ind]
 
-    # Save updated coupling strengths in dictionary
-    p_dict['aei'] = aei
-    p_dict['aie'] = aie
-    p_dict['ani'] = ani
-    p_dict['ane'] = ane
+    # Save updated coupling strengths and random number generator seed in dictionary
+    p_dict['aei']  = aei
+    p_dict['aie']  = aie
+    p_dict['ani']  = ani
+    p_dict['ane']  = ane
+    p_dict['seed'] = seed
 
     # If a resting state simulation is done, make sure dopamine doesn't kick in 
     if task == 'rest':
@@ -212,7 +215,11 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
     p_dict['s_step'] = s_step
         
     # Compute end time for simulation (in ms) and allocate time-step array
-    tend   = tstart + len_cycle*param_py.n_cycles*1000
+    if kwargs.has_key('n_cycles'):
+        n_cycles = kwargs['n_cycles']
+    else:
+        n_cycles = param_py.n_cycles
+    tend   = tstart + len_cycle*n_cycles*1000
     tsteps = np.arange(tstart,tend,dt)
 
     # Get the size of the time-array
@@ -228,7 +235,7 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
                   str(datetime.now().minute)+"_"+\
                   str(datetime.now().second)+\
                   outfile[-3::]
-        print "WARNING: file "+outfile+" already exists, renaming it to: "+newname+"!"
+        print "WARNING: File "+outfile+" already exists, renaming it to: "+newname+"!"
         os.rename(outfile,newname)
     
     # Chunk outifle depending on available memory (eat up ~ 20% of RAM)
@@ -271,7 +278,6 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
     f.create_dataset('QV',shape=(N,n_elems),chunks=chunks)
     f.create_dataset('Beta',shape=(N,n_elems),chunks=chunks)
     f.create_dataset('t',data=np.linspace(tstart,tend,n_elems))
-    # f.create_dataset('t',data=tsteps[::s_step])
 
     # Save parameters (but exclude stuff imported in the parameter file)
     pg = f.create_group('params')
@@ -347,6 +353,7 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
 
     # Check if list of names to plot was provided. If yes, make sure they make sense
     if type(names).__name__ != "str":
+        doleg = True
         try:
             names = list(names)
         except: raise TypeError("Regions to plot have to be provided as Python list or NumPy 1darray!")
@@ -357,22 +364,25 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
             except: raise ValueError("Region "+name+"not found in file!")
     else:
         if names == "all":
-            idx = range(len(rois_infile))
+            idx   = range(len(rois_infile))
+            doleg = False
         else:
             try:
                 idx = rois_infile.index(names)
             except: raise ValueError("Region "+names+"not found in file!")
+            doleg = True
 
     if figname != None:
         if type(figname).__name__ != "str":
             raise TypeError("Figure name has to be a string, not "+type(figname).__name__+"!")
 
     # Fix sorting of idx so that smart indexing below works
-    idx    = np.array(idx)
-    names  = np.array(names)
-    sorted = idx.argsort()
-    names  = names[sorted]
-    idx    = idx[sorted]
+    if doleg:
+        idx    = np.array(idx)
+        names  = np.array(names)
+        sorted = idx.argsort()
+        names  = names[sorted]
+        idx    = idx[sorted]
 
     # After all the error checking, reopen the file
     f = h5py.File(fname,'r')
@@ -410,7 +420,7 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
 
         sp = plt.subplot(4,1,1)
         plt.plot(t,V)
-        if (names == "all").min() == False:
+        if doleg:
             plt.legend(names)
         plt.ylabel('mV',fontsize=16)
         [ymin,ymax] = sp.get_ylim()
@@ -456,13 +466,13 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         
         # Try to load the BOLD data from file
         try:
-            BOLD = f['BOLD'].value 
+            BOLD = f['BOLD'][idx,:].T
         except: 
             f.close()
             raise ValueError("No BOLD data found in file "+fname+"!")
 
         # Get x-entent of data and create x-ticks vector
-        xmax = BOLD.shape[1] + 1
+        xmax = BOLD.shape[0] + 1
         xtv  = np.arange(-1,xmax)
 
         # Prepare window and plot stuff
@@ -470,8 +480,8 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         if figname != None: fig.canvas.set_window_title(figname)
         plt.title("BOLD data "+fname,fontsize=18)
         sp = plt.subplot(111)
-        plt.plot(BOLD.T)
-        if (names == "all").min() == False:
+        plt.plot(BOLD)
+        if doleg:
             plt.legend(names)
         plt.xticks(xtv,fontsize=10)
         [ymin,ymax] = sp.get_ylim()
@@ -652,6 +662,43 @@ def get_LI(fname,raw=True):
 
     # Return LI
     return (XTV[:n].sum() - XTV[n:].sum())/XTV.sum()
+
+##########################################################################################
+def show_params(fname):
+
+    # Sanity checks
+    if type(fname).__name__ != 'str':
+        raise TypeError("Name of HDF5 file has to be a string!")
+
+    # Try to open given HDF5 container
+    try:
+        f = h5py.File(fname,'r')
+    except: raise ValueError("Cannot open "+fname+"!")
+    try:
+        par_grp = f['params']
+        f.close()
+    except: raise ValueError("HDF5 file "+fname+" does not have the required fields!")
+
+    # After all the error checking, reopen the file
+    f = h5py.File(fname,'r')
+    
+    # Create a list for Texttable
+    tlist = []
+    for key in f['params'].keys():
+        tlist.append([key,f['params'][key].value])
+
+    # Close file
+    f.close()
+
+    # Print table
+    print"\nShowing parameters of file "+fname
+    table = Texttable()
+    table.set_deco(Texttable.HEADER)
+    table.set_cols_align(["l", "l"])
+    table.add_rows([["Parameter","Value"]],header=True)
+    table.add_rows(tlist,header=False)
+    print "\n"+table.draw()+"\n"
+
     
 ##########################################################################################
 def regexfind(arr,expr):
