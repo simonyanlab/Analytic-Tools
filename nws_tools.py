@@ -216,7 +216,10 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
         col = 0
         for fl in txtfiles:
             if fl.count(sublist[k]):
-                bigmat[:,col,k] = [float(line.strip()) for line in open(fl)]
+                try:
+                    bigmat[:,col,k] = [float(line.strip()) for line in open(fl)]
+                except:
+                    raise ValueError("Error reading file: "+fl)
                 col += 1
 
         # Safeguard: stop if subject is missing, i.e., col = 0 still (weirder things have happened...)

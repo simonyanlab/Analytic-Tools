@@ -109,7 +109,6 @@ cdef class par:
     cdef public DTYPE_t k_m
     cdef public DTYPE_t tonic
     cdef public DTYPE_t rmin
-    cdef public DTYPE_t rmax
     cdef public DTYPE_t a
     cdef public DTYPE_t b_hi
     cdef public DTYPE_t b_lo
@@ -131,10 +130,12 @@ cdef class par:
     cdef public np.ndarray mK
     cdef public np.ndarray beta
     cdef public np.ndarray cplng
+    cdef public np.ndarray r
     cdef public np.ndarray aei
     cdef public np.ndarray aie
     cdef public np.ndarray ani
     cdef public np.ndarray ane
+    cdef public np.ndarray rmax
 
     # Class constructor
     def __cinit__(self, dict p_dict):
@@ -179,7 +180,6 @@ cdef class par:
         self.v_m   = p_dict['v_m']
         self.k_m   = p_dict['k_m']
         self.rmin  = p_dict['rmin']
-        self.rmax  = p_dict['rmax']
         self.a     = p_dict['a']
         self.b_hi  = p_dict['b_hi']
         self.b_lo  = p_dict['b_lo']
@@ -201,12 +201,14 @@ cdef class par:
         self.mK    = np.zeros([self.N,], dtype=DTYPE)
         self.beta  = np.ones([self.N,], dtype=DTYPE)
         self.cplng = np.zeros([self.N,], dtype=DTYPE)
+        self.r = np.zeros([self.N,], dtype=DTYPE)
         self.C     = p_dict['C']
         self.D     = p_dict['D']
         self.aei   = p_dict['aei']
         self.aie   = p_dict['aie']
         self.ani   = p_dict['ani']
         self.ane   = p_dict['ane']
+        self.rmax  = p_dict['rmax']
 
 # Vectorized tanh computation
 cdef DTYPE_t vectanh(np.ndarray[DTYPE_t, ndim = 1] invec, np.ndarray[DTYPE_t, ndim = 1] outvec, int n):
@@ -229,7 +231,7 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     # Declare local variables
     cdef int i
     cdef int n = p.N
-    cdef DTYPE_t tsec, r, denom, isspeech
+    cdef DTYPE_t tsec, denom, isspeech
 
     # The input has the format X=[V0,...,V997,Z0,...,Z997]
     p.V  = X[0:p.N]
@@ -283,8 +285,8 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     A[p.N:2*p.N] = p.b*p.aei*p.V*p.QV
 
     # Dopamine model
-    r              = (p.rmax - p.rmin)*isspeech + p.rmin
-    A[2*p.N:3*p.N] = r*p.QV - (p.v_m*p.DA)*((p.DA + p.k_m)**(-1))
+    p.r            = (p.rmax - p.rmin)*isspeech + p.rmin
+    A[2*p.N:3*p.N] = p.r*p.QV - (p.v_m*p.DA)*((p.DA + p.k_m)**(-1))
 
     # Stochastic (diffusion) parts for V and Z (note that diffusion for DA is 0)
     B[0:p.N]     = p.ane*p.delta
@@ -297,6 +299,7 @@ cpdef np.ndarray[DTYPE_t, ndim = 2] solve_model(np.ndarray[DTYPE_t, ndim = 1] x0
                                                 np.ndarray[np.long_t, ndim = 1] blocksize, \
                                                 np.ndarray[np.long_t, ndim = 1] chunksize, \
                                                 int seed, \
+                                                int verbose, \
                                                 str outfile):
     """
     Solve the model using a custom-tailored Runge--Kutta method of strong order 1.5
@@ -348,9 +351,10 @@ cpdef np.ndarray[DTYPE_t, ndim = 2] solve_model(np.ndarray[DTYPE_t, ndim = 1] x0
     Y[:,-1] = x0
 
     # Initialize progressbar
-    widgets = ['Running simulation... ',pb.Percentage(),' ',pb.Bar(marker='#'),' ',pb.ETA()]
-    pbar    = pb.ProgressBar(widgets=widgets,maxval=tsize)
-    pbar.start()
+    if verbose:
+        widgets = ['Running simulation... ',pb.Percentage(),' ',pb.Bar(marker='#'),' ',pb.ETA()]
+        pbar    = pb.ProgressBar(widgets=widgets,maxval=tsize)
+        pbar.start()
 
     # Compute solution recursively block by block
     j     = 0
@@ -385,8 +389,9 @@ cpdef np.ndarray[DTYPE_t, ndim = 2] solve_model(np.ndarray[DTYPE_t, ndim = 1] x0
             k += 1
 
             # Update progressbar
-            pbar.update(pb_i)
-            pb_i += 1
+            if verbose:
+                pbar.update(pb_i)
+                pb_i += 1
 
         # Write computed blocks to file
         fout['V'][:,chunk:chunk+csize]    = Y[0:myp.N,0:bsize:myp.s_step]
@@ -400,7 +405,8 @@ cpdef np.ndarray[DTYPE_t, ndim = 2] solve_model(np.ndarray[DTYPE_t, ndim = 1] x0
         chunk += csize
 
     # Terminate progressbar
-    pbar.finish()
+    if verbose:
+        pbar.finish()
 
     # Close HDF5 container and write everything to disk
     fout.close()

@@ -22,7 +22,8 @@ from nipy.modalities.fmri import hrf, utils
 from the_model import par, solve_model
 
 ##########################################################################################
-def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='parameters.py', symsyn=True, **kwargs):
+def run_model(V0, Z0, DA0, task, outfile, \
+              C=None, seed=None, paramfile='parameters.py', symsyn=True, verbose=True, **kwargs):
 
     # Sanity checks
     n = np.zeros((3,)); i = 0
@@ -66,6 +67,9 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
 
     if symsyn != True and symsyn != False:
         raise TypeError("The switch `symsyn` has to be boolean!")
+
+    if verbose != True and verbose != False:
+        raise TypeError("The switch `verbose` has to be boolean!")
 
     # Append '.h5' extension to outfile if necessary
     if outfile[-3:] != '.h5':
@@ -163,16 +167,15 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
     p_dict['seed'] = seed
 
     # If a resting state simulation is done, make sure dopamine doesn't kick in 
+    rmin = param_py.rmin
     if task == 'rest':
-        b_lo = 1
-        b_hi = 1
+        rmax = np.ones((N,))*param_py.rmin
     else:
-        b_lo = param_py.b_lo
-        b_hi = param_py.b_hi
+        rmax = eval(param_py.rmax)
 
     # Save (possibly updated) beta limits and given task in dictionary
-    p_dict['b_hi'] = b_hi
-    p_dict['b_lo'] = b_lo
+    p_dict['rmax'] = rmax
+    p_dict['rmin'] = rmin
     p_dict['task'] = task
 
     # Compute length for simulation and speech on-/offset times
@@ -188,14 +191,14 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
     # Set/get initial time for simulation
     if p_dict.has_key('tstart'): 
         tstart = param_py.tstart
-        print "WARNING: Using custom initial time of  "+str(tstart)+" (has to be in ms)!"
+        if verbose: print "WARNING: Using custom initial time of  "+str(tstart)+" (has to be in ms)!"
     else:
         tstart = 0
 
     # Set/get step-size for simulation 
     if p_dict.has_key('dt'): 
         dt = param_py.dt
-        print "WARNING: Using custom step-size of "+str(dt)+" (has to be in ms)!"
+        if verbose: print "WARNING: Using custom step-size of "+str(dt)+" (has to be in ms)!"
     else:
         dt = 1e-1
 
@@ -225,18 +228,8 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
     # Get the size of the time-array
     tsize   = tsteps.size
 
-    # Start laying out output HDF5 container
-    if os.path.isfile(outfile):
-        newname = outfile[:-3] + "_bak_"+\
-                  str(datetime.now().year)+"_"+\
-                  str(datetime.now().month)+"_"+\
-                  str(datetime.now().day)+"_"+\
-                  str(datetime.now().hour)+"_"+\
-                  str(datetime.now().minute)+"_"+\
-                  str(datetime.now().second)+\
-                  outfile[-3::]
-        print "WARNING: File "+outfile+" already exists, renaming it to: "+newname+"!"
-        os.rename(outfile,newname)
+    # Before laying out output HDF5 container, rename existing files to not accidentally overwrite'em
+    moveit(outfile)
     
     # Chunk outifle depending on available memory (eat up ~ 20% of RAM)
     meminfo = psutil.virtual_memory()
@@ -279,6 +272,14 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
     f.create_dataset('Beta',shape=(N,n_elems),chunks=chunks)
     f.create_dataset('t',data=np.linspace(tstart,tend,n_elems))
 
+    # Now copy matrices also to p_dict and initialize the model's C-class with it
+    p_dict['C'] = C
+    p_dict['D'] = D
+
+    # If user provided some additional parameters as keyword arguments, now's the time to assign them
+    for key, value in kwargs.items():
+        p_dict[key] = value
+
     # Save parameters (but exclude stuff imported in the parameter file)
     pg = f.create_group('params')
     for key,value in p_dict.items():
@@ -289,14 +290,6 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
 
     # Close container and write to disk
     f.close()
-
-    # Now copy matrices also to p_dict and initialize the model's C-class with it
-    p_dict['C'] = C
-    p_dict['D'] = D
-
-    # If user provided some additional parameters as keyword arguments, now's the time to assign them
-    for key, value in kwargs.items():
-        p_dict[key] = value
 
     # Initialize parameter C-class (struct) for the model
     params = par(p_dict)
@@ -315,19 +308,19 @@ def run_model(V0, Z0, DA0, task, outfile, C=None, seed=None, paramfile='paramete
     table.set_deco(Texttable.HEADER)
     table.set_cols_align(["l", "l"])
     table.add_rows([["Simulating ",task.upper()],\
-                    ["#cycles: ",str(param_py.n_cycles)],\
+                    ["#cycles: ",str(p_dict['n_cycles'])],\
                     ["parameter file:",paramfile+".py"],\
                     ["keyword args:",pstr],\
-                    ["matrix file:",param_py.matrices],\
-                    ["Coupling matrix:",c_str],\
-                    ["Output:",outfile]])
-    print "\n"+table.draw()+"\n"
+                    ["matrix file:",p_dict['matrices']],\
+                    ["coupling matrix:",c_str],\
+                    ["output:",outfile]])
+    if verbose: print "\n"+table.draw()+"\n"
 
     # Finally... Run the actual simulation
-    VZD = solve_model(VZD0,tsteps,params,blocksize,chunksize,seed,outfile)
+    VZD = solve_model(VZD0,tsteps,params,blocksize,chunksize,seed,int(verbose),outfile)
 
     # Done!
-    print "\nDone\n"
+    if verbose: print "\nDone\n"
 
 ##########################################################################################
 def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
@@ -698,7 +691,6 @@ def show_params(fname):
     table.add_rows([["Parameter","Value"]],header=True)
     table.add_rows(tlist,header=False)
     print "\n"+table.draw()+"\n"
-
     
 ##########################################################################################
 def regexfind(arr,expr):
@@ -755,3 +747,39 @@ def regexfind(arr,expr):
 
     # Get matching indices and return
     return np.where(match == True)[0]
+
+##########################################################################################
+def moveit(fname):
+    """
+    Check if a file exists, if yes, rename it
+
+    Parameters
+    ----------
+    fname : str
+        A string specifying (the path to) the file to be renamed (if existing)
+
+    Returns
+    -------
+    Nothing : None
+
+    See also
+    --------
+    None
+    """
+
+    # Check if input makes sense
+    if type(fname).__name__ != "str":
+        raise TypeError("Filename has to be a string!")
+
+    # If file already exists, rename it
+    if os.path.isfile(fname):
+        newname = fname[:-3] + "_bak_"+\
+                  str(datetime.now().year)+"_"+\
+                  str(datetime.now().month)+"_"+\
+                  str(datetime.now().day)+"_"+\
+                  str(datetime.now().hour)+"_"+\
+                  str(datetime.now().minute)+"_"+\
+                  str(datetime.now().second)+\
+                  fname[-3::]
+        print "WARNING: File "+fname+" already exists, renaming it to: "+newname+"!"
+        os.rename(fname,newname)
