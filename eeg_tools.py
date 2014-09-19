@@ -14,11 +14,11 @@ import calendar
 import csv
 import h5py
 import psutil
-from scipy.signal import buttord, butter, lfilter, filtfilt
+from scipy.signal import buttord, butter, kaiserord, kaiser, lfilter, filtfilt, firwin
 from scipy import ndimage
 
 ##########################################################################################
-def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0):
+def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,ftype='IIR'):
     """
     Band-/Low-/High-pass filter a 1D/2D input signal
 
@@ -41,9 +41,14 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0)
         Notes for details). By default, the offset is a fraction of low-/high-cut 
         frequencies. 
     passdB : float
-        Maximal frequency loss in the passband (in dB). 
+        Maximal frequency loss in the passband (in dB). For `ftype = FIR` (see below) 
+        `passdB` has to be equals `stopdB`.
     stopdB : float
-        Minimal frequency attentuation in the stopband (in dB). 
+        Minimal frequency attentuation in the stopband (in dB). For `ftype = FIR` (see below) 
+        `passdB` has to be equals `stopdB`.
+    ftype : string
+        Type of filter to be used (either `IIR` = infinite impulse response filter, or
+        `FIR` = finite impulse response filter). 
 
     Returns
     -------
@@ -52,12 +57,13 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0)
 
     Notes
     -----
-    This routine uses a Butterworth filter to low-/high-/bandpass the input signal. 
-    Based on the user's input the optimal (i.e., lowest) order of a Butterworth filter
+    This routine uses a Butterworth filter (for `ftype = 'IIR'`) or a Kaiser filter
+    (for `ftype = 'FIR'`) to low-/high-/bandpass the input signal. 
+    Based on the user's input the optimal (i.e., lowest) order of the filter
     is calculated. Note that depending on the choice of cutoff frequencies and values 
     of `passdB` and `stopdB` the computed filter coefficients might be very large/low 
     causing numerical instability in the filtering routine. The code assumes you know
-    what you're doing and does not try to guess whether the combinatio of 
+    what you're doing and does not try to guess whether the combination of 
     cutoff-frequencies, offset and attenuation/amplification values applied to the 
     input signal makes sense. 
 
@@ -115,7 +121,7 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0)
     >>> import numpy as np
     >>> srate = 5000 # Sampling rate in Hz
     >>> T = 0.05
-    >>> nsamples = T*fs
+    >>> nsamples = T*srate
     >>> t = np.linspace(0,T,nsamples,endpoint=False)
     >>> a = 0.02
     >>> f0 = 600.0
@@ -124,8 +130,10 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0)
     >>> signal += a * np.cos(2 * np.pi * f0 * t + .11)
     >>> signal += 0.03 * np.cos(2 * np.pi * 2000 * t)
 
-    First, we low-pass filter the signal, i.e., we remove all high frequencies. As 
-    cutoff frequency we choose 50Hz, with an offset of 10Hz. That means frequencies 
+    First, we low-pass filter the signal using the default IIR Butterworth filter (all
+    examples given below can be repeated using the FIR Kaiser filter by additionally 
+    providing the keyword argument `ftype='FIR'`). 
+    As cutoff frequency we choose 50Hz, with an offset of 10Hz. That means frequencies 
     [0-50] Hz "survive", frequencies in the band [50-60] Hz are gradually attenuated, 
     all frequencies >60Hz are maximally attenuated.
 
@@ -219,13 +227,21 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0)
         # If no offset frequency was provided, assign default value (for low-/high-pass filters)
         if passfreq != None: offset = offmult*passfreq
 
+    # Filter type
+    try:
+        bad = (ftype != 'IIR') and (ftype != 'FIR')
+    except: raise TypeError('Filtertype has to be either FIR or IIR, not '+type(ftype).__name__+'!')
+    if bad: raise ValueError('Filtertype has to be either FIR or IIR!')
+
     # Passband decibel value
+    userpass = False
     if passdB != 1.0:
         try: 
             bad = (passdB <= 0)
         except:
             raise TypeError('Passband dB has to be a strictly positive number, not '+type(passdB).__name__+'!')
         if bad: raise ValueError('Passband dB has to be > 0!')
+        userpass = True
 
     # Stopband decibel value
     if stopdB != 30:
@@ -234,6 +250,20 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0)
         except:
             raise TypeError('Stopband dB has to be a strictly positive number, not '+type(stopdB).__name__+'!')
         if bad: raise ValueError('Stopband dB has to be > 0!')
+        userpass = True
+
+    # Since the Kaiser filter requires max/min ripple to be equal, make sure that condition is satisfied
+    if ftype == 'FIR':
+        if passdB != stopdB:
+
+            # Take the maximum of the two dB values
+            passdB = np.max([passdB,stopdB])
+            stopdB = passdB
+
+            # If the user supplied different dB values, print a warning
+            if userpass: 
+                msg = "WARNING: FIR filter requires stopdB = passdB, setting stopdB = passdB = "+str(passdB)
+                print msg
 
     # Determine if we do low-/high-/bandpass-filtering
     if locut == None:
@@ -255,19 +285,38 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0)
             raise ValueError('Stopband is inside the passband!')
         if stopfreq[1] >= 1: raise ValueError('Highpass frequency = Nyquist frequency!')
 
-    # Compute optimal order of Butterworth filter
-    order, natfreq = buttord(passfreq, stopfreq, passdB, stopdB)
-
-    # Show computed order and passband
-    print "Optimal order for Butterworth filter was found to be: "+str(order)
+    # Show input frequencies
     print "Input frequency/frequencies: "+str(locut)+"Hz, "+str(hicut)+"Hz"
-    print "Natural frequency/frequencies: "+str(natfreq*nyq)+"Hz"
-    
-    # Compute Butterworth filter coefficients
-    b,a = butter(order,natfreq,btype=ftype)
 
-    # Filter data
-    filtered = lfilter(b,a,signal)
+    # Compute optimal order of filter
+    if ftype == 'IIR':
+
+        # Compute optimal order of Butterworth filter
+        order, natfreq = buttord(passfreq, stopfreq, passdB, stopdB)
+        
+        # Show natural frequencies and optimal order of filter
+        print "Natural frequency/frequencies: "+str(natfreq*nyq)+"Hz"
+        print "Optimal order for Butterworth filter was found to be: "+str(order)
+
+        # Compute Butterworth filter coefficients
+        b,a = butter(order,natfreq,btype=ftype)
+
+        # Filter data
+        filtered = lfilter(b,a,signal)
+
+    else:
+
+        # Compute optimal order of Kaiser filter
+        order, beta = kaiserord(passdB,offset)
+
+        # Show optimal order
+        print "Optimal order for Kaiser filter was found to be: "+str(order)
+
+        # Compute Kaiser filter coefficients
+        b = firwin(order,passfreq,window=('kaiser',beta),pass_zero=False)
+
+        # Filter data
+        filtered = filtfilt(b,[1.0],signal)
     
     return filtered
 

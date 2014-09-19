@@ -1706,7 +1706,8 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True):
         
         #  Re-scale all time series to the interval [0,1], 
         #  using the maximum range of the whole dataset.
-        scaling  = float(1. / (range_max - range_min))
+        denom   = range_max - range_min + 1 - (range_max != range_min)
+        scaling = float(1. / denom)
         
         #  Create array to hold symbolic trajectories
         symbolic = np.empty(tsdata.shape, dtype="int32")
