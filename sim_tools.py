@@ -46,7 +46,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     task : string
         Specify which task should be simulated. Currently, only 'rest' and 'speech' are supported. 
     outfile : string
-        Filename (including path if not in working directory) of HDF5 container that will be created to 
+        File-name (including path if not in working directory) of HDF5 container that will be created to 
         save simulation results. See Notes for the structure of the generated container. Any existing 
         file will be renamed. The user has to have writing permissions for the given location.
     C : NumPy 2darray
@@ -58,9 +58,9 @@ def run_model(V0, Z0, DA0, task, outfile, \
         realizations. Also, if synaptic coupling strengths are sampled from a probability distribution,
         simulation results will vary from run to run unless the seed is fixed. 
     paramfile : string
-        Parameter filename (including path if not in working directory) that should be used for simulation. 
+        Parameter file-name (including path if not in working directory) that should be used for simulation. 
         The parameter file has to be a Python file (.py extension). For more details refer to `Examples` 
-        below. You should have received a sample parameter file (`paramters.py`) with this copy 
+        below. You should have received a sample parameter file (`parameters.py`) with this copy 
         of `sim_tools.py`. 
     symsyn : bool
         Boolean switch determining whether synaptic coupling strengths should be symmetrized between 
@@ -85,7 +85,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     Notes
     -----
     Due to the (usually) high temporal resolution of simulations, results are not kept in memory (and 
-    thus returned as variable in the caller's workspace) but saved directly to disk using the HDF5
+    thus returned as variable in the caller's work-space) but saved directly to disk using the HDF5
     container `outfile`. The code uses the HDF library's data chunking feature to save entire
     segments on disk while running. By default the code will allocate around 20% of available 
     memory to cache simulation results. Hence, more memory leads to fewer disk-writes during 
@@ -110,11 +110,11 @@ def run_model(V0, Z0, DA0, task, outfile, \
     >> run_model(V0,Z0,DA0,'rest','patho/sim_rest_patho.h5',paramfile='par_patho.py')
 
     runs a resting state simulation with the same initial conditions and saves the result in
-    the container `sim_rest_patho.h5` in the subdirectory `patho` (which must already exist, otherwise
+    the container `sim_rest_patho.h5` in the sub-directory `patho` (which must already exist, otherwise
     an error is raised). 
 
     If only one or two parameters should be changed from their values found in a given parameter file, 
-    it is probably more handy to change the value of these paramters from the command line, rather
+    it is probably more handy to change the value of these parameters from the command line, rather
     than to write a separate parameter file (that is identical to the original one except for two 
     values). Thus, assume the values of `VK` and `VL` should be -0.4 and -0.9 respectively, i.e., 
     different than those found in (the otherwise fine) `par_patho.py`. Then the command
@@ -157,7 +157,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
         raise ValueError("Task has to be either 'rest' or 'speech'!")
     
     if type(outfile).__name__ != 'str':
-        raise TypeError('Output filename has to be a string specifying the path to an HDF5 container!')
+        raise TypeError('Output file-name has to be a string specifying the path to an HDF5 container!')
 
     if seed != None:
         try:
@@ -172,10 +172,10 @@ def run_model(V0, Z0, DA0, task, outfile, \
         raise TypeError('Parameter file has to be specified using a string!')
 
     if symsyn != True and symsyn != False:
-        raise TypeError("The switch `symsyn` has to be boolean!")
+        raise TypeError("The switch `symsyn` has to be Boolean!")
 
     if verbose != True and verbose != False:
-        raise TypeError("The switch `verbose` has to be boolean!")
+        raise TypeError("The switch `verbose` has to be Boolean!")
 
     # Append '.h5' extension to outfile if necessary
     if outfile[-3:] != '.h5':
@@ -185,7 +185,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     if paramfile[-3:] == '.py':
         paramfile = paramfile[0:-3]
 
-    # Divide paramfile into filename and path
+    # Divide paramfile into file-name and path
     slash = paramfile.rfind(os.sep)
     if slash  < 0:
         pth   = '.'
@@ -249,10 +249,10 @@ def run_model(V0, Z0, DA0, task, outfile, \
     ani = eval(param_py.ani)
     ane = eval(param_py.ane)
 
-    # If wanted, make sure lef/right hemispheres have balanced coupling strenghts
+    # If wanted, make sure left/right hemispheres have balanced coupling strengths
     if symsyn:
 
-        # Get inidices of left-hemispheric regions and throw a warning if left/right don't match up
+        # Get indices of left-hemispheric regions and throw a warning if left/right don't match up
         regex = re.compile("[Ll]_*")
         match = np.vectorize(lambda x:bool(regex.match(x)))(names)
         l_ind = np.where(match == True)[0]
@@ -336,7 +336,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     # Get the size of the time-array
     tsize   = tsteps.size
 
-    # Before laying out output HDF5 container, rename existing files to not accidentally overwrite'em
+    # Before laying out output HDF5 container, rename existing files to not accidentally overwrite 'em
     moveit(outfile)
     
     # Chunk outifle depending on available memory (eat up ~ 20% of RAM)
@@ -405,7 +405,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     # Initialize parameter C-class (struct) for the model
     params = par(p_dict)
 
-    # Concatenate intial conditions
+    # Concatenate initial conditions
     VZD0 = np.hstack((np.hstack((V0.squeeze(),Z0.squeeze())),DA0.squeeze()))
 
     # Let the user know what's going to happen...
@@ -441,12 +441,12 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
     Parameters
     ----------
     fname : string
-        Filename (including path if not in working directory) of HDF5 container that was generated 
+        File-name (including path if not in working directory) of HDF5 container that was generated 
         by `run_model`. 
     names : str or Python list/NumPy 1darray
         Specify regions to plot. Either use the region's name as found in the `params` group of
         the HDF5 container given by `fname` (e.g., `names='L_IFG'`) or its index in the `names` list
-        (e.g., `names = 3`). Use a list or NumPy 1darry to specify more than one region
+        (e.g., `names = 3`). Use a list or NumPy 1darray to specify more than one region
         (e.g., `names = ['L_IFG','R_IFG']` or `names = [3,15]`). By default, all regions are plotted. 
     raw : bool
         If `True` then the raw model output will be plotted. Depending on the setting of `names` (see
@@ -477,10 +477,10 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         raise TypeError("Name of HDF5 file has to be a string!")
 
     if raw != True and raw != False:
-        raise TypeError("The switch `raw` has to be boolean!")
+        raise TypeError("The switch `raw` has to be Boolean!")
 
     if bold != True and bold != False:
-        raise TypeError("The switch `bold` has to be boolean!")
+        raise TypeError("The switch `bold` has to be Boolean!")
 
     # Try to open given HDF5 container
     try:
@@ -611,7 +611,7 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
             f.close()
             raise ValueError("No BOLD data found in file "+fname+"!")
 
-        # Get x-entent of data and create x-ticks vector
+        # Get x-extent of data and create x-ticks vector
         xmax = BOLD.shape[0] + 1
         xtv  = np.arange(-1,xmax)
 
@@ -744,7 +744,7 @@ def make_bold(fname, stim_onset=None):
     Parameters
     ----------
     fname : string
-        Filename (including path if not in working directory) of HDF5 container that was generated 
+        File-name (including path if not in working directory) of HDF5 container that was generated 
         by `run_model`. 
     stim_onset : float
         Time (in seconds) of stimulus onset. By default, onset/offset timings of 
@@ -788,7 +788,7 @@ def make_bold(fname, stim_onset=None):
         try: np.round(stim_onset)
         except: raise TypeError("The stimulus onset time has to be a real scalar!")
 
-    # Get task from file to start subsampling procedure
+    # Get task from file to start sub-sampling procedure
     task = f['params']['task'].value
 
     # Compute cycle length based on the sampling rate used to generate the file
@@ -812,7 +812,7 @@ def make_bold(fname, stim_onset=None):
     # Allocate space for BOLD signal
     BOLD = np.zeros((N,n_cycles))
 
-    # Subsample convoluted data depending on task to get BOLD signal
+    # Sub-sample convoluted data depending on task to get BOLD signal
     if task == 'speech':
 
         # Get interval to be considered for boldification

@@ -1621,6 +1621,8 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
         a (significantly) slower Python implementation is employed 
         (provided in case the compilation of the C++ code snippets 
         fails on a system)
+    norm_ts : bool
+        If `True` the input time-series is normalized to zero mean and unit variance (default). 
 
     Returns
     -------
@@ -1683,6 +1685,9 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
 
     if type(fast).__name__ != 'bool':
         raise TypeError('The fast flag must be Boolean!')
+
+    if type(norm_ts).__name__ != 'bool':
+        raise TypeError('The norm_ts flag must be Boolean!')
     
     #  Get faster reference to length of time series = number of samples
     #  per grid point.
