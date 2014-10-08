@@ -1155,10 +1155,10 @@ def MA(signal, window_size):
     # Sanity checks
     try:
         shs = signal.shape
-    except: raise TypeError("Input `signal` must be a NumPy 2darray, not "+type(signal).__name__+"!")
+    except: raise TypeError("Input `signal` must be a NumPy 1d/2darray, not "+type(signal).__name__+"!")
     if len(shs) > 2:
-        raise ValueError("Input `signal` must be a NumPy 2darray!")
-    if np.sum(shs) <= 2:
+        raise ValueError("Input `signal` must be a NumPy 1d/2darray!")
+    if np.min(shs) < 2:
         raise ValueError("Input `signal` is an array of only one element! ")
     if np.isnan(signal).max() == True or np.isinf(signal).max() == True or np.isreal(signal).min() == False:
         raise ValueError("Input `signal` must be real without NaNs or Infs!")

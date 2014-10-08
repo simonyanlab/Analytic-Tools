@@ -1600,7 +1600,7 @@ def normalize_time_series(time_series_array):
     time_series_array[np.isnan(time_series_array)] = 0
     
 ##########################################################################################
-def mutual_info(tsdata, n_bins=32, normalized=True, fast=True):
+def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
     """
     Calculate the (normalized) mutual information matrix at zero lag
 
@@ -1689,7 +1689,8 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True):
     (n_samples,N) = tsdata.shape
 
     #  Normalize tsdata time series to zero mean and unit variance
-    normalize_time_series(tsdata)
+    if norm_ts:
+        normalize_time_series(tsdata)
 
     #  Initialize mutual information array
     mi = np.zeros((N,N), dtype="float32")

@@ -18,12 +18,118 @@ from datetime import datetime
 from texttable import Texttable
 from scipy import ndimage
 from nipy.modalities.fmri import hrf, utils
+import shutil
 
-from the_model import par, solve_model
+try:
+    from the_model import par, solve_model
+except:
+    print "ERROR: Could not import the model. Try running `make all` in a terminal first"
+    sys.exit()
 
 ##########################################################################################
 def run_model(V0, Z0, DA0, task, outfile, \
               C=None, seed=None, paramfile='parameters.py', symsyn=True, verbose=True, **kwargs):
+    """
+    Run a simulation using the neural population model
+
+    Parameters
+    ----------
+    V0 : NumPy 1darray
+        Initial conditions for excitatory neurons. If `N` regions are simulated then `V0` has 
+        to have length `N`.
+    Z0 : NumPy 1darray
+        Initial conditions for inhibitory neurons. If `N` regions are simulated then `Z0` has 
+        to have length `N`.
+    DA0 : NumPy 1darray
+        Initial conditions for dopamine levels. If `N` regions are simulated then `DA0` has 
+        to have length `N`.
+    task : string
+        Specify which task should be simulated. Currently, only 'rest' and 'speech' are supported. 
+    outfile : string
+        Filename (including path if not in working directory) of HDF5 container that will be created to 
+        save simulation results. See Notes for the structure of the generated container. Any existing 
+        file will be renamed. The user has to have writing permissions for the given location.
+    C : NumPy 2darray
+        Coupling matrix to be used. Has to be a square `N`-by-`N` array. If the coupling matrix 
+        is not provided as a keyword argument, it will be loaded from the parameter file. 
+    seed : integer
+        Random number generator seed. To make meaningful comparisons between successive simulation
+        runs, the random number seed should be fixed so that the solver uses the same Wiener process
+        realizations. Also, if synaptic coupling strengths are sampled from a probability distribution,
+        simulation results will vary from run to run unless the seed is fixed. 
+    paramfile : string
+        Parameter filename (including path if not in working directory) that should be used for simulation. 
+        The parameter file has to be a Python file (.py extension). For more details refer to `Examples` 
+        below. You should have received a sample parameter file (`paramters.py`) with this copy 
+        of `sim_tools.py`. 
+    symsyn : bool
+        Boolean switch determining whether synaptic coupling strengths should be symmetrized between 
+        hemispheres (`symsyn=True`) or not. 
+    verbose : bool
+        If `True` the code will print a summary of the most important parameters and all used 
+        keyword arguments (see below) in the simulation together with a progress bar to (roughly)
+        estimate run time (requires the `progressbar` module). 
+    kwargs : additional keyword arguments
+        Instead of relying solely on a static file to define parameter values, it is also possible
+        to pass on parameters to the code using keyword arguments (see `Examples` below). Note: parameters
+        given as keyword arguments have higher priority than values set in `paramfile`, i.e., if 
+        `p1 = 1` is defined in `paramfile` but `p1 = 2` is a keyword argument, the code will use 
+        `p1 = 2` in the simulation. This behavior was intentionally implemented to enable the use 
+        of this function within a parameter identification framework. 
+
+    Returns
+    -------
+    Nothing : None
+        Simulation results are saved in the HDF5 container specified by `outfile`. See `Notes` for details. 
+
+    Notes
+    -----
+    Due to the (usually) high temporal resolution of simulations, results are not kept in memory (and 
+    thus returned as variable in the caller's workspace) but saved directly to disk using the HDF5
+    container `outfile`. The code uses the HDF library's data chunking feature to save entire
+    segments on disk while running. By default the code will allocate around 20% of available 
+    memory to cache simulation results. Hence, more memory leads to fewer disk-writes during 
+    run-time and thus faster performance. 
+    The structure of the generated output container is as follows: all state variables and the dopaminergic 
+    gain :math:`\beta_t` are stored at the top-level of the file. Additionally, the employed coupling 
+    matrix `C` and dopamine connection matrix `D` are also saved in the top level group. All used parameters
+    are saved in the subgroup `params`. 
+
+    Examples
+    --------
+    Let `V0`, `Z0`, and `DA0` (NumPy 1darrays of length `N`) be initial conditions of the
+    model. Assuming that a valid parameter file (called `parameters.py`) is located in the current 
+    working directory, the following call will run a resting state simulation and save the output
+    in the HDF5 container `sim_rest.h5`
+
+    >>> run_model(V0,Z0,DA0,'rest','sim_rest.h5')
+
+    Assume another parameter file, say, `par_patho.py` hold parameter settings simulating a 
+    certain pathology. Then the command
+
+    >> run_model(V0,Z0,DA0,'rest','patho/sim_rest_patho.h5',paramfile='par_patho.py')
+
+    runs a resting state simulation with the same initial conditions and saves the result in
+    the container `sim_rest_patho.h5` in the subdirectory `patho` (which must already exist, otherwise
+    an error is raised). 
+
+    If only one or two parameters should be changed from their values found in a given parameter file, 
+    it is probably more handy to change the value of these paramters from the command line, rather
+    than to write a separate parameter file (that is identical to the original one except for two 
+    values). Thus, assume the values of `VK` and `VL` should be -0.4 and -0.9 respectively, i.e., 
+    different than those found in (the otherwise fine) `par_patho.py`. Then the command
+
+    >> run_model(V0,Z0,DA0,'rest','patho/sim_rest_patho.h5',paramfile='par_patho.py',VK=-0.4,VL=-0.9)
+    
+    runs the same resting state simulation as above but with `VK=-0.4` and `VL=-0.9`. This feature
+    can also be used to efficiently embed `run_model` in a parameter identification framework.
+
+    See also
+    --------
+    plot_sim : plot simulations generated by run_model
+    Paper: S. Fuertinger, J. C. Zinn, and K. Simonyan. A Neural Population Model Incorporating Dopaminergic 
+    Neurotransmission during Complex Voluntary Behaviors, PLoS Computational Biology, in press. 
+    """
 
     # Sanity checks
     n = np.zeros((3,)); i = 0
@@ -102,8 +208,10 @@ def run_model(V0, Z0, DA0, task, outfile, \
     try:
         c_str = "from argument"
         if C == None: C = f['C'].value; c_str = "from file"
-        D     = f['D'].value
-        names = f['names'].value
+        D      = f['D'].value
+        names  = f['names'].value
+        labels = None
+        if f.keys().count('labels'): labels = f['labels'].value
         f.close()
     except: 
         raise ValueError("HDF5 file "+param_py.matrices+" does not have the required fields!")
@@ -287,6 +395,9 @@ def run_model(V0, Z0, DA0, task, outfile, \
         if valuetype != 'instance' and valuetype != 'module' and valuetype != 'function':
             pg.create_dataset(key,data=value)
     pg.create_dataset('names',data=names)
+    
+    # If labels were provided in the matrix file too, store them
+    if labels != None: pg.create_dataset('labels',data=labels)
 
     # Close container and write to disk
     f.close()
@@ -324,6 +435,42 @@ def run_model(V0, Z0, DA0, task, outfile, \
 
 ##########################################################################################
 def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
+    """
+    Plot a simulation generated by run_model
+
+    Parameters
+    ----------
+    fname : string
+        Filename (including path if not in working directory) of HDF5 container that was generated 
+        by `run_model`. 
+    names : str or Python list/NumPy 1darray
+        Specify regions to plot. Either use the region's name as found in the `params` group of
+        the HDF5 container given by `fname` (e.g., `names='L_IFG'`) or its index in the `names` list
+        (e.g., `names = 3`). Use a list or NumPy 1darry to specify more than one region
+        (e.g., `names = ['L_IFG','R_IFG']` or `names = [3,15]`). By default, all regions are plotted. 
+    raw : bool
+        If `True` then the raw model output will be plotted. Depending on the setting of `names` (see
+        above) the simulation length, and the model dimension (i.e., the number of modeled regions) 
+        this may result in a very 'busy' plot. 
+    bold : bool
+        If True then the previously converted simulated BOLD signals will be plotted (if no BOLD
+        signal is found in the input container specified by `fname`, an error is raised). 
+    figname : string
+        String to be used as window title for generated figures.
+
+    Returns
+    -------
+    Nothing : None
+
+    Notes
+    -----
+    None
+
+    See also
+    --------
+    run_model : used to run a simulation
+    make_bold : convert raw simulation output to a BOLD signal  
+    """
 
     # Sanity checks
     if type(fname).__name__ != 'str':
@@ -485,6 +632,70 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
 
 ##########################################################################################
 def make_D(target,source,names,values=None):
+    """
+    Create matrix of afferent/efferent dopamine regions in the model
+
+    Parameters
+    ----------
+    target : Python list or NumPy 1darray
+        Python list or NumPy 1darray of region names that are affected by dopamine release
+        (has to be the same length as `source`).
+    source : Python list or NumPy 1darray
+        Python list or NumPy 1darray of region names that steer dopamine release. 
+        (has to be the same length as `target`).
+    names : Python list or NumPy 1darray
+        Names of all regions in the model. If `names` has length `N`, the resulting 
+        dopamine connection matrix will by `N`-by-`N`. 
+    values : Python list or NumPy 1darray
+        By default, dopamine links are binary, i.e., all links have unit weight. By passing 
+        a `values` array, certain links can be emphasized (weight > 1) or weakened (weight < 1). 
+        Entries of the `values` array have to be calibrated based on the values of `b_hi`, `b_lo`, 
+        and `a`. 
+    
+    Returns
+    -------
+    D : NumPy 2darray
+        A `N`-by-`N` array. Every row that has a non-zero entry signifies a dopamine target, 
+        and every non-zero column corresponds to a dopamine source. 
+
+    Notes
+    -----
+    None
+
+    Examples
+    --------
+    For the sake of simplicity consider a brain "parcellation" consisting of three (bilateral) regions, 
+    called `A`, `B`, and `C`. Thus, we define the following `names` array
+
+    >>> names = ['L_A','L_B','L_C','R_A','R_B','R_C']
+
+    Assume that in the left hemisphere dopamine is mainly concentrated in region `B`, its release is 
+    steered by neural firing in region `A`. In the right hemisphere, dopamine release in region `C` is 
+    depending on neural activity in area `B`. Then the `target` and `source` arrays are given by
+    
+    >>> target = ['L_B','R_C']
+    >>> source = ['L_A','R_B']
+
+    Then the call
+
+    >>> D = make_D(target,source,names)
+    >>> D
+    array([[ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 1.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0.,  1.,  0.]])
+
+    generates a 6-by-6 NumPy array `D`, that has non-zero entries in rows 2 and 6 (because
+    'L_B' is the second, and 'R_C' the sixth element of the list `names`), and columns 1 and 5 
+    (because 'L_A' is the first, and 'R_B' the 5th element of the list `names`). Thus, the row/column
+    index of each non-zero entry in `D` has the format target-by-source. 
+
+    See also
+    --------
+    None
+    """
 
     # Sanity checks
     for tsn in [target,source,names]:
@@ -527,6 +738,36 @@ def make_D(target,source,names,values=None):
 
 ##########################################################################################
 def make_bold(fname, stim_onset=None):
+    """
+    Convert raw model output to BOLD signal
+
+    Parameters
+    ----------
+    fname : string
+        Filename (including path if not in working directory) of HDF5 container that was generated 
+        by `run_model`. 
+    stim_onset : float
+        Time (in seconds) of stimulus onset. By default, onset/offset timings of 
+        stimuli are stored in the HDF5 container generated by `run_model`. Only override 
+        this setting, if you know what you are doing. 
+
+    Returns
+    -------
+    Nothing : None
+        The computed BOLD signal is stored as dataset `BOLD` at the top level of the HDF5 container 
+        specified by `fname`. 
+
+    Notes
+    -----
+    Regional neural voltages are converted to BOLD time-series using the linear hemodynamic response 
+    function proposed by Glover (1999). For details consult the supporting information of our manuscript. 
+
+    See also
+    --------
+    Glover G (1999) Deconvolution of Impulse Response in Event-Related BOLD FMRI. NeuroImage 9: 416-429.
+    Fuertinger, J. C. Zinn, and K. Simonyan. A Neural Population Model Incorporating Dopaminergic 
+    Neurotransmission during Complex Voluntary Behaviors, PLoS Computational Biology, in press. 
+    """
 
     # Sanity checks
     if type(fname).__name__ != 'str':
@@ -565,20 +806,6 @@ def make_bold(fname, stim_onset=None):
     hrft       = utils.lambdify_t(hrf.glover(utils.T))
     hrf_kernel = np.hstack((np.zeros((int(s_rate*stim_onset),)),hrft(np.arange(0,32,dt))))
 
-    # t1 = np.arange(0,32+stim_onset,dt)
-    # gamma = Psi*np.exp(-t1/theta)*t1**(alpha - 1.)
-    # hrf_kernel = gamma.copy()
-    # plt.figure();plt.plot(gamma)
-
-    # t1 = np.arange(0,32+stim_onset,dt)
-    # plt.ion();plt.figure();plt.plot(t1,hrf_kernel)
-    # plt.figure();plt.plot(gamma)
-
-    # V  = (V.T - V.mean(axis=1)).T
-    # qq = np.abs(np.diff(V,axis=1))
-    # convV = ndimage.filters.convolve1d(V,hrf_kernel,mode='constant')
-    # convV = ndimage.filters.convolve1d((qq.T - qq.mean(axis=1)).T,hrf_kernel,mode='constant')
-
     # Convolve the de-meaned model time-series with the kernel 
     convV = ndimage.filters.convolve1d((V.T - V.mean(axis=1)).T,hrf_kernel,mode='constant')
 
@@ -609,7 +836,6 @@ def make_bold(fname, stim_onset=None):
 
     # Re-scale the the signal
     BOLD = BOLD*0.02
-    # BOLD = (BOLD.T - BOLD.mean(axis=1)).T
 
     # Save it to the file
     try:
@@ -618,46 +844,30 @@ def make_bold(fname, stim_onset=None):
         f['BOLD'].write_direct(BOLD)
     f.close()
 
-##########################################################################################
-def get_LI(fname,raw=True):
-
-    # Sanity checks
-    if type(fname).__name__ != 'str':
-        raise TypeError("Name of HDF5 file has to be a string!")
-
-    if raw != True and raw != False:
-        raise TypeError("The switch `raw` has to be boolean!")
-
-    # Try to open given HDF5 container
-    try:
-        f = h5py.File(fname,'r')
-    except: raise ValueError("Cannot open "+fname+"!")
-    try:
-        names = f['params']['names'].value
-        f.close()
-    except: raise ValueError("HDF5 file "+fname+" does not have the required fields!")
-
-    # After all the error checking, reopen the file
-    f = h5py.File(fname,'r')
-
-    # Find left-hemisphere indices
-    l_ind = regexfind(names,"[Ll]_*")
-    n     = l_ind[-1]
-
-    # Load regional membrane potentials or BOLD signals
-    if (raw):
-        X = f['V'].value
-    else:
-        X = f['BOLD'].value
-        
-    # Compute TV norm for each region
-    XTV = np.sum(np.abs(np.diff(X,axis=1)),axis=1)
-
-    # Return LI
-    return (XTV[:n].sum() - XTV[n:].sum())/XTV.sum()
 
 ##########################################################################################
 def show_params(fname):
+    """
+    Pretty-print all parameters used in a simulation
+
+    Parameters
+    ----------
+    fname : string
+        Filename (including path if not in working directory) of HDF5 container that was generated 
+        by `run_model`.
+
+    Returns
+    -------
+    Nothing : None
+
+    Notes
+    -----
+    None
+    
+    See also
+    --------
+    None
+    """
 
     # Sanity checks
     if type(fname).__name__ != 'str':
@@ -751,16 +961,20 @@ def regexfind(arr,expr):
 ##########################################################################################
 def moveit(fname):
     """
-    Check if a file exists, if yes, rename it
+    Check if a file/directory exists, if yes, rename it
 
     Parameters
     ----------
     fname : str
-        A string specifying (the path to) the file to be renamed (if existing)
+        A string specifying (the path to) the file/directory to be renamed (if existing)
 
     Returns
     -------
     Nothing : None
+
+    Notes
+    -----
+    None
 
     See also
     --------
@@ -769,17 +983,32 @@ def moveit(fname):
 
     # Check if input makes sense
     if type(fname).__name__ != "str":
-        raise TypeError("Filename has to be a string!")
+        raise TypeError("File-/Directory-name has to be a string!")
 
     # If file already exists, rename it
     if os.path.isfile(fname):
+        now     = datetime.now()
         newname = fname[:-3] + "_bak_"+\
-                  str(datetime.now().year)+"_"+\
-                  str(datetime.now().month)+"_"+\
-                  str(datetime.now().day)+"_"+\
-                  str(datetime.now().hour)+"_"+\
-                  str(datetime.now().minute)+"_"+\
-                  str(datetime.now().second)+\
+                  str(now.year)+"_"+\
+                  str(now.month)+"_"+\
+                  str(now.day)+"_"+\
+                  str(now.hour)+"_"+\
+                  str(now.minute)+"_"+\
+                  str(now.second)+\
                   fname[-3::]
         print "WARNING: File "+fname+" already exists, renaming it to: "+newname+"!"
         os.rename(fname,newname)
+
+    # If directory already exists, rename it
+    elif os.path.isdir(fname):
+        now     = datetime.now()
+        newname = fname + "_bak_"+\
+                  str(now.year)+"_"+\
+                  str(now.month)+"_"+\
+                  str(now.day)+"_"+\
+                  str(now.hour)+"_"+\
+                  str(now.minute)+"_"+\
+                  str(now.second)
+        print "WARNING: Directory "+fname+" already exists, renaming it to: "+newname+"!"
+        shutil.move(fname,newname)
+    
