@@ -28,7 +28,8 @@ except:
 
 ##########################################################################################
 def run_model(V0, Z0, DA0, task, outfile, \
-              C=None, seed=None, paramfile='parameters.py', symsyn=True, verbose=True, **kwargs):
+              C=None, seed=None, paramfile='parameters.py', symsyn=True, verbose=True, ram_use=0.2,\
+              **kwargs):
     """
     Run a simulation using the neural population model
 
@@ -69,6 +70,12 @@ def run_model(V0, Z0, DA0, task, outfile, \
         If `True` the code will print a summary of the most important parameters and all used 
         keyword arguments (see below) in the simulation together with a progress bar to (roughly)
         estimate run time (requires the `progressbar` module). 
+    ram_use : float
+        Fraction of memory to use for caching simulation results before writing to disk 
+        (0 < `ram_use` < 1). More available memory means fewer disk-writes and thus better performance, 
+        i.e, the larger `ram_use` the faster this code runs. However, if too much RAM is allocated by 
+        this routine it may stall the executing computer. By default, `ram_use = 0.2`, i.e., around 20% 
+        of available memory is used. 
     kwargs : additional keyword arguments
         Instead of relying solely on a static file to define parameter values, it is also possible
         to pass on parameters to the code using keyword arguments (see `Examples` below). Note: parameters
@@ -177,6 +184,12 @@ def run_model(V0, Z0, DA0, task, outfile, \
     if verbose != True and verbose != False:
         raise TypeError("The switch `verbose` has to be Boolean!")
 
+    try:
+        bad = (ram_use <= 0) or (ram_use >= 1)
+    except: 
+        raise TypeError('The parameter ram_use has to be a float, not '+type(ram_use).__name__+'!')
+    if bad: raise ValueError('The parameter ram_use has to satisfy 0 < ram_use < 1!')
+
     # Append '.h5' extension to outfile if necessary
     if outfile[-3:] != '.h5':
         outfile = outfile + '.h5'
@@ -206,9 +219,11 @@ def run_model(V0, Z0, DA0, task, outfile, \
         f = h5py.File(param_py.matrices,'r')
     except: raise ValueError("Could not open HDF5 file holding the coupling matrix")
     try:
-        c_str = "from argument"
-        if C == None: C = f['C'].value; c_str = "from file"
-        D      = f['D'].value
+        if C == None: C = f['C'].value
+        if kwargs.has_key('D'):
+            D = kwargs['D']
+        else:
+            D = f['D'].value
         names  = f['names'].value
         labels = None
         if f.keys().count('labels'): labels = f['labels'].value
@@ -423,7 +438,6 @@ def run_model(V0, Z0, DA0, task, outfile, \
                     ["parameter file:",paramfile+".py"],\
                     ["keyword args:",pstr],\
                     ["matrix file:",p_dict['matrices']],\
-                    ["coupling matrix:",c_str],\
                     ["output:",outfile]])
     if verbose: print "\n"+table.draw()+"\n"
 
