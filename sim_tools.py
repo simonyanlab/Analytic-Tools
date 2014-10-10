@@ -1002,20 +1002,25 @@ def moveit(fname):
     # If file already exists, rename it
     if os.path.isfile(fname):
         now     = datetime.now()
-        newname = fname[:-3] + "_bak_"+\
+        dot     = fname.rfind('.')
+        idx     = len(fname)
+        if dot > 0: idx = dot
+        newname = fname[:idx] + "_bak_"+\
                   str(now.year)+"_"+\
                   str(now.month)+"_"+\
                   str(now.day)+"_"+\
                   str(now.hour)+"_"+\
                   str(now.minute)+"_"+\
                   str(now.second)+\
-                  fname[-3::]
+                  fname[idx::]
         print "WARNING: File "+fname+" already exists, renaming it to: "+newname+"!"
         os.rename(fname,newname)
 
     # If directory already exists, rename it
     elif os.path.isdir(fname):
         now     = datetime.now()
+        slash   = fname.rfind(os.sep)
+        if slash == (len(fname) - 1): fname = fname[:slash]
         newname = fname + "_bak_"+\
                   str(now.year)+"_"+\
                   str(now.month)+"_"+\
