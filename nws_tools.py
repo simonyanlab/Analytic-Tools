@@ -181,6 +181,7 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
     # Load very first file to get length of time-series
     firstsub = txtfiles[0]
     tlen     = get_numlines(firstsub)
+    if tlen < 2: raise ValueError('File '+firstsub+' is empty or has fewer than 2 lines!')
 
     # Search from left in file-name for first "s" (naming scheme: sNxy_bla_bla_.txt)
     firstsub  = firstsub.replace(txtpath+os.sep,'')
@@ -359,8 +360,8 @@ def corrcheck(*args,**kwargs):
     # Check if we're dealing with Pearson or NMI matrices (or something completely unexpected)
     cmin = corrs.min(); cmax = corrs.max()
     if cmax > 1 or cmin < -1:
-        msg = "Input has to have values between -1/+1 or 0/+1. Found "+str(cmin)+" to "+str(cmax)
-        raise ValueError(msg)
+        msg = "WARNING: Input has to have values between -1/+1 or 0/+1. Found "+str(cmin)+" to "+str(cmax)
+        print msg
     maxval = 1
     if corrs.min() < 0:
         minval = -1
@@ -1994,6 +1995,7 @@ def get_numlines(fname):
         raise TypeError("Filename has to be a string!")
 
     # Cycle through lines of files and do nothing
+    lineno = -1
     with open(fname) as f:
         for lineno, l in enumerate(f):
             pass
