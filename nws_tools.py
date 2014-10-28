@@ -1,7 +1,7 @@
 # nws_tools.py - Collection of network creation/processing/analysis/plotting routines
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
-# September 25 2013
+# October 15 2013
 
 from __future__ import division
 import numpy as np
@@ -144,19 +144,22 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
        
     Returns
     -------
-    corrs : NumPy 3darray
-        `N`-by-`N` correlation matrices of numsubs subjects. Format is 
-                `corrs.shape = (N,N,numsubs)`,
-        s.t.
-                `corrs[:,:,i]` = `N x N` correlation matrix of `i`-th subject 
-    bigmat : NumPy 3darray
-        Tensor holding unprocessed time series of all subjects. Format is 
-                `bigmat.shape = (tlen,N,numsubs)`,
-        where `tlen` is the length of the time-series and `N` is the number of                 
-        regions (=nodes in a network). 
-    sublist : list of strings
-        List of subjects found in folder specified by `txtpath`, e.g.,
-                `sublist = ['s101','s103','s110','s111','s112',...]`
+    res : dict
+        Dictionary with fields:
+
+        corrs : NumPy 3darray
+            `N`-by-`N` correlation matrices of numsubs subjects. Format is 
+                    `corrs.shape = (N,N,numsubs)`,
+            s.t.
+                    `corrs[:,:,i]` = `N x N` correlation matrix of `i`-th subject 
+        bigmat : NumPy 3darray
+            Tensor holding unprocessed time series of all subjects. Format is 
+                    `bigmat.shape = (tlen,N,numsubs)`,
+            where `tlen` is the length of the time-series and `N` is the number of                 
+            regions (=nodes in a network). 
+        sublist : list of strings
+            List of subjects found in folder specified by `txtpath`, e.g.,
+                    `sublist = ['s101','s103','s110','s111','s112',...]`
 
     Notes
     -----
@@ -176,7 +179,7 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
 
     # Get list of all txt-files in txtpath and order them lexicographically
     if txtpath[-1] == ' '  or txtpath[-1] == os.sep: txtpath = txtpath[:-1]
-    txtfiles = natsort.natsorted(myglob(txtpath,"*.[Tt][Xx][Tt]"), key=lambda y: y.lower())
+    txtfiles = natsort.natsorted(myglob(txtpath,"s*.[Tt][Xx][Tt]"), key=lambda y: y.lower())
 
     # Load very first file to get length of time-series
     firstsub = txtfiles[0]
@@ -186,7 +189,7 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
     # Search from left in file-name for first "s" (naming scheme: sNxy_bla_bla_.txt)
     firstsub  = firstsub.replace(txtpath+os.sep,'')
     s_in_name = firstsub.find('s')
-
+    
     # The characters right of "s" until the first "_" are the subject identifier
     udrline = firstsub[s_in_name::].find('_')
     subject = firstsub[s_in_name:s_in_name+udrline]
@@ -232,10 +235,9 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
             corrs[:,:,k] = np.corrcoef(bigmat[:,:,k],rowvar=0,**kwargs)
         elif corrtype == 'mi':
             corrs[:,:,k] = mutual_info(bigmat[:,:,k],**kwargs)
-            
 
     # Happy breakdown
-    return bigmat, corrs, sublist
+    return {'corrs':corrs, 'bigmat':bigmat, 'sublist':sublist}
 
 ##########################################################################################
 def corrcheck(*args,**kwargs):
@@ -606,19 +608,22 @@ def thresh_nws(nws,userdens=None,percval=0.0):
                
     Returns
     -------
-    th_nws : NumPy 3darray
-        Thresholded networks for all subjects. Format is the same as for `nws`. 
-    tau_levels : NumPy 1darray
-        The threshold values for each subject's network corresponding to the 
-        networks stored in `th_nws`, i.e. `tau_levels[i]` is the threshold that 
-        generated the network `th_nws[:,:,i]`, i.e., the network of subject `i`. 
-    den_values : NumPy 1darray
-        Same format as `tau_levels` but holding the exact density values for each subject
-    th_mnw : NumPy 2darray
-        The group averaged (across all subjects) weighted network
-    mnw_percval: float
-        Percentage value used to compute `th_mnw` (see documentation of `get_meannw` for
-        details)
+    res : dict 
+        Dictionary with fields
+
+        th_nws : NumPy 3darray
+            Thresholded networks for all subjects. Format is the same as for `nws`. 
+        tau_levels : NumPy 1darray
+            The threshold values for each subject's network corresponding to the 
+            networks stored in `th_nws`, i.e. `tau_levels[i]` is the threshold that 
+            generated the network `th_nws[:,:,i]`, i.e., the network of subject `i`. 
+        den_values : NumPy 1darray
+            Same format as `tau_levels` but holding the exact density values for each subject
+        th_mnw : NumPy 2darray
+            The group averaged (across all subjects) weighted network
+        mnw_percval: float
+            Percentage value used to compute `th_mnw` (see documentation of `get_meannw` for
+            details)
 
     Notes
     -----
@@ -680,8 +685,9 @@ def thresh_nws(nws,userdens=None,percval=0.0):
     if min_raw == 0: raise ValueError('Network '+str(raw_den.argmin())+' has density 0%!')
     if userdens >= max_raw:
         print "All networks have density lower than desired density "+str(userdens)+"%"
-        th_nws = nws; tau_levels = None; den_values = raw_den; th_mnw,mnw_percval = get_meannw(nws) 
-        return th_nws, tau_levels, den_values, th_mnw, mnw_percval
+        th_mnw,mnw_percval = get_meannw(nws)
+        return {'th_nws':nws, 'tau_levels': None, 'den_values': raw_den, \
+                'th_mnw': th_mnw, 'mnw_percval': mnw_percval}
 
     # Inform user about minimal/maximal density in raw data
     print "\nRaw data has following density values: \n"
@@ -794,8 +800,8 @@ def thresh_nws(nws,userdens=None,percval=0.0):
 
     # Be polite and dismiss the user 
     print "Done...\n"
-
-    return th_nws, tau_levels, den_values, th_mnw, mnw_percval
+    return {'th_nws':th_nws, 'tau_levels': tau_levels, 'den_values': den_values,\
+            'th_mnw': th_mnw, 'mnw_percval': mnw_percval}
 
 ##########################################################################################
 def normalize(I,a=0,b=1):

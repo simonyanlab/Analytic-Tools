@@ -78,7 +78,6 @@ cdef class par:
 
     # Declare class fields: scalars
     cdef public int N
-    cdef public DTYPE_t TCa
     cdef public DTYPE_t deCa
     cdef public DTYPE_t gCa
     cdef public DTYPE_t VCa
@@ -136,6 +135,7 @@ cdef class par:
     cdef public np.ndarray ani
     cdef public np.ndarray ane
     cdef public np.ndarray rmax
+    cdef public np.ndarray TCa
 
     # Class constructor
     def __cinit__(self, dict p_dict):
@@ -150,7 +150,6 @@ cdef class par:
 
         # Initialize scalars
         self.N     = p_dict['C'].shape[0]
-        self.TCa   = p_dict['TCa']
         self.deCa  = p_dict['deCa']
         self.gCa   = p_dict['gCa']
         self.VCa   = p_dict['VCa']
@@ -209,6 +208,7 @@ cdef class par:
         self.ani   = p_dict['ani']
         self.ane   = p_dict['ane']
         self.rmax  = p_dict['rmax']
+        self.TCa   = p_dict['TCa']
 
 # Vectorized tanh computation
 cdef DTYPE_t vectanh(np.ndarray[DTYPE_t, ndim = 1] invec, np.ndarray[DTYPE_t, ndim = 1] outvec, int n):

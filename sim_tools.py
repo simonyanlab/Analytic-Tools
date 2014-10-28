@@ -28,7 +28,7 @@ except:
 
 ##########################################################################################
 def run_model(V0, Z0, DA0, task, outfile, \
-              C=None, seed=None, paramfile='parameters.py', symsyn=True, verbose=True, ram_use=0.2,\
+              seed=None, paramfile='parameters.py', symsyn=True, verbose=True, ram_use=0.2,\
               **kwargs):
     """
     Run a simulation using the neural population model
@@ -50,9 +50,6 @@ def run_model(V0, Z0, DA0, task, outfile, \
         File-name (including path if not in working directory) of HDF5 container that will be created to 
         save simulation results. See Notes for the structure of the generated container. Any existing 
         file will be renamed. The user has to have writing permissions for the given location.
-    C : NumPy 2darray
-        Coupling matrix to be used. Has to be a square `N`-by-`N` array. If the coupling matrix 
-        is not provided as a keyword argument, it will be loaded from the parameter file. 
     seed : integer
         Random number generator seed. To make meaningful comparisons between successive simulation
         runs, the random number seed should be fixed so that the solver uses the same Wiener process
@@ -223,7 +220,10 @@ def run_model(V0, Z0, DA0, task, outfile, \
         f = h5py.File(param_py.matrices,'r')
     except: raise ValueError("Could not open HDF5 file holding the coupling matrix")
     try:
-        if C == None: C = f['C'].value
+        if kwargs.has_key('C'):
+            C = kwargs['C']
+        else:
+            C = f['C'].value
         if kwargs.has_key('D'):
             D = kwargs['D']
         else:
@@ -300,10 +300,13 @@ def run_model(V0, Z0, DA0, task, outfile, \
     else:
         rmax = eval(param_py.rmax)
 
-    # Save (possibly updated) beta limits and given task in dictionary
+    # Save (possibly updated) dopamine bounds and given task in dictionary
     p_dict['rmax'] = rmax
     p_dict['rmin'] = rmin
     p_dict['task'] = task
+
+    # Get ion channel parameters
+    p_dict['TCa'] = eval(param_py.TCa)
 
     # Compute length for simulation and speech on-/offset times
     len_cycle = param_py.stimulus + param_py.production + param_py.acquisition
