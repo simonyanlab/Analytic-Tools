@@ -182,8 +182,7 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
     txtfiles = natsort.natsorted(myglob(txtpath,"s*.[Tt][Xx][Tt]"), key=lambda y: y.lower())
 
     # Load very first file to get length of time-series
-    firstsub = txtfiles[0]
-    tlen     = get_numlines(firstsub)
+    tlen = np.loadtxt(txtfiles[0]).size
     if tlen < 2: raise ValueError('File '+firstsub+' is empty or has fewer than 2 lines!')
 
     # Search from left in file-name for first "s" (naming scheme: sNxy_bla_bla_.txt)
@@ -221,7 +220,7 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
         for fl in txtfiles:
             if fl.count(sublist[k]):
                 try:
-                    bigmat[:,col,k] = [float(line.strip()) for line in open(fl)]
+                    bigmat[:,col,k] = np.loadtxt(fl)
                 except:
                     raise ValueError("Error reading file: "+fl)
                 col += 1
@@ -1970,43 +1969,6 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
 
     # Return (N)MI matrix
     return mi
-
-##########################################################################################
-def get_numlines(fname):
-    """
-    Get number of lines of a txt-file
-
-    Inputs:
-    -------
-    fname : str
-        Path to file to be read
-
-    Returns:
-    --------
-    lineno : int
-        Number of lines in the file
-
-    Notes:
-    ------
-    This code was written by Mark Byers as part of a Stackoverflow submission, 
-    see .. http://stackoverflow.com/questions/845058/how-to-get-line-count-cheaply-in-python
-
-    See also:
-    ---------
-    None
-    """
-
-    # Check if input makes sense
-    if type(fname).__name__ != "str":
-        raise TypeError("Filename has to be a string!")
-
-    # Cycle through lines of files and do nothing
-    lineno = -1
-    with open(fname) as f:
-        for lineno, l in enumerate(f):
-            pass
-
-    return lineno + 1
 
 ##########################################################################################
 def issym(A,tol=1e-9):

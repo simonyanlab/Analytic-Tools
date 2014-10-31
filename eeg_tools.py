@@ -7,7 +7,7 @@ from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-from datetime import date
+from datetime import date, datetime, timedelta
 import fnmatch
 import os
 import calendar
@@ -681,13 +681,13 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
 
     # Depending on available memory, allocate temporary matrix
     meminfo = psutil.virtual_memory()
-    maxmem  = meminfo.available*0.25/(numChannels+1)/ds
+    maxmem  = int(np.ceil(meminfo.available*0.25/(numChannels+1)/ds))
 
     # If the whole array fits into memory load it once, otherwise chunk it up
     if numSamples <= maxmem:
         blocksize = [numSamples]
     else:
-        blocksize = [maxmem]*(numSamples//maxmem)
+        blocksize = [maxmem]*int(numSamples//maxmem)
         rest      = int(np.mod(numSamples,maxmem))
         if rest > 0: blocksize = blocksize + [rest]
 
@@ -722,6 +722,8 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     # Read/write data block by block
     j = 0
     for i in xrange(numblocks):
+
+        # FIXME: use memmap for that!!!
 
         # Read data block-wise and save to matrix or row (depending on user choice, add offset to get int16)
         bsize   = blocksize[i]
@@ -1057,30 +1059,8 @@ def load_data(h5file,nodes=None):
     read_eeg : Read raw EEG data from binary *.EEG/*.eeg and *.21E files
     """
 
-    # Sanity checks
-    if type(h5file).__name__ == 'str':
-        try:
-            f = h5py.File(h5file)
-        except: raise ValueError("Error opening file "+h5file)
-        closefile = True
-    elif type(h5file).__name__ == "File":
-        try:
-            h5file.filename 
-        except: raise TypeError('Input is not a valid HDF5 file!')
-        f         = h5file
-        closefile = False
-    else: raise TypeError('Input has to be a string specifying an HDF5 file or h5py.File instance!')
-
-    try:
-        ismat = (f['EEG'].keys().count('eeg_mat') > 0)
-    except: 
-        raise TypeError("Input file "+h5file+" does not seem to be an EEG data file...")
-
-    # Get list of electrodes actually present in file
-    if (ismat):
-        ec_list = f['EEG']['electrode_list'].value.tolist()
-    else:
-        ec_list = f['EEG'].keys()
+    # Check if input HDF5 container makes sense
+    f, closefile, ismat, ec_list = check_hdf(h5file)
 
     # Get indices of nodes to be read
     idx = []
@@ -1171,3 +1151,107 @@ def MA(signal, window_size):
     # Assemble window and compute moving average of signal
     window = np.ones(int(window_size))/float(window_size)
     return ndimage.filters.convolve1d(signal,window,mode='nearest')
+
+##########################################################################################
+def time2ind(h5file,t_start,t_end):
+    """
+    Convert human readable 24hr times to indices used in given iEEG file container
+
+    Parameters
+    ----------
+    h5file : str or h5py.File instance
+        String specifying file name (or path + filename) or `h5py.File` instance of
+        HDF5 container to be accessed
+    t_start : list/NumPy 1darray
+        Start time in 24hr format. Syntax is [hh,mm,ss]
+    t_end : list/NumPy 1darray
+        End time in 24hr format. Syntax is [hh,mm,ss]
+
+    Returns
+    -------
+    ind_start : integer
+        Index of iEEG array corresponding to provided start time `t_start`
+    ind_stop : integer
+        Index of iEEG array corresponding to provided end time `t_stop`
+
+    See also
+    --------
+    load_eeg : Load data from HDF5 container generated with read_eeg
+    """
+
+    # Check if input HDF5 container makes sense
+    f, closefile, ismat, ec_list = check_hdf(h5file)
+
+    # Read session date and sampling rate from file
+    sess_start = h5file['info']['record_date'].value 
+    s_rate     = h5file['info']['sampling_rate'].value 
+
+    # Extract hours of session start, on- and offsets
+    sess_hour = sess_start[3]
+    ts_hour   = t_start[0]
+    te_hour   = t_end[0]
+
+    # Convert session date to datetime object
+    sess_begin = datetime(*sess_start)
+
+    # Combine session date (sess_start[0:3] gives [yr,mnth,day]) with onset time ([hr,min,sec]) 
+    ts_date = sess_start[0:3]
+    t_begin = datetime(*np.hstack([ts_date,t_start]))
+
+    # If onset hour is less than session hour (01 vs 23), we crossed the 12AM mark, correct t_begin
+    if sess_hour > ts_hour:
+        t_begin += timedelta(days=1)
+
+    # Same for offset time
+    te_date = [t_begin.year,t_begin.month,t_begin.day]
+    t_stop  = datetime(*np.hstack([te_date,t_end]))
+    if ts_hour > te_hour:
+        t_stop += timedelta(days=1)
+
+    # That's why we use datetime: subtract objects to get time differences
+    ts_offset = t_begin - sess_begin 
+    te_offset = t_stop - sess_begin
+
+    # Indices are computed as offset seconds * sampling rate
+    ind_start = ts_offset.seconds*s_rate
+    ind_stop  = te_offset.seconds*s_rate
+
+    # Close file if user provided just string
+    if closefile: h5file.close()
+
+    # Return converted start/stop indices
+    return ind_start, ind_stop
+
+##########################################################################################
+def check_hdf(h5file):
+
+    # See if we can open provided HDF5 container
+    if type(h5file).__name__ == 'str':
+        try:
+            f = h5py.File(h5file)
+        except: raise ValueError("Error opening file "+h5file)
+        closefile = True
+    elif type(h5file).__name__ == "File":
+        try:
+            h5file.filename 
+        except: raise TypeError('Input is not a valid HDF5 file!')
+        f         = h5file
+        closefile = False
+    else: raise TypeError('Input has to be a string specifying an HDF5 file or h5py.File instance!')
+
+    # Check if data is stored as matrix or "tagged list"
+    try:
+        ismat = (f['EEG'].keys().count('eeg_mat') > 0)
+    except: 
+        raise TypeError("Input file "+h5file+" does not seem to be an EEG data file...")
+
+    # Get list of electrodes actually present in file
+    if (ismat):
+        ec_list = f['EEG']['electrode_list'].value.tolist()
+    else:
+        ec_list = f['EEG'].keys()
+
+    # Return HDF5 file object and tell caller if 
+    # container uses an array (ismat = True) or named list storage format and
+    # if the file needs to be closed in the end(closefile = True)
+    return f, closefile, ismat, ec_list

@@ -870,7 +870,6 @@ def make_bold(fname, stim_onset=None):
         f['BOLD'].write_direct(BOLD)
     f.close()
 
-
 ##########################################################################################
 def show_params(fname):
     """
