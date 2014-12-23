@@ -1183,8 +1183,8 @@ def time2ind(h5file,t_start,t_end):
     f, closefile, ismat, ec_list = check_hdf(h5file)
 
     # Read session date and sampling rate from file
-    sess_start = h5file['info']['record_date'].value 
-    s_rate     = h5file['info']['sampling_rate'].value 
+    sess_start = f['info']['record_date'].value 
+    s_rate     = f['info']['sampling_rate'].value 
 
     # Extract hours of session start, on- and offsets
     sess_hour = sess_start[3]
@@ -1217,7 +1217,7 @@ def time2ind(h5file,t_start,t_end):
     ind_stop  = te_offset.seconds*s_rate
 
     # Close file if user provided just string
-    if closefile: h5file.close()
+    if closefile: f.close()
 
     # Return converted start/stop indices
     return ind_start, ind_stop

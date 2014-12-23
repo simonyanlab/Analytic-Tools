@@ -1,9 +1,10 @@
-# makeimg.py - Create/load 2D test images
+# makeimg.py - Create 2D gray-scale test images
 # 
-# Author: Stefan Fuertinger
-# Juni  6 2012
+# Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
+# June  6 2012
 
 from __future__ import division
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -15,29 +16,25 @@ IMGPATH = IMGPATH.replace(os.path.basename(__file__),"")
 ##########################################################################################
 def onesquare(N,ns=0.0):
     """
-    ONESQUARE creates a simple NxN grey-scale image consisting only of one square
+    Create a simple piece-wise constant gray-scale image: a white square on a black background
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     N : int
-        Positive integer determining the wanted image dimension
+        Image dimension (image is an `N`-by-`N` array) 
     ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
+        Noise level applied to the image, i.e., 0.1 = 10% noise, 0.2 = 20% noise, etc. Thus `ns` has to 
+        satisfy `0 <= ns <= 1`. By default `ns = 0.0`. 
        
-    Returns:
-    --------
+    Returns
+    -------
     It : NumPy 2darray
-        Array representation of the image (2D array). 
+        Array representation of the image (2D array)
 
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
+    See also
+    --------
+    fivesquares : another piece-wise constant test image
+    myphantom : Python implementation of the Shepp--Logan phantom
     """
 
     # Check if input parameters make sense
@@ -55,29 +52,25 @@ def onesquare(N,ns=0.0):
 ##########################################################################################
 def fivesquares(N,ns=0.0):
     """
-    FIVESQUARES creates an NxN grey-scale image consisting of five squares
+    Create a piece-wise constant gray-scale image: five squares of different intensities on black background
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     N : int
-        Positive integer determining the wanted image dimension
+        Image dimension (image is an `N`-by-`N` array) 
     ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
+        Noise level applied to the image, i.e., 0.1 = 10% noise, 0.2 = 20% noise, etc. Thus `ns` has to 
+        satisfy `0 <= ns <= 1`. By default `ns = 0.0`. 
        
-    Returns:
-    --------
+    Returns
+    -------
     It : NumPy 2darray
-        Array representation of the image (2D array). 
+        Array representation of the image (2D array)
 
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
+    See also
+    --------
+    onesquare : another piece-wise constant test image
+    myphantom : Python implementation of the Shepp--Logan phantom
     """
 
     # Check if input parameters make sense
@@ -109,31 +102,28 @@ def fivesquares(N,ns=0.0):
     return It 
 
 ##########################################################################################
-def twospikes(N,ns=0.0):
+def spikes(N,ns=0.0):
     """
-    TWOSPIKES creates an NxN grey-scale image consisting of two spikes
+    Create a piece-wise linear gray-scale image of four squares with gradually increasing intensities
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     N : int
-        Positive integer determining the wanted image dimension
+        Image dimension (image is an `N`-by-`N` array) 
     ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
+        Noise level applied to the image, i.e., 0.1 = 10% noise, 0.2 = 20% noise, etc. Thus `ns` has to 
+        satisfy `0 <= ns <= 1`. By default `ns = 0.0`. 
        
-    Returns:
-    --------
+    Returns
+    -------
     It : NumPy 2darray
-        Array representation of the image (2D array). 
+        Array representation of the image (2D array)
 
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
+    See also
+    --------
+    bars : piece-wise linear test image of rectangles
+    manysquares : piece-wise linear test image of squares
+    tgvtest : gray scale image widely used to illustrate weaknesses of total variation denoising
     """
 
     # Check if input parameters make sense
@@ -163,29 +153,26 @@ def twospikes(N,ns=0.0):
 ##########################################################################################
 def bars(N,ns=0.0):
     """
-    BARS creates the beloved NxN grey-scale image consisting of vertical and horizontal bars
+    Create a piece-wise linear gray-scale image of rectangles with gradually increasing intensities
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     N : int
-        Positive integer determining the wanted image dimension
+        Image dimension (image is an `N`-by-`N` array) 
     ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
+        Noise level applied to the image, i.e., 0.1 = 10% noise, 0.2 = 20% noise, etc. Thus `ns` has to 
+        satisfy `0 <= ns <= 1`. By default `ns = 0.0`. 
        
-    Returns:
-    --------
+    Returns
+    -------
     It : NumPy 2darray
-        Array representation of the image (2D array). 
+        Array representation of the image (2D array)
 
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
+    See also
+    --------
+    spikes : piece-wise linear test image of four squares
+    manysquares : piece-wise linear test image of squares
+    tgvtest : gray scale image widely used to illustrate weaknesses of total variation denoising
     """
 
     # Check if input parameters make sense
@@ -216,29 +203,26 @@ def bars(N,ns=0.0):
 ##########################################################################################
 def manysquares(N,ns=0.0):
     """
-    MANYSQUARES creates an NxN grey-scale image consisting of many squares
+    Create a piece-wise linear gray-scale image of 16 squares with gradually increasing intensities
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     N : int
-        Positive integer determining the wanted image dimension
+        Image dimension (image is an `N`-by-`N` array) 
     ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
+        Noise level applied to the image, i.e., 0.1 = 10% noise, 0.2 = 20% noise, etc. Thus `ns` has to 
+        satisfy `0 <= ns <= 1`. By default `ns = 0.0`. 
        
-    Returns:
-    --------
+    Returns
+    -------
     It : NumPy 2darray
-        Array representation of the image (2D array). 
+        Array representation of the image (2D array)
 
-    Notes:
-    ------
-    None 
-
-    See also:
+    See also
     --------
-    None 
+    spikes : piece-wise linear test image of four squares
+    bars : piece-wise linear test image of rectangles
+    tgvtest : gray scale image widely used to illustrate weaknesses of total variation denoising
     """
 
     # Check if input parameters make sense
@@ -265,29 +249,26 @@ def manysquares(N,ns=0.0):
 ##########################################################################################
 def tgvtest(N,ns=0.0):
     """
-    TGVTEST creates the famous NxN grey-scale image consisting of one shaded square
+    Create a gray-scale image consisting of one shaded square often used to illustrate TV denoising problems
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     N : int
-        Positive integer determining the wanted image dimension
+        Image dimension (image is an `N`-by-`N` array) 
     ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
+        Noise level applied to the image, i.e., 0.1 = 10% noise, 0.2 = 20% noise, etc. Thus `ns` has to 
+        satisfy `0 <= ns <= 1`. By default `ns = 0.0`. 
        
-    Returns:
-    --------
+    Returns
+    -------
     It : NumPy 2darray
-        Array representation of the image (2D array). 
+        Array representation of the image (2D array)
 
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
+    See also
+    --------
+    spikes : piece-wise linear test image of four squares
+    bars : piece-wise linear test image of rectangles
+    manysquares : piece-wise linear test image of squares
     """
 
     # Check if input parameters make sense
@@ -306,29 +287,30 @@ def tgvtest(N,ns=0.0):
 ##########################################################################################
 def myphantom(N,ns=0.0):
     """
-    MYPHANTOM creates the famous Shepp--Logan phantom as NxN grey-scale image
+    Create the famous Shepp--Logan phantom
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     N : int
-        Positive integer determining the wanted image dimension
+        Image dimension (image is an `N`-by-`N` array) 
     ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
+        Noise level applied to the image, i.e., 0.1 = 10% noise, 0.2 = 20% noise, etc. Thus `ns` has to 
+        satisfy `0 <= ns <= 1`. By default `ns = 0.0`. 
        
-    Returns:
-    --------
+    Returns
+    -------
     It : NumPy 2darray
-        Array representation of the image (2D array). 
+        Array representation of the image (2D array)
 
-    Notes:
-    ------
-    None 
+    See also
+    --------
+    onesquare : another piece-wise constant test image
+    fivesquares : another piece-wise constant test image
 
-    See also:
-    ---------
-    Jain, Anil K., Fundamentals of Digital Image Processing, Englewood Cliffs, NJ, Prentice Hall, 1989, p. 439
+    References
+    ----------
+    .. [1] Jain, Anil K., Fundamentals of Digital Image Processing, 
+           Englewood Cliffs, NJ, Prentice Hall, 1989, p. 439
     """
     
     # Check if input parameters make sense
@@ -346,7 +328,7 @@ def myphantom(N,ns=0.0):
                      [.1,  .0230, .0230,   0,   -.606,   0],
                      [.1,  .0230, .0460,  .06,  -.605,   0]])
 
-    # Create placholder for phantom image
+    # Create placeholder for phantom image
     It = np.zeros((N,N));
 
     # Create spaced array
@@ -374,429 +356,38 @@ def myphantom(N,ns=0.0):
     return It
 
 ##########################################################################################
-def barbara(N,ns=0.0):
-    """
-    BARBARA loads the famous "Barbara"-testing image
-
-    Inputs:
-    -------
-    N : int
-        Positive integer determining the wanted image dimension. Note that 
-        the image is only available in 64x64, 128x128, 256x256 and 512x512. 
-        If N is not either 64, 128, 256, 512 the best fit resolution is 
-        chosen. 
-    ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
-       
-    Returns:
-    --------
-    It : NumPy 2darray
-        Array representation of the image (2D array). 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
-    """
-
-    # Check if input parameters make sense
-    checkinput(N,ns)
-
-    # See if we can offer what the user wants
-    N = getN(N)
-
-    # Load image
-    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"barbara_"+str(N)+".tif") 
-    It = It.astype(float)
-    It = It[::-1,:]
-    It = It/255.0
-
-    # Add noise to image (if wanted)
-    It = addnoise(It,N,ns)
-
-    return It 
-
-##########################################################################################
-def boat(N,ns=0.0):
-    """
-    BOAT loads the famous "boat"-testing image
-
-    Inputs:
-    -------
-    N : int
-        Positive integer determining the wanted image dimension. Note that 
-        the image is only available in 64x64, 128x128, 256x256 and 512x512. 
-        If N is not either 64, 128, 256, 512 the best fit resolution is 
-        chosen. 
-    ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
-       
-    Returns:
-    --------
-    It : NumPy 2darray
-        Array representation of the image (2D array). 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
-    """
-
-    # Check if input parameters make sense
-    checkinput(N,ns)
-
-    # See if we can offer what the user wants
-    N = getN(N)
-
-    # Load image
-    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"boat_"+str(N)+".tif") 
-    It = It.astype(float)
-    It = It[::-1,:]
-    It = It/255.0
-
-    # Add noise to image (if wanted)
-    It = addnoise(It,N,ns)
-
-    return It 
-
-##########################################################################################
-def fingerprint(N,ns=0.0):
-    """
-    FINGERPRINT loads a sample image of a fingerprint
-
-    Inputs:
-    -------
-    N : int
-        Positive integer determining the wanted image dimension. Note that 
-        the image is only available in 64x64, 128x128, 256x256 and 512x512. 
-        If N is not either 64, 128, 256, 512 the best fit resolution is 
-        chosen. 
-    ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
-       
-    Returns:
-    --------
-    It : NumPy 2darray
-        Array representation of the image (2D array). 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
-    """
-
-    # Check if input parameters make sense
-    checkinput(N,ns)
-
-    # See if we can offer what the user wants
-    N = getN(N)
-
-    # Load image
-    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"fingerprint_"+str(N)+".tif") 
-    It = It.astype(float)
-    It = It[::-1,:]
-    It = It/255.0
-
-    # Add noise to image (if wanted)
-    It = addnoise(It,N,ns)
-
-    return It 
-
-##########################################################################################
-def house(N,ns=0.0):
-    """
-    HOUSE loads a sample image of a house
-
-    Inputs:
-    -------
-    N : int
-        Positive integer determining the wanted image dimension. Note that 
-        the image is only available in 64x64, 128x128, 256x256 and 512x512. 
-        If N is not either 64, 128, 256, 512 the best fit resolution is 
-        chosen. 
-    ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
-       
-    Returns:
-    --------
-    It : NumPy 2darray
-        Array representation of the image (2D array). 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
-    """
-
-    # Check if input parameters make sense
-    checkinput(N,ns)
-
-    # See if we can offer what the user wants
-    N = getN(N)
-
-    # Load image
-    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"house_"+str(N)+".tif") 
-    It = It.astype(float)
-    It = It[::-1,:]
-    It = It/255.0
-
-    # Add noise to image (if wanted)
-    It = addnoise(It,N,ns)
-
-    return It 
-
-##########################################################################################
-def I0mri(N,ns=0.0):
-    """
-    I0MRI loads a sample image of an DCE-MRI sequence
-
-    Inputs:
-    -------
-    N : int
-        Positive integer determining the wanted image dimension. Note that 
-        the image is only available in 64x64, 128x128, 256x256 and 512x512. 
-        If N is not either 64, 128, 256, 512 the best fit resolution is 
-        chosen. 
-    ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
-       
-    Returns:
-    --------
-    It : NumPy 2darray
-        Array representation of the image (2D array). 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
-    """
-
-    # Check if input parameters make sense
-    checkinput(N,ns)
-
-    # See if we can offer what the user wants
-    N = getN(N)
-
-    # Load image
-    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"I0mri_"+str(N)+".tif") 
-    It = It.astype(float)
-    It = It[::-1,:]
-    It = It/255.0
-
-    # Add noise to image (if wanted)
-    It = addnoise(It,N,ns)
-
-    return It 
-
-##########################################################################################
-def I1mri(N,ns=0.0):
-    """
-    I1MRI loads a sample image of an DCE-MRI sequence
-
-    Inputs:
-    -------
-    N : int
-        Positive integer determining the wanted image dimension. Note that 
-        the image is only available in 64x64, 128x128, 256x256 and 512x512. 
-        If N is not either 64, 128, 256, 512 the best fit resolution is 
-        chosen. 
-    ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
-       
-    Returns:
-    --------
-    It : NumPy 2darray
-        Array representation of the image (2D array). 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
-    """
-
-    # Check if input parameters make sense
-    checkinput(N,ns)
-
-    # See if we can offer what the user wants
-    N = getN(N)
-
-    # Load image
-    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"I1mri_"+str(N)+".tif") 
-    It = It.astype(float)
-    It = It[::-1,:]
-    It = It/255.0
-
-    # import pdb;pdb.set_trace()
-
-    # Add noise to image (if wanted)
-    It = addnoise(It,N,ns)
-
-    return It 
-
-##########################################################################################
-def lena(N,ns=0.0):
-    """
-    LENA loads the famous "Lena"-image
-
-    Inputs:
-    -------
-    N : int
-        Positive integer determining the wanted image dimension. Note that 
-        the image is only available in 64x64, 128x128, 256x256 and 512x512. 
-        If N is not either 64, 128, 256, 512 the best fit resolution is 
-        chosen. 
-    ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
-       
-    Returns:
-    --------
-    It : NumPy 2darray
-        Array representation of the image (2D array). 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    .. http://ndevilla.free.fr/lena/
-    """
-
-    # Check if input parameters make sense
-    checkinput(N,ns)
-
-    # See if we can offer what the user wants
-    N = getN(N)
-
-    # Load image
-    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+os.sep+"lena_"+str(N)+".tif") 
-    It = It.astype(float)
-    It = It[::-1,:]
-    It = It/255.0
-
-    # Add noise to image (if wanted)
-    It = addnoise(It,N,ns)
-
-    return It 
-
-##########################################################################################
-def peppers(N,ns=0.0):
-    """
-    PEPPERS loads the "peppers"-image
-
-    Inputs:
-    -------
-    N : int
-        Positive integer determining the wanted image dimension. Note that 
-        the image is only available in 64x64, 128x128, 256x256 and 512x512. 
-        If N is not either 64, 128, 256, 512 the best fit resolution is 
-        chosen. 
-    ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
-       
-    Returns:
-    --------
-    It : NumPy 2darray
-        Array representation of the image (2D array). 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
-    """
-
-    # Check if input parameters make sense
-    checkinput(N,ns)
-
-    # See if we can offer what the user wants
-    N = getN(N)
-
-    # Load image
-    It = plt.imread(IMGPATH+str(N)+"x"+str(N)+"/peppers_"+str(N)+".tif") 
-    It = It.astype(float)
-    It = It[::-1,:]
-    It = It/255.0
-
-    # Add noise to image (if wanted)
-    It = addnoise(It,N,ns)
-
-    return It 
-
-##########################################################################################
 def gengrid(N):
     """
-    GENGRID creates an N-by-N grid needed to construct most artificial images
+    Creates an `N`-by-`N` grid needed to construct most artificial images
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     N : int
-        Positive integer determining the wanted image dimension
+        Image dimension
        
-    Returns:
-    --------
+    Returns
+    -------
     x : NumPy 2darray
-        2D grid array of x-values on the domain [xmin,xmax]x[ymin,ymax]. 
+        2D grid array of `x`-values on the domain `[xmin,xmax]`-by-`[ymin,ymax]` 
     y : NumPy 2darray
-        2D grid array of y-values on the domain [xmin,xmax]x[ymin,ymax]. 
+        2D grid array of `y`-values on the domain `[xmin,xmax]`-by-`[ymin,ymax]`
     xmin : float
-        The left boundary of the (rectangular) domain. By default xmin = 1. 
+        Left boundary of the (rectangular) domain. By default `xmin = 1` 
     xmax : float
-        The right boundary of the (rectangular) domain. By default xmax is 
-        dynamically set such that xmax = N. 
+        Right boundary of the (rectangular) domain. By default `xmax = N`
     ymin : float
-        The lower boundary of the (rectangular) domain. By default ymin = 1. 
-    ymin : float
-        The lower boundary of the (rectangular) domain. By default ymin = 1. 
+        The lower boundary of the (rectangular) domain. By default `ymin = 1` 
+    ymax : float
+        The upper boundary of the (rectangular) domain. By default `ymax = N` 
     x1 : NumPy 1darray
-        1D array holding the x-spacing on the domain 
+        The `x`-spacing on the domain 
     y1 : NumPy 1darray
-        1D array holding the y-spacing on the domain 
+        The `y`-spacing on the domain 
 
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    NumPy's meshgrid. 
-    makegrid from myvec
+    See also
+    --------
+    meshgrid : NumPy's `meshgrid <http://docs.scipy.org/doc/numpy/reference/generated/numpy.meshgrid.html>`_
+    makegrid : found in the module myvec.makegrid
     """
 
     # Set domain boundaries
@@ -805,7 +396,7 @@ def gengrid(N):
     ymin = 1
     ymax = N
 
-    # Compute stepsize
+    # Compute step-size
     h  = (xmax - xmin)/(N-1);
 
     # Compute 1D grid arrays
@@ -820,31 +411,22 @@ def gengrid(N):
 ##########################################################################################
 def addnoise(It,N,ns):
     """
-    ADDNOISE imposes additive Gaussian noise to an image
+    Add Gaussian noise to an image
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     It : NumPy 2darray
         Array representation of an image (2D array). 
     N : int
-        Positive integer determining the image dimension
+        Image dimension (image is an `N`-by-`N` array) 
     ns : float
-        Floating point number setting the noise level to be applied to the 
-        image, i.e. 0.1 = 10% noise, 0.2 = 20% noise, ... Thus ns has to 
-        satisfy 0 <= ns <= 1. By default ns = 0.0. 
+        Noise level applied to the image, i.e., 0.1 = 10% noise, 0.2 = 20% noise, etc. Thus `ns` has to 
+        satisfy `0 <= ns <= 1`. By default `ns = 0.0`. 
        
-    Returns:
-    --------
+    Returns
+    -------
     It : NumPy 2darray
         Noisy version of the input array 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    None 
     """
 
     # Fix state of random number generator
@@ -859,16 +441,15 @@ def addnoise(It,N,ns):
 ##########################################################################################
 def checkinput(N,ns):
     """
-    Perform sanity checks on the inputs N and ns
+    Perform sanity checks on the inputs `N` and `ns`
     """
 
     # Sanity checks
     # N
-    try: N/2.0
+    try: bad = (N != int(N))
     except: raise TypeError("N has to be a positive integer!")
     if N <= 1: raise ValueError("N has to be greater than 1!")
-    if np.round(N) != N:
-        raise ValueError("N has to be an integer!")
+    if bad: raise ValueError("N has to be an integer!")
 
     # ns
     try: float(ns)
@@ -876,25 +457,3 @@ def checkinput(N,ns):
     if ns < 0 or ns > 1: raise ValueError("ns has to be in [0,1]!")
 
     return
-
-##########################################################################################
-def getN(N):
-    """
-    Check if N is either 64, 128, 256 or 512. If not set N to be the 
-    closest of those. 
-    """
-    
-    # Image dimensions we have to offer
-    Nlist = np.array([64,128,256,512])
-
-    # Now see if the user picked one of those
-    if (N != Nlist).all():
-        print "WARNING: No images of format N = ",N," found!"
-        
-        # Pick the closest available image dimension instead
-        idx = np.abs(Nlist - N).argmin()
-        N   = Nlist[idx]
-
-        print "Using N = ",N," instead..."
-
-    return N

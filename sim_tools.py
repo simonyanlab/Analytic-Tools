@@ -136,7 +136,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     ----------
     .. [1] S. Fuertinger, J. C. Zinn, and K. Simonyan. A Neural Population Model Incorporating 
            Dopaminergic Neurotransmission during Complex Voluntary Behaviors. PLoS Computational Biology, 
-           in press. 
+           10(11), 2014. 
     """
 
     # Sanity checks
@@ -787,12 +787,12 @@ def make_bold(fname, stim_onset=None):
 
     References
     ----------
-    .. [1] Glover G (1999) Deconvolution of Impulse Response in Event-Related BOLD FMRI. 
-           NeuroImage 9: 416-429.
+    .. [1] Glover G. Deconvolution of Impulse Response in Event-Related BOLD FMRI. 
+           NeuroImage 9: 416-429, 1999.
 
     .. [2] S. Fuertinger, J. C. Zinn, and K. Simonyan. A Neural Population Model Incorporating 
            Dopaminergic Neurotransmission during Complex Voluntary Behaviors. PLoS Computational Biology, 
-           in press. 
+           10(11), 2014. 
     """
 
     # Sanity checks

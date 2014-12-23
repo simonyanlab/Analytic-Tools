@@ -1,6 +1,6 @@
 # df_tools.py - FEniCS related convenience functions
 # 
-# Author: Stefan Fuertinger
+# Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
 # Juni  5 2012
 
 from __future__ import division

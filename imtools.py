@@ -1,9 +1,10 @@
-# imtools.py - Simple but often used load/save/show shortcuts for images
+# imtools.py - Simple but often used load/save/show routines for images
 # 
-# Author: Stefan Fuertinger
-# Juni 13 2012
+# Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
+# June 13 2012
 
 from __future__ import division
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -15,33 +16,28 @@ from string import join
 ##########################################################################################
 def imview(Im,interpolation="nearest",vmin=None,vmax=None):
     """
-    IMVIEW plots a grey-scale image using "sane" defaults for Matplotlib's imshow. 
+    Plot a gray-scale image using "sane" defaults for Matplotlib's `imshow`. 
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     Im: NumPy 2darray
         Grey-scale image to plot (has to be a 2D array)
     interpolation: str
         String determining interpolation to be used for plotting. Default 
-        value is "nearest". Recommended other values are "bilinear" or "lanczos". 
-        See Matplotlib's imshow-documentation for details. 
+        value is 'nearest'. Recommended other values are 'bilinear' or 'lanczos'. 
+        See Matplotlib's `imshow`-documentation for details. 
     vmin: float
-        Minimal luminance to be used in plot (if None then vmin = Im.min())
+        Minimal luminance to be used in plot (if `None` then `vmin = Im.min()`)
     vmax: float
-        Maximal luminance to be used in plot (if None then vmax = Im.max())
+        Maximal luminance to be used in plot (if `None` then `vmax = Im.max()`)
        
-    Returns:
+    Returns
+    -------
+    Nothing: None
+
+    See also
     --------
-    None 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    Matplotlib's imshow
-
+    imshow : in the `Matplotlib documentation <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow>`_
     """
 
     # Sanity checks
@@ -81,95 +77,38 @@ def imview(Im,interpolation="nearest",vmin=None,vmax=None):
     return
 
 ##########################################################################################
-def imload(fstr,nrm=False):
-    """
-    IMLOAD loads an image using Matplotlib's imread
-
-    Inputs:
-    -------
-    fstr : string
-        String holding path and filename (including filename extension!) 
-        of the image to load. Note that this code only calls imread thus
-        only image formats supported by imread will work. 
-    nrm : bool
-        If nrm = True the loaded image is normalized, such that It.max() = 1
-        and It.min() = 0. Default nrm = False. 
-       
-    Returns:
-    --------
-    It : NumPy ndarray
-        Array representation of the image (2D array for grey-scale images, 
-        (:,:,3)-array for RGB images and (:,:,4)-array for RGBA images). 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    Matplotlib's imread
-    """
-
-    # Sanity checks
-    if type(fstr).__name__ != "str":
-        raise TypeError("fstr has to be a string!")
-    if type(nrm).__name__ != "bool":
-        raise TypeError("nrm has to be True or False!")
-
-    # Get the extension of the image to be loaded
-    try:
-        ext = fstr.split(".")[1]
-    except:
-        print "ERROR: No image extension specified! Aborting..."
-
-    # Load the image 
-    It = plt.imread(fstr) 
-
-    # If we have a tif-file matplotlib loads the image upside down
-    tifvers = ("tif","TIF","tiff","TIFF")
-    if tifvers.count(fstr) != 0:
-        It = It[::-1,:]
-
-    # Convert it to float and normalize it s.t. It.max() = 1.0
-    It = It.astype(float)
-
-    # Normalize the image if wanted
-    if nrm: It = normalize(It)
-
-    return It
-
-##########################################################################################
 def imwrite(figobj,fstr,dpi=None):
     """
-    IMWRITE saves a Matplotlib figure camera-ready using a "tight" bounding box
+    Save a Matplotlib figure camera-ready using a "tight" bounding box
 
-    Inputs:
-    -------
-    figobj : matplotlib figure
-        Matplotlib figure object to be saved as image. 
+    Parameters
+    ----------
+    figobj : Matplotlib figure
+        Matplotlib figure object to be saved
     fstr : string
         String holding the filename to be used to save the figure. If 
-        a specific file format is wanted, provide it with fstr, e.g., 
-        fstr = 'output.tiff'. If fstr does not contain a filename extension
-        the matplotlib default (png) will be used. 
-    dpi : integer >= 1
-        The wanted resolution of the output in dots per inch. If None the 
-        matplotlib default will be used. 
+        a specific file format is wanted, provide it with `fstr`, e.g., 
+        `fstr = 'output.tiff'`. If `fstr` does not contain a filename extension
+        the Matplotlib default (png) will be used. 
+    dpi : integer
+        The wanted resolution of the output in dots per inch. If `None` the 
+        Matplotlib default will be used. 
        
-    Returns:
-    --------
-    None
+    Returns
+    -------
+    Nothing : None
 
-    Notes:
-    ------
-    This is a humble attempt to get rid of the huge white areas around a plot 
-    that are generated by Matplotlib's savefig when saving a figure as an 
-    image using default values. It tries to mimick export_fig for MATLAB. 
+    Notes
+    -----
+    This is a humble attempt to get rid of the huge white areas around plots 
+    that are generated by Matplotlib's `savefig` when saving a figure as an 
+    image using default values. It tries to mimic 
+    `export_fig for MATLAB <http://www.mathworks.com/matlabcentral/fileexchange/23629-export-fig>`_. 
     The result, however, is not perfect yet...
 
-    See also:
-    ---------
-    Matplotlib's savefig
+    See also
+    --------
+    savefig : in the `Matplotlib documentation <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.savefig>`_
     """
 
     # Sanity checks
@@ -200,46 +139,38 @@ def imwrite(figobj,fstr,dpi=None):
 ##########################################################################################
 def normalize(I,a=0,b=1):
     """
-    NORMALIZE rescales a numpy ndarray
+    Re-scale a NumPy ndarray
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     I: NumPy ndarray
         Array to be normalized
     a : float
-        Floating point number being the lower normalization bound. 
-        By default a = 0. (Note that it has to hold that a < b)
+        The lower normalization bound. 
+        By default `a = 0` (Note that it has to hold that `a < b`)
     b : float
-        Floating point number being the upper normalization bound. 
-        By default b = 1. (Note that it has to hold that a < b)
+        The upper normalization bound. 
+        By default `b = 1` (Note that it has to hold that `a < b`)
        
-    Returns:
-    --------
+    Returns
+    -------
     In : NumPy ndarray
-        Scaled version of the input array I, such that a = In.min() and 
-        b = In.max()
+        Scaled version of the input array `I`, such that `a = In.min()` and 
+        `b = In.max()`
 
-    Notes:
-    ------
-    None 
-
-    Examples:
-    ---------
-    I = array([[-1,.2],[100,0]])
-    In = normalize(I,a=-10,b=12)
-    In 
-    array([[-10.        ,  -9.73861386],
-           [ 12.        , -10.        ]])
-
-    See also:
-    ---------
-    None 
+    Examples
+    --------
+    >>> I = array([[-1,.2],[100,0]])
+    >>> In = normalize(I,a=-10,b=12)
+    >>> In 
+        array([[-10.        ,  -9.73861386],
+               [ 12.        , -10.        ]])
     """
 
-    # Ensure that I is a numpy-ndarray
+    # Ensure that I is a NumPy-ndarray
     try: tmp = I.size == 1
-    except TypeError: raise TypeError('I has to be a numpy ndarray!')
-    if (tmp): raise ValueError('I has to be a numpy ndarray of size > 1!')
+    except TypeError: raise TypeError('I has to be a NumPy ndarray!')
+    if (tmp): raise ValueError('I has to be a NumPy ndarray of size > 1!')
 
     # If normalization bounds are user specified, check them
     try: tmp = b <= a
@@ -271,28 +202,24 @@ def normalize(I,a=0,b=1):
 ##########################################################################################
 def blendedges(Im,chim):
     """
-    BLENDEDGES superimposes a (binary) edge set on an grayscale image using Matplotlib's imshow
+    Superimpose a (binary) edge set on an gray-scale image using Matplotlib's `imshow`
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     Im: NumPy 2darray
-        Greyscale image (has to be a 2D array)
+        Grayscale image (has to be a 2D array)
     chim: NumPy 2darray
-        Binary edge map (has to be a 2D array). Note that the edge map must only contain 
-        the valus 0 and 1. 
+        Binary edge map (has to be a 2D array). Note that the edge map must be binary, i.e., 
+        it must only contain the values 0 and 1
        
-    Returns:
+    Returns
+    -------
+    Nothing : None
+
+    See also
     --------
-    None 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    Matplotlib's imshow
-    .. http://stackoverflow.com/questions/2495656/variable-alpha-blending-in-pylab
+    imshow : in the `Matplotlib documentation <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow>`_
+    Stackoverflow : `This submission <http://stackoverflow.com/questions/2495656/variable-alpha-blending-in-pylab>`_ illustrates how to use variable alpha blending in Matplotlib
     """
 
     # Sanity checks
@@ -333,10 +260,10 @@ def mycmap(x):
     Generate a custom color map, setting alpha values to one on edge
     points, and to zero otherwise
     
-    Notes:
-    ------
-    This code is based on the suggestion found at
-    .. http://stackoverflow.com/questions/2495656/variable-alpha-blending-in-pylab 
+    Notes
+    -----
+    This code is based on the suggestion found at this 
+    `Stackoverflow thread <http://stackoverflow.com/questions/2495656/variable-alpha-blending-in-pylab >`
     """
 
     # Convert edge map to Matplotlib colormap (shape (N,N,4))
@@ -350,79 +277,74 @@ def mycmap(x):
 ##########################################################################################
 def recmovie(figobj=None, movie=None, savedir=None, fps=None):
     """
-    RECMOVIE saves matplotlib figures and generates a movie sequence. 
+    Save Matplotlib figures and generate a movie sequences 
 
-    Inputs:
-    -------
-    figobj : matplotlib figure
-        Figure that shall be saved. 
+    Parameters
+    ----------
+    figobj : Matplotlib figure
+        Figure to base the movie on
     movie : str 
-        String determining the filename of the generated movie. 
+        Filename of the generated movie
     savedir : str
-        String determining the directory figobj shall be saved
+        Directory `figobj` shall be saved
         into or name of directory holding image files that 
-        shall be composed into a movie. 
+        to be converted to a movie
     fps : int
-        Integer determining the frames per second in the movie
-        that is generated. 
+        Frames per second for the movie that is generated
 
-    Returns:
+    Returns
+    -------
+    Nothing : None
+
+    Examples
     --------
-    None
-
-
-    Notes:
-    ------
-    RECMOVIE(FIGOBJ) saves the matplotlib figure-object FIGOBJ in the default directory
-    _tmp as png-image. If the default directory is empty the image will be _tmp0000.png, 
-    otherwise the highest no. in the png-file-names incremented by one will be
+    The command `recmovie(figobj)` saves the Matplotlib figure-object `figobj` in the default directory
+    `_tmp` as png-image. If the default directory is empty the image will be named `_tmp0000.png`, 
+    otherwise the highest number in the png-file-names incremented by one will be
     used as filename. 
 
-    RECMOVIE(FIGOBJ,SAVEDIR="somedir") saves the matplotlib figure-object FIGOBJ in the 
-    directory defined by the string SAVEDIR. If the directory does not exist, it will
-    be generated. 
-    If the directory SAVEDIR is empty the image will be _tmp0000.png, otherwise the 
-    highest no. in the png-file-names incremented by one will be used as filename. 
+    Use `recmovie(figobj,savedir="somedir")` to save the Matplotlib figure-object `figobj` in the 
+    directory defined by the string `savedir`. If the directory does not exist, it will
+    be created. 
+    If the directory `savedir` is empty the image will be named `_tmp0000.png`, otherwise the 
+    highest number in the png-file-names incremented by one will be used as filename. 
 
-    RECMOVIE() will attempt to use mencoder to generate an avi-movie composed of the 
-    png-images found in the default directory _tmp. The movie's default name will be
-    composed of the default prefix _tmp and the system's current date and time. 
-    After the movie has been generated the default-directory _tmp and its contents 
+    The command `recmovie()` will attempt to use `mencoder <http://en.wikipedia.org/wiki/MEncoder>`_
+    to generate an avi-movie composed of the 
+    png-images found in the default directory `_tmp`. The movie's default name will be
+    composed of the default prefix `_tmp` and the current date and time. 
+    After the movie has been generated the default-directory `_tmp` and its contents 
     will be deleted. 
 
-    RECMOVIE(MOVIE="somename") will attempt to use mencoder to generate an avi-movie 
-    composed of the png-images found in the default directory _tmp. The movie's 
-    name will be composed of the string MOVIE, hence here somename.avi. 
-    After the movie has been generated the default-directory _tmp and its contents 
-    will be deleted. 
-
-    RECMOVIE(SAVEDIR="somedir") will attempt to use mencoder to generate an avi-movie 
-    composed of the png-images found in the directory specified by the string SAVEDIR. 
-    The movie's name will be composed the default prefix _tmp and the system's current 
+    Use `recmovie(movie="somename")` to launch mencoder and generate an avi-movie 
+    composed of the png-images found in the default directory `_tmp`. 
+    The string `movie` will be used as filename for the generated movie (in the above example
+    a file `somename.avi` will be created). 
+    After the movie has been generated the default-directory `_tmp` and its contents 
+    will be deleted. Similarly `recmovie(savedir="somedir")` will generate an avi-movie 
+    composed of the png-images found in the directory specified by the string `savedir`. 
+    The movie's name will be composed the default prefix `_tmp` and the current 
     date and time. 
-    After the movie has been generated it will be moved to the directory SAVEDIR. If 
-    a movie-file of the same name exists in SAVEDIR a WARNING is printed and the movie 
+    After the movie has been generated it will be moved to the directory `savedir`. If 
+    a movie-file of the same name exists in `savedir` a WARNING is printed and the movie 
+    will not be moved. Analogously, `recmovie(movie="somename",savedir="somedir") will
+    generate an avi-movie named "somename" composed of the png-images found in the 
+    directory specified by the string 
+    `savedir`. 
+    After the movie has been generated it will be moved to the directory `savedir`. If 
+    a movie-file of the same name exists in `savedir` a WARNING is printed and the movie 
     will not be moved. 
 
-    RECMOVIE(MOVIE="somename",SAVEDIR="somedir") will attempt to use mencoder to generate 
-    an avi-movie composed of the png-images found in the directory specified by the string 
-    SAVEDIR. The movie's name will be composed of the string MOVIE, hence here somename.avi. 
-    After the movie has been generated it will be moved to the directory SAVEDIR. If 
-    a movie-file of the same name exists in SAVEDIR a WARNING is printed and the movie 
-    will not be moved. 
-
-    RECMOVIE(FIGOBJ,MOVIE="somename",SAVEDIR="somedir") will ONLY save the 
-    matplotlib-figure-object FIGOBJ in the directory defined by the string SAVEDIR. The 
-    optional argument MOVIE will be ignored. 
+    Note: the command `recmovie(figobj,movie="somename",savedir="somedir")` will ONLY save the 
+    Matplotlib-figure-object `figobj` in the directory defined by the string `savdir`. The 
+    optional argument `movie` will be ignored. 
 
     Note: the default-directory, image-format and movie-type can be changed in the source code 
-    by editing the variables "prefix", "imgtype" and "movtype". 
+    by editing the variables `prefix`, `imgtype` and `movtype`. 
 
-    See also:
-    ---------
-    .. http://matplotlib.sourceforge.net/examples/animation/movie_demo.html
-    .. http://matplotlib.sourceforge.net/faq/howto_faq.html#make-a-movie 
-
+    See also
+    --------
+    Matplotlib : a `collection of codes <http://matplotlib.org/examples/animation/index.html>`_ illustrating how to use animation in Matplotlib 
     """
 
     # Set default values
@@ -447,10 +369,7 @@ def recmovie(figobj=None, movie=None, savedir=None, fps=None):
     # Sanity checks
     if figobj != None:
         if type(figobj).__name__ != "Figure":
-            raise TypeError("figobj has to be a valid matplotlib Figure object!")
-        # try:
-        #     figobj.number
-        # except AttributeError: raise TypeError("figobj has to be a valid matplotlib Figure object!")
+            raise TypeError("figobj has to be a valid Matplotlib Figure object!")
 
     if type(movie).__name__ != "str":
         raise TypeError("movie has to be a string!")
@@ -462,14 +381,6 @@ def recmovie(figobj=None, movie=None, savedir=None, fps=None):
         fps = int(fps) # convert possible float argument to integer, if it does not work raise a TypeError
     except:
         raise TypeError("fps has to be an integer (see man mencoder for details)!")
-
-    # try:
-    #     movie+"string"
-    # except TypeError: raise TypeError("movie has to be a string!")
-
-    # try:
-    #     savedir+"string"
-    # except TypeError: raise TypeError("savedir has to be a string!")
 
     # Check if mencoder is available
     if os.system("which mencoder > /dev/null") != 0:

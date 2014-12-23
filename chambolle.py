@@ -1,50 +1,56 @@
-# chambolle.py - Solve nonlinear TV-denoising using Chambolle's approach
+# chambolle.py - Solve nonlinear TV-denoising using Chambolle's projection algorithm
+# 
+# Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
+# August 22 2012
 
 from __future__ import division
 
 import numpy as np
 import scipy as sp
 
-from mypy.difftools import fidop2d
+# If the mypy package is present, import fidop2d from there, otherwise difftools.py has to be in the same
+# directory as this file
+try:
+    from mypy.difftools import fidop2d
+except:
+    from difftools import fidop2d
 
+##########################################################################################
 def chambolle(ut, Dx=None, Dy=None, mu=1.0e-5, dt=0.25, itmax=10000, tol=1.0e-3):
     """
-    CHAMBOLLE solves the nonlinear TV-denoising problem using Chambolle's approach
+    Solve the nonlinear TV-denoising problem using Chambolle's projection algorithm 
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     ut : NumPy 2darray
-        Raw greyscale image to denoise. Note that ut has to be square!
+        Raw grey-scale image to denoise. Note that `ut` has to be square!
     Dx : NumPy/SciPy matrix
-        Disrecte derivative operator in direction x (foward differences are recommended). 
-        Note that if ut is N-by-N Dx has to be N**2-by-N**2!
+        Discrete derivative operator in direction `x` (forward differences are recommended). 
+        Note that if `ut` is `N`-by-`N` then `Dx` has to be `N**2`-by-`N**2`!
     Dy : NumPy/SciPy matrix
-        Disrecte derivative operator in direction y (foward differences are recommended). 
-        Note that if ut is N-by-N Dy has to be N**2-by-N**2!
-    mu : non-negative real scalar
-        Regularization parameter in the TV functional. Note that mu >= 0 has to hold!
-    dt : positive real scalar
-        Pseudo time step. Note that dt has to satisfy 0 < dt < 1. 
+        Discrete derivative operator in direction `y` (forward differences are recommended). 
+        Note that if `ut` is `N`-by-`N` then `Dy` has to be `N**2`-by-`N**2`!
+    mu : non-negative float
+        Regularization parameter in the TV functional. Note that `mu >= 0` has to hold!
+    dt : positive float
+        Pseudo time step. Note that `dt` has to satisfy `0 < dt < 1`. 
     itmax : positive integer
-        Maximal number of Chambolle iterations. Note that itmax has to be > 0!
-    tol : positive real scalar
-        Error tolerance in Chambolle iterations. Note that tol has to satisfy 0 < tol << 1!
+        Maximal number of Chambolle iterations. Note that `itmax` has to be > 0!
+    tol : positive float
+        Error tolerance in Chambolle iterations. Note that `tol` has to satisfy `0 < tol << 1`!
 
-    Returns:
-    --------
+    Returns
+    -------
     u : NumPy 2darray
-        Denoised Chambolle-image. Has the same dimension as ut. 
+        Denoised Chambolle-image. Has the same dimension as the input image `ut`. 
     p : NumPy 3darray
-        Dual variable ("Chambolle-edge-set"). If ut is N-by-N then p is 2-by-N-by-N, i.e. 
+        Dual variable ("Chambolle-edge-set"). If `ut` is `N`-by-`N` then `p` is `2`-by-`N`-by-`N`, i.e. 
         a tensor. 
 
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    .. http://dl.acm.org/citation.cfm?id=964985
+    References
+    ----------
+    .. [1] A. Chambolle. An algorithm for total variation minimization and applications.
+           Journal of Mathematical Imaging and Vision, 20(1-2):89-97, 2004.
     """
 
     # Sanity checks
@@ -59,7 +65,7 @@ def chambolle(ut, Dx=None, Dy=None, mu=1.0e-5, dt=0.25, itmax=10000, tol=1.0e-3)
 
     if Dx != None:
         if type(Dx).__name__.rfind("matrix") == -1:
-            raise TypeError("Dx has to be a SciPy/Numpy matrix!")
+            raise TypeError("Dx has to be a SciPy/NumPy matrix!")
         else:
             NN = Dx.shape[0]
             if NN != Dx.shape[1]: raise ValueError("Dx has to be a square matrix!")
@@ -67,7 +73,7 @@ def chambolle(ut, Dx=None, Dy=None, mu=1.0e-5, dt=0.25, itmax=10000, tol=1.0e-3)
 
     if Dy != None:
         if type(Dy).__name__.rfind("matrix") == -1:
-            raise TypeError("Dy has to be a SciPy/Numpy matrix!")
+            raise TypeError("Dy has to be a SciPy/NumPy matrix!")
         else:
             NN = Dy.shape[0]
             if NN != Dy.shape[1]: raise ValueError("Dy has to be a square matrix!")
@@ -96,7 +102,7 @@ def chambolle(ut, Dx=None, Dy=None, mu=1.0e-5, dt=0.25, itmax=10000, tol=1.0e-3)
     if Dx == None or Dy == None:
         Dx,Dy = fidop2d(N,'xy','f')
 
-    # Transform the image to be a vector
+    # Convert the image to a vector
     ut = ut.flatten(1)
 
     # Initialize necessary variables
@@ -161,4 +167,4 @@ def chambolle(ut, Dx=None, Dy=None, mu=1.0e-5, dt=0.25, itmax=10000, tol=1.0e-3)
     u = u.reshape(N,N,order="F")
     u = u*mu
 
-    return u,p
+    return u, p

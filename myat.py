@@ -1,79 +1,113 @@
 # myat.py - Implementation of an Ambrosio-Tortorelli segmentation
+# 
+# Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
+# August 22 2012
 
 from __future__ import division
 
 import numpy as np
 import matplotlib.pyplot as plt
-
 from numpy.linalg import norm
 from scipy.sparse import spdiags, linalg
 
-from mypy.difftools import fidop2d
-from mypy.imtools import imview
+# If the mypy package is present, import fidop2d and imview from there, otherwise difftools.py has to be 
+# in the same directory as this file
+try:
+    from mypy.difftools import fidop2d
+    from mypy.imtools import imview
+except:
+    from difftools import fidop2d
+    from imtools import imview
 
 ##########################################################################################
 def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=None):
     """
-    MYAT solves the Ambrosio-Tortorelli approximation to the Mumford-Shah functional
+    Solve the Ambrosio--Tortorelli approximation of the Mumford-Shah functional
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     f : NumPy 2darray
-       Raw (noisy) input image to be segmented. Note that f has to be square!
+        Raw (noisy) input image to be segmented. Note that `f` has to be square!
     ep : float
-       Positive edge-"thickness" parameter in the approximation functional. For ep -> 0
-       the Ambrosio-Tortorelli approximation Gamma-converges to the Mumford-Shah 
-       functional (see Notes below). 
+        Positive edge-"thickness" parameter in the approximation functional. For `ep -> 0`
+        the Ambrosio--Tortorelli approximation Gamma-converges to the Mumford--Shah 
+        functional (see Notes below). 
     nu : float
-       Positive parameter determining the influence of the Ambrosio-Tortorelli terms in the 
-       functional. 
+        Positive parameter determining the influence of the Ambrosio--Tortorelli terms in the 
+        functional. 
     de : float
-       Positive parameter influencing the smoothness regularization term for u in the functional. 
+        Positive parameter influencing the smoothness regularization term for `u` in the functional. 
     la : float
-       Positive parameter weighing the data fidelity term in the functional. 
+        Positive parameter weighing the data fidelity term in the functional. 
     tol : float
-       Error tolerance for stopping criterion satisfying 0 < tol << 1. 
+        Error tolerance for the stopping criterion satisfying `0 < tol << 1`. 
     itmax : int
-       Integer giving the maximal number of iterations. 
+        Integer, the maximal number of iterations. 
     iplot : bool
-       Bool turning interactive plotting on (iplot=True) or off (iplot=False)
+        Switch to turn interactive plotting on (`iplot=True`) or off (`iplot=False`)
     Dx : NumPy/SciPy matrix
-       Disrecte derivative operator in direction x (foward differences are recommended). 
-       Note that if f is N-by-N Dx has to be N**2-by-N**2!
+        Disrecte derivative operator in direction `x` (foward differences are recommended). 
+        Note that if `f` is `N`-by-`N` then `Dx` has to be `N**2`-by-`N**2`!
     Dy : NumPy/SciPy matrix
-       Disrecte derivative operator in direction y (foward differences are recommended). 
-       Note that if f is N-by-N Dy has to be N**2-by-N**2!
+        Discrete derivative operator in direction `y` (forward differences are recommended). 
+        Note that if `f` is `N`-by-`N` then `Dy` has to be `N**2`-by-`N**2`!
     Lh : NumPy/SciPy matrix
-       Disrecte Laplace operator (central differences are recommended). 
-       Note that if f is N-by-N Dy has to be N**2-by-N**2!
+        Discrete Laplace operator (central differences are recommended). 
+        Note that if `f` is `N`-by-`N` then `Dy` has to be `N**2`-by-`N**2`!
 
-    Returns:
-    --------
+    Returns
+    -------
     u : NumPy 2darray
-       The smoothed version of f. 
+        The smoothed version of `f`. 
     v : NumPy 2darray
-       The fuzzy edge map of f. 
+        The fuzzy edge map of `f`. 
 
-    Notes:
-    ------
-    The Ambrosio-Tortorelli functional is given by
-       J_ep(u,v) = \int nu*ep/2 |Dv|^2 + nu/(2*ep) (1-v)^2 + de/2 v^2|Du|^2 + la/2 (u-f)^2 dx
+    Notes
+    -----
+    The Ambrosio--Tortorelli functional [1]_ is given by 
+
+    .. math:: 
+
+       J[u,v] = \\int_{\\Omega}\\frac{\\nu\\varepsilon}{2}|\\nabla v|^2 + \\frac{\\nu}{2\\varepsilon}(1-v)^2 + \\frac{\\delta}{2} v^2|\\nabla u|^2 + \\frac{\\lambda}{2} (u-f)^2 dx
+
     The associated Euler--Lagrange equations are
-       -de div*(v^2Du) + la*u = la*f
-                        du/dn = 0
+
+    .. math::
+
+       \\begin{align}
+       -\\delta \\mathrm{div}(v^2 \\nabla u) + \\lambda u &= \\lambda f \\\\
+       \\frac{\\partial u}{\\partial n} &= 0
+       \\end{align}
+
     and
-       -nu*ep*Lap(v) + nu/ep*v + de*v|Du|^2 = nu/ep
-                                      dv/dn = 0
+
+    .. math::
+
+       \\begin{align}
+       -\\nu\\varepsilon\\Delta v + \\frac{\\nu}{\\varepsilon}v + \\delta v|\\nabla u|^2 &= \\frac{\\nu}{\\varepsilon} \\\\
+       \\frac{\\partial u}{\\partial n} &= 0
+       \\end{align}
+
     The alternate optimization algorithm is initialized using
-       u0 = f
-       v0 = 1/(1 + de*ep/nu|Df|^2)
-    It can be shown that J_ep Gamma-converges to the Mumford Shah functional for ep -> 0. 
 
-    See also:
-    ---------
-    G. Aubert and P. Kornprobst: "Mathematical Problems in Image Processing: Partial Differential 
-    Equations and the Calculus of Variations", Springer 2006. 
+    .. math::
 
+       \\begin{align}
+       u_0 &= f \\\\
+       v_0 &= 1/(1 + \\delta \\frac{\\varepsilon}{\\nu} |\\nabla f|^2)
+       \\end{align}
+
+    It can be shown that :math:`J_{\\epsilon}` Gamma-converges to the Mumford--Shah functional 
+    for :math:`\\varepsilon \\rightarrow 0` (see, e.g., [2]_). 
+
+    References
+    ----------
+    .. [1] L. Ambrosio and V.M. Tortorelli. Approximation of functionals depending on
+           jumps by elliptic functionals via Gamma-convergence. Communications on Pure and
+           Applied Mathematics, 43:999-1036, 1990.
+
+    .. [2] G. Aubert and P. Kornprobst: "Mathematical Problems in Image Processing: Partial Differential 
+           Equations and the Calculus of Variations", Springer 2006. 
     """
 
     # Sanity checks
@@ -134,7 +168,7 @@ def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=N
             if NN != N**2: raise ValueError("Dx has to be of dimension %s**2 = %s"%(repr(N),repr(N**2)))
 
         if type(Dy).__name__.rfind("matrix") == -1:
-            raise TypeError("Dy has to be a SciPy/Numpy matrix!")
+            raise TypeError("Dy has to be a SciPy/NumPy matrix!")
         else:
             NN = Dy.shape[0]
             if NN != Dy.shape[1]: raise ValueError("Dy has to be a square matrix!")
@@ -143,7 +177,7 @@ def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=N
         
     if Lh != None:
         if type(Lh).__name__.rfind("matrix") == -1:
-            raise TypeError("Lh has to be a SciPy/Numpy matrix!")
+            raise TypeError("Lh has to be a SciPy/NumPy matrix!")
         else:
             NN = Lh.shape[0]
             if NN != Lh.shape[1]: raise ValueError("Lh has to be a square matrix!")
@@ -193,7 +227,7 @@ def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=N
     vn   = np.zeros(v.shape)
     JN   = np.zeros((NN,))
 
-    # Allocate non-zero structure of variying matrices
+    # Allocate non-zero structure of varying matrices
     Av = Lh.copy()
     Au = Dx.T*Dx
     Dv = spdiags(np.ones((NN,)),0,NN,NN)

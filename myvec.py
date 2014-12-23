@@ -1,4 +1,7 @@
 # myvec.py - Plotting tools for vector fields
+# 
+# Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
+# June 13 2012
 
 from __future__ import division
 import matplotlib.pyplot as plt
@@ -8,29 +11,24 @@ from scipy.interpolate import griddata
 ##########################################################################################
 def myquiv(u,v):
     """
-    MYQUIV plots a vector field w=(u,v) using "sane" defaults for Matplotlib's quiver.
+    Plots a 2D vector field using "sane" defaults for Matplotlib's `quiver`.
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     u : NumPy 2darray
-        x components of the vector field w(x,y) = (u(x,y),v(x,y)). Note that u has to be 
-        a 2D array of the same dimension as v. 
+        `x` components of the vector field `w(x,y) = (u(x,y),v(x,y))`. Note that `u` has to be 
+        a 2D array of the same dimension as `v`. 
     v : NumPy 2darray
-        y components of the vector field w(x,y) = (u(x,y),v(x,y)). Note that v has to be 
-        a 2D array of the same dimension as u. 
+        `y` components of the vector field `w(x,y) = (u(x,y),v(x,y))`. Note that `v` has to be 
+        a 2D array of the same dimension as `u`. 
        
-    Returns:
+    Returns
+    -------
+    Nothing : None 
+
+    See also
     --------
-    None 
-
-    Notes:
-    ------
-    None 
-
-    See also:
-    ---------
-    Matplotlib's quiver
-
+    quiver : in the `Matplotlib Example Code Repository <http://matplotlib.org/examples/pylab_examples/quiver_demo.html>`_
     """
 
     # Check the input vector field
@@ -49,54 +47,56 @@ def myquiv(u,v):
 ##########################################################################################
 def makegrid(N,M=None,xmin=1,xmax=None,ymin=1,ymax=None):
     """
-    MAKEGRID creates an M-by-N grid on the 2D-domain [xmin,xmax]x[ymin,ymax]
+    Create an `M`-by-`N` grid on the 2D-domain `[xmin,xmax]`-by-`[ymin,ymax]`
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     N : int
-        Integer determining the number of gridpoints in vertical (i.e. y-)
-        direction
+        The number of grid-points in vertical (i.e. `y`-) direction
     M : int 
-        Integer determining the number of gridpoints in vertical (i.e. y-)
-        direction. By default M is dynamically set such that M = N. 
+        The number of grid-points in horizontal (i.e. `x`-) direction. By default `M = N`
     xmin : float
-        The left boundary of the (rectangular) domain. By default xmin = 1. 
+        The left boundary of the (rectangular) domain. By default `xmin = 1` 
     xmax : float
-        The right boundary of the (rectangular) domain. By default xmax is 
-        dynamically set such that xmax = N. 
+        The right boundary of the (rectangular) domain. By default `xmax = N`
     ymin : float
-        The lower boundary of the (rectangular) domain. By default ymin = 1. 
+        The lower boundary of the (rectangular) domain. By default `ymin = 1`
     ymax : float
-        The upper boundary of the (rectangular) domain. By default ymax is 
-        dynamically set such that ymax = M. 
+        The upper boundary of the (rectangular) domain. By default `ymax = N`
     
-    Returns:
-    --------
+    Returns
+    -------
     x : NumPy 2darray
-        2D grid array of x-values on the domain [xmin,xmax]x[ymin,ymax]. 
+        2D grid array of `x`-values on the domain `[xmin,xmax]`-by-`[ymin,ymax]`
     y : NumPy 2darray
-        2D grid array of y-values on the domain [xmin,xmax]x[ymin,ymax]. 
+        2D grid array of `y`-values on the domain `[xmin,xmax]`-by-`[ymin,ymax]`
 
-    Notes:
-    ------
-    The call 
-        x,y = makegrid(N)
-    creates a square [1,N]-by-[1,N] grid given by
-       >>> x
-       array([[   1.,    1.,    1., ...,    1.],
-              [   2.,    2.,    2., ...,    2.],
-              ..., 
-              [    N,     N,     N, ...,     N]])
+    Examples
+    --------
+    The call
+ 
+    >>> x,y = makegrid(N)
+
+    creates a square `[1,N]`-by-`[1,N]` grid given by
+
+    >>> x
+        array([[   1.,    1.,    1., ...,    1.],
+               [   2.,    2.,    2., ...,    2.],
+               ..., 
+               [    N,     N,     N, ...,     N]])
+
     and
-       >>> y
-       array([[   1.,    2.,    3., ...,     N],
-              [   1.,    2.,    3., ...,     N],
-              ..., 
-              [   1.,    2.,    3., ...,     N]])
-    See also:
-    ---------
-    NumPy's meshgrid. 
 
+    >>> y
+        array([[   1.,    2.,    3., ...,     N],
+               [   1.,    2.,    3., ...,     N],
+               ..., 
+               [   1.,    2.,    3., ...,     N]])
+
+    See also
+    --------
+    meshgrid : NumPy's `meshgrid <http://docs.scipy.org/doc/numpy/reference/generated/numpy.meshgrid.html>`_
+    gengrid : found in the module `makeimg <makeimg.gengrid.html>`_
     """
 
     # Sanity checks
@@ -157,46 +157,38 @@ def makegrid(N,M=None,xmin=1,xmax=None,ymin=1,ymax=None):
 ##########################################################################################
 def mygrid(u,v,x=None,y=None,rowstep=16,colstep=16,interpolation="lanczos"):
     """
-    MYGRID plots a vector field w=(u,v) as deformed grid on a 2D lattice. 
+    Plot a 2D vector field as deformed grid on a 2D lattice
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     u : NumPy 2darray
-        x components of the vector field w(x,y) = (u(x,y),v(x,y)). Note that u has to be 
-        a 2D array of the same dimension as v. 
+        `x` components of the vector field `w(x,y) = (u(x,y),v(x,y))`. Note that `u` has to be 
+        a 2D array of the same dimension as `v`. 
     v : NumPy 2darray
-        y components of the vector field w(x,y) = (u(x,y),v(x,y)). Note that v has to be 
-        a 2D array of the same dimension as u. 
+        `y` components of the vector field `w(x,y) = (u(x,y),v(x,y))`. Note that `v` has to be 
+        a 2D array of the same dimension as `u`. 
     x : NumPy 2darray
-        2D grid array of x-values on the domain of w(x,y). By default it is assumed that 
-        w has the domain [1,N]-by-[1,N]. 
+        2D grid array of `x`-values on the domain of `w(x,y)`. By default it is assumed that 
+        `w` is defined on `[1,N]`-by-`[1,N]` 
     y : NumPy 2darray
-        2D grid array of y-values on the domain of w(x,y). By default it is assumed that 
-        w has the domain [1,N]-by-[1,N]. 
+        2D grid array of `y`-values on the domain of `w(x,y)`. By default it is assumed that 
+        `w` is defined on `[1,N]`-by-`[1,N]` 
     rowstep : int
-        Integer determining the array row stride (step size) used to generate the grid. 
-        Default value is 16. 
+        Array row stride (step size) used to generate the grid. Default value is 16. 
     colstep : int
-        Integer determining the array column stride (step size) used to generate the grid. 
-        Default value is 16. 
+        Array column stride (step size) used to generate the grid. Default value is 16. 
     interpolation : str
-        String determining interpolation to be used for plotting. Default 
-        value is "lanczos". Recommended other values are "bilinear" or "nearest". 
-        See Matplotlib's imshow-documentation for details. 
-
+        Interpolation to be used for plotting. Default value is "lanczos". 
+        Recommended other values are "bilinear" or "nearest". See Matplotlib's 
+        `imshow`-documentation for details. 
        
-    Returns:
+    Returns
+    -------
+    Nothing : None 
+
+    See also
     --------
-    None 
-
-    Notes:
-    ------
-    None
-
-    See also:
-    ---------
-    None
-
+    imshow : in the `Matplotlib documentation <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow>`_
     """
 
     # Check the input vector field
@@ -254,42 +246,36 @@ def mygrid(u,v,x=None,y=None,rowstep=16,colstep=16,interpolation="lanczos"):
 ##########################################################################################
 def mywire(u,v,x=None,y=None,rowstep=1,colstep=1):
     """
-    MYWIRE plots a vector field w=(u,v) as 3D wireframe using Matplotlib's 
-    plot_wireframe. 
+    Plot a 2D vector field as 3D wire-frame using Matplotlib's `plot_wireframe`
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     u : NumPy 2darray
-        x components of the vector field w(x,y) = (u(x,y),v(x,y)). Note that u has to be 
-        a 2D array of the same dimension as v. 
+        `x` components of the vector field `w(x,y) = (u(x,y),v(x,y))`. Note that `u` has to be 
+        a 2D array of the same dimension as `v`. 
     v : NumPy 2darray
-        y components of the vector field w(x,y) = (u(x,y),v(x,y)). Note that v has to be 
-        a 2D array of the same dimension as u. 
+        `y` components of the vector field `w(x,y) = (u(x,y),v(x,y))`. Note that `v` has to be 
+        a 2D array of the same dimension as `u`. 
     x : NumPy 2darray
-        2D grid array of x-values on the domain of w(x,y). By default it is assumed that 
-        w has the domain [1,N]-by-[1,N]. 
+        2D grid array of `x`-values on the domain of `w(x,y)`. By default it is assumed that 
+        `w` is defined on `[1,N]`-by-`[1,N]` 
     y : NumPy 2darray
-        2D grid array of y-values on the domain of w(x,y). By default it is assumed that 
-        w has the domain [1,N]-by-[1,N]. 
+        2D grid array of `y`-values on the domain of `w(x,y)`. By default it is assumed that 
+        `w` is defined on `[1,N]`-by-`[1,N]` 
     rowstep : int
-        Integer determining the array row stride (step size) used to generate the wireframe
-        plot (see plot_wireframe's documentation for details). Default value is one. 
+        Array row stride (step size) used to generate the wire-frame plot (see `plot_wireframe`'s 
+        documentation for details). Default value is 1. 
     colstep : int
-        Integer determining the array column stride (step size) used to generate the wireframe
-        plot (see plot_wireframe's documentation for details). Default value is one. 
+        Array column stride (step size) used to generate the wire-frame plot (see `plot_wireframe`'s 
+        documentation for details). Default value is 1. 
        
-    Returns:
+    Returns
+    -------
+    Nothing : None 
+
+    See also
     --------
-    None 
-
-    Notes:
-    ------
-    None
-
-    See also:
-    ---------
-    Matplotlib's plot_wireframe
-
+    plot_wireframe : in the `Matplotlib documentation <http://matplotlib.org/mpl_toolkits/mplot3d/api.html#mpl_toolkits.mplot3d.axes3d.Axes3D.plot_wireframe>`_
     """
 
     # Check the input vector field
@@ -335,7 +321,7 @@ def mywire(u,v,x=None,y=None,rowstep=1,colstep=1):
 ##########################################################################################
 def checkinput(u,v):
     """
-    Perform sanity checks on the input vector field w=(u,v). 
+    Perform sanity checks on the input vector field
     """
 
     # Sanity checks
@@ -345,8 +331,8 @@ def checkinput(u,v):
         if len(u.shape) > 2: raise ValueError("u has to be 2-dimensional!")
         try: u.shape[1]
         except: raise ValueError("u has to be a matrix!")
-        if np.isnan(u).max() == True or np.isinf(u).max() == True:
-            raise ValueError("u must not contain NaNs or Infs!")
+        if np.isnan(u).max() == True or np.isinf(u).max() == True or np.isreal(u).min() == False:
+            raise ValueError("u must be real and must not contain NaNs or Infs!")
 
     if type(v).__name__ != "ndarray":
         raise TypeError("v has to be a NumPy 2darray!")
@@ -354,8 +340,8 @@ def checkinput(u,v):
         if len(v.shape) > 2: raise ValueError("v has to be 2-dimensional!")
         try: v.shape[1]
         except: raise ValueError("v has to be a matrix!")
-        if np.isnan(v).max() == True or np.isinf(v).max() == True:
-            raise ValueError("v must not contain NaNs or Infs!")
+        if np.isnan(v).max() == True or np.isinf(v).max() == True or np.isreal(v).min() == False:
+            raise ValueError("v must be real and must not contain NaNs or Infs!")
 
     if u.shape[0] != v.shape[0] or u.shape[1] != v.shape[1]:
         raise IndexError("u and v must have the same dimensions!")
@@ -365,7 +351,7 @@ def checkinput(u,v):
 ##########################################################################################
 def checkgrid(x,y):
     """
-    Perform sanity checks on the grid (x,y). 
+    Perform sanity checks on the grid
     """
 
     # Sanity checks
@@ -375,8 +361,8 @@ def checkgrid(x,y):
         if len(x.shape) > 2: raise ValueError("x has to be 2-dimensional!")
         try: x.shape[1]
         except: raise ValueError("x has to be a matrix!")
-        if np.isnan(x).max() == True or np.isinf(x).max() == True:
-            raise ValueError("x must not contain NaNs or Infs!")
+        if np.isnan(x).max() == True or np.isinf(x).max() == True or np.isreal(x).min() == False:
+            raise ValueError("x must be real and must not contain NaNs or Infs!")
 
     if type(y).__name__ != "ndarray":
         raise TypeError("y has to be a NumPy 2darray!")
@@ -384,8 +370,8 @@ def checkgrid(x,y):
         if len(y.shape) > 2: raise ValueError("y has to be 2-dimensional!")
         try: y.shape[1]
         except: raise ValueError("y has to be a matrix!")
-        if np.isnan(y).max() == True or np.isinf(y).max() == True:
-            raise ValueError("y must not contain NaNs or Infs!")
+        if np.isnan(y).max() == True or np.isinf(y).max() == True or np.isreal(y).min() == False:
+            raise ValueError("y must be real and must not contain NaNs or Infs!")
 
     if u.shape[0] != y.shape[0] or u.shape[1] != y.shape[1]:
         raise IndexError("u and y must have the same dimensions!")

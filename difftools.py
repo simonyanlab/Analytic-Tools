@@ -1,7 +1,7 @@
 # difftools.py - Several useful utilities for numerical differentiation
 # 
-# Author: Stefan Fuertinger
-# Juni 13 2012
+# Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
+# June 13 2012
 
 from __future__ import division
 import numpy as np
@@ -10,87 +10,100 @@ from scipy.sparse import spdiags, eye, kron
 ##########################################################################################
 def fidop2d(N, drt='xy', fds='c'):
     """
-    FIDOP2D computes 2D finite difference operators
+    Compute 2D finite difference operators
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     N : integer
         Positive integer holding the grid dimension (has to be square, i.e.
-        N-by-N!)
-    drt : str
+        `N`-by-`N`!)
+    drt : string
         String determining the direction of the discrete derivatives. 
         Can be either 'x', 'y' or 'xy'. 
-    fds : str
+    fds : string
         String determining the employed finite difference scheme. Can be 
         either 'c' for centered, 'f' for forward or 'b' for backward. 
        
-    Returns:
-    --------
+    Returns
+    -------
     D : SciPy sparse matrix/matrices
         Depending on the given input one or two sparse matrices 
         corresponding to the wanted discrete derivative operators are 
         returned. 
 
-    Notes:
-    ------
-    Dx,Dy = FIDOP2D(N) returns the sparse N^2-by-N^2 matrices Dx and Dy such that
-    Dh = [Dx,Dy] is the discrete gradient operator in lexicographic 
-    ordering for a function F given on a grid of size NxN.
-    Dx corresponds to the discrete derivative operator of first order 
-    in x-direction, Dy corresponds to the discrete derivative operator 
-    of first order in y-direction. The spacing between points
-    in each direction is assumed to be one (i.e. the step size h = 1). 
-  
-    D = FIDOP2D(N,drt) returns the sparse N^2-by-N^2 matrix D corresponding
-    to the discrete derivative operator in direction drt
-    in lexicographic ordering. The string drt has to be either 'x' (DEFAULT)
-    , 'y' or 'xy'. 
-    Note: only 'xy' will return two matrices, namely Dx, Dy. 
+    Examples
+    --------
+    The command `Dx,Dy = fidop2d(N)` returns the sparse `N**2`-by-`N**2` 
+    matrices `Dx` and `Dy` such that `Dh` defined by
 
-    D = FIDOP2D(N,drt,fds) returns sparse the N^2-by-N^2 matrix D corresponding
-    to the discrete derivative operator in direction drt
-    in lexicographic ordering using the finite difference scheme fds. 
-    The char fds can either be 'c' (centered differences, in cells, DEFAULT), 
+    >>> import numpy as np
+    >>> Dh = np.hstack([Dx,Dy])
+
+    is the discrete gradient operator in lexicographic 
+    ordering for a function `F` given on a grid of size `N`-by-`N`.
+    The matrix `Dx` is a discrete approximation of the first-order derivative operator 
+    in `x`-direction, Analogously, `Dy` discretizes the first order derivative operator 
+    in `y`-direction. The spacing between points in each direction is assumed to be one 
+    (i.e. the step size `h = 1`). 
+    
+    The command `D = fidop2d(N,drt)` returns the sparse `N**2`-by-`N**2` matrix `D` corresponding
+    to the discrete derivative operator in direction `drt`
+    in lexicographic ordering. The string `drt` has to be either 'x' (default)
+    , 'y' or 'xy'. Note: only 'xy' will return two matrices, namely `Dx`, `Dy`. 
+
+    The command `D = fidop2d(N,drt,fds)` returns sparse the `N**2`-by-`N**2` matrix `D` corresponding
+    to the discrete derivative operator in direction `drt`
+    in lexicographic ordering using the finite difference scheme `fds`. 
+    The string `fds` can either be 'c' (centered differences, in cells, default), 
     'f' (forward differences, in interfaces) or 'b' (backward differences, in interfaces). 
 
-    Examples:
-    ---------
-    Dx,Dy = fidop2d(4,fds='f')
-    Dy = fidop2d(N,'y')
+    To discretize first order differential operators on a 4-by-4 grid in both `x`- and `y`-directions 
+    using forward differences use
 
-    Some mathematical notes:
-    ------------------------
+    >>> Dx,Dy = fidop2d(4,fds='f')
+
+    To get only the discrete first order differential operator in `y`-direction on a grid of size `N` use
+
+    >>> Dy = fidop2d(N,'y')
+
+    Notes
+    -----
     For clarity here some comments on the rationale behind the code. 
 
-    The Laplacian:
-    --------------
-    If Dxf,Dyf are computed using forward differences, i.e.
-        Dxf,Dyf = FIDOP2D(N,'xy','f')
-    Then the discrete Laplacian Lh as if using centered differences is
-    obtained by 
-        Lh = -(Dxf.T*Dxf + Dyf.T*Dyf)
-    or if using backward differences, i.e.
-        Dxb,Dyb = FIDOP2D(N,'xy','b')
-    then
-        Lh = Dxb.T*Dxb + Dyb.T*Dyb
-    
-    The Divergence:
-    ---------------
-    Note adjoints: For p in H_0(div):={p in L^2(Om)|div(p) in L^2(Om), p*n = 0 on the boundary of Om}
-    we have
-        \int_Om grad(u)*p dx =  \int_Om u*p*n dS - \int_Om u*div(p) dx
-                                \-------------/
-                                     =0
-                             = -\int_Om u*div(p) dx
-    or in short
-        adjoint(div) = -grad
-    Hence for a spatial discretization take
-        Div_h ~ -Dh.T
-    as approximation for the Divergence. 
+    *The Laplacian*
 
-    See also:
-    ---------
-    None
+    If `Dxf` and `Dyf` are computed using forward differences, i.e.
+
+    >>> Dxf,Dyf = fidop2d(N,'xy','f')
+
+    then the discrete Laplacian `Lh` based on centered differences is
+    obtained by 
+
+    >>> Lh = -(Dxf.T*Dxf + Dyf.T*Dyf)
+
+    or analogously for backward differences, 
+
+    >>> Dxb,Dyb = fidop2d(N,'xy','b')
+
+    then
+
+    >>> Lh = Dxb.T*Dxb + Dyb.T*Dyb
+    
+    *The Divergence*
+
+    Note adjoints: for :math:`p` in 
+    :math:`H_0(\\mathrm{div}):=\\{p \\in L^2(\\Omega)` | div :math:`(p) \\in L^2(\\Omega), pn = 0` 
+    on the boundary of :math:`\\Omega\\}` we have
+
+    .. math:: 
+
+       \\begin{align}
+       \\int_{\\Omega} \\nabla u\\cdot p dx &=  \\int_{\\Omega} u p \\cdot  n dS - \\int_{\\Omega} u \\textrm{ div }(p) dx\\\\
+                                     & = 0 -\\int_{\\Omega} u \\textrm{ div }(p) dx
+       \\end{align}
+
+    or in short :math:`\\textrm{div}^\\ast = -\\nabla`. Hence for a spatial discretization take 
+    `Div_h ~ -Dh.T` as approximation for the divergence. 
     """
 
     # Check correctness of input
@@ -149,50 +162,30 @@ def fidop2d(N, drt='xy', fds='c'):
 ##########################################################################################
 def myff2n(n):
     """
-    MYFF2N gives factor settings dFF2 for a two-level full factorial 
+    Give factor settings for a two-level full factorial design
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     n : integer
-        Positive integer holding the number of factors (i.e. n >= 1)
+        Number of factors
        
-    Returns:
-    --------
+    Returns
+    -------
     dff2 : NumPy 2darray
-        m-by-n array holding the factor settings 
+        An `m`-by-`n` array of factor settings 
 
-    Notes:
-    ------
-    From the MATLAB(TM) help:
-    dFF2 = ff2n(n) gives factor settings dFF2 for a two-level full factorial 
-    design with n factors. dFF2 is m-by-n, where m is the number of treatments 
-    in the full-factorial design. Each row of dFF2 corresponds to a single 
-    treatment. Each column contains the settings for a single factor, 
-    with values of 0 and 1 for the two levels.
-
-    Examples:    
-    ---------
-    dFF2 = ff2n(3)
-    dFF2 =
-       0   0   0
-
-       0   0   1
-
-       0   1   0
-
-       0   1   1
-
-       1   0   0
-
-       1   0   1
-
-       1   1   0
-
-       1   1   1
-
-    See also:
-    ---------
-    None
+    Examples    
+    --------
+    >>> dFF2 = ff2n(3)
+    >>> dFF2
+        array([[ 0.,  0.,  0.],
+               [ 0.,  0.,  1.],
+               [ 0.,  1.,  0.],
+               [ 0.,  1.,  1.],
+               [ 1.,  0.,  0.],
+               [ 1.,  0.,  1.],
+               [ 1.,  1.,  0.],
+               [ 1.,  1.,  1.]])
     """
 
     # Check correctness of input
@@ -219,61 +212,3 @@ def myff2n(n):
         dff2[:,n-k-1] = settings.flatten(1)
 
     return dff2
-
-##########################################################################################
-def mygrad(F):
-    """
-    MYGRAD computes the numerical gradient of a 2D function using central differences
-
-    Inputs:
-    -------
-    F: NumPy 2darray
-       A function defined on a M-by-N grid, i.e. a two-dimensional NumPy array
-
-    Returns:
-    --------
-    Fx: NumPy 2darray
-       Array of the same dimension as F containing the x-derivatives of F
-    Fy: NumPy 2darray
-       Array of the same dimension as F containing the y-derivatives of F
-
-    Notes:
-    ------
-    In contrast to MATLAB Fx contains derivatives along rows and Fy holds
-    the derivatives along columns. 
-
-    See also:
-    ---------
-    MATLAB's gradient function 
-    .. http://www.mathworks.de/help/techdoc/ref/gradient.html
-    """
-
-    # Sanity checks
-    if type(F).__name__ != "ndarray":
-        raise TypeError("F has to be a NumPy ndarray!")
-    else:
-        if len(F.shape) > 2: raise ValueError("F has to be 2-dimensional!")
-        try: F.shape[1]
-        except: raise ValueError("F has to be 2-dimensional!")
-        if np.isnan(F).max() == True or np.isinf(F).max() == True:
-            raise ValueError("F must not contain NaNs or Infs!")
-
-    # Now do something
-    M = F.shape[0]
-    N = F.shape[1]
-
-    # Allocate space for output
-    Fx = np.zeros((M,N))
-    Fy = np.zeros((M,N))
-
-    # Compute x-derivatives
-    Fx[0,:]     = F[1,:]   - F[0,:]
-    Fx[1:M-1,:] = F[2:M,:] - F[0:M-2,:]
-    Fx[-1,:]    = F[-1,:]  - F[-2,:]
-
-    # Compute y-derivatives
-    Fy[:,0]     = F[:,1]   - F[:,0]
-    Fy[:,1:N-1] = F[:,2:N] - F[:,0:N-2]
-    Fy[:,-1]    = F[:,-1]  - F[:,-2]
-
-    return Fx, Fy
