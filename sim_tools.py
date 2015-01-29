@@ -139,7 +139,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
            10(11), 2014. 
     """
 
-    # Sanity checks
+    # Sanity checks for initial conditions
     n = np.zeros((3,)); i = 0
     for vec in [V0, Z0, DA0]:
         try: 
@@ -158,15 +158,24 @@ def run_model(V0, Z0, DA0, task, outfile, \
         i += 1
     if np.unique(n).size > 1:
         raise ValueError('The initial conditions for V, Z, and DA have to have the same length!')
-
-    if type(task).__name__ != 'str':
+        
+    # Check task string
+    if str(task) != task:
         raise TypeError('Task has to be specified as string, not '+type(task).__name__+'!')
+    task = str(task)
     if task != 'rest' and task != 'speech':
         raise ValueError("Task has to be either 'rest' or 'speech'!")
-    
-    if type(outfile).__name__ != 'str':
-        raise TypeError('Output file-name has to be a string specifying the path to an HDF5 container!')
 
+    # The path to the output file should be a string (no unicode craziness) and existing
+    if str(outfile) != outfile:
+        raise TypeError('Output filename has to be a string!')
+    outfile = str(outfile)
+    if outfile.find("~") == 0:
+        outfile = os.path.expanduser('~') + outfile[1:]
+    if not os.path.isdir(outfile[:outfile.rfind(os.sep)]):
+        raise ValueError('Invalid path for output file: '+outfile+'!')
+
+    # Set or get random number generator seed
     if seed != None:
         try:
             bad = (np.round(seed) != seed)
@@ -176,15 +185,28 @@ def run_model(V0, Z0, DA0, task, outfile, \
     else:
         seed = np.random.get_state()[1][0]
 
-    if type(paramfile).__name__ != 'str':
+    # Make sure paramfile doesn't contain unicode and is a valid path
+    if str(paramfile) != paramfile:
         raise TypeError('Parameter file has to be specified using a string!')
+    paramfile = str(paramfile)
+    if paramfile.find("~") == 0:
+        paramfile = os.path.expanduser('~') + paramfile[1:]
+    if not os.path.isfile(paramfile):
+        raise ValueError('Parameter file: '+paramfile+' does not exist!')
 
-    if symsyn != True and symsyn != False:
-        raise TypeError("The switch `symsyn` has to be Boolean!")
+    # Make sure symsyn and verbose are either True or False
+    msg = "The switch `symsyn` has to be Boolean!"
+    try:
+        bad = (symsyn != True and symsyn != False)
+    except: raise TypeError(msg)
+    if bad: raise TypeError(msg)
+    msg = "The switch `verbose` has to be Boolean!"
+    try:
+        bad = (verbose != True and verbose != False)
+    except: raise TypeError(msg)
+    if bad: raise TypeError(msg)
 
-    if verbose != True and verbose != False:
-        raise TypeError("The switch `verbose` has to be Boolean!")
-
+    # Finally, check ram_use
     try:
         bad = (ram_use <= 0) or (ram_use >= 1)
     except: 
@@ -258,7 +280,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     if len(names) != N: 
         raise ValueError("Matrix is "+str(N)+"-by-"+str(N)+" but `names` have length "+str(len(names))+"!")
     for nm in names:
-        if type(nm).__name__ != 'str' and type(nm).__name__ != 'string_':
+        if str(nm) != nm:
             raise ValueError("Names have to be provided as Python list/NumPy array of strings!")
 
     # Get synaptic couplings from parameter file (and set seed of random number generator)
@@ -493,15 +515,26 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
     make_bold : convert raw simulation output to a BOLD signal  
     """
 
-    # Sanity checks
-    if type(fname).__name__ != 'str':
+    # Make sure fname doesn't contain unicode and is a valid file
+    if str(fname) != fname:
         raise TypeError("Name of HDF5 file has to be a string!")
+    fname = str(fname)
+    if fname.find("~") == 0:
+        fname = os.path.expanduser('~') + fname[1:]
+    if not os.path.isfile(fname):
+        raise ValueError('File: '+fname+' does not exist!')
 
-    if raw != True and raw != False:
-        raise TypeError("The switch `raw` has to be Boolean!")
-
-    if bold != True and bold != False:
-        raise TypeError("The switch `bold` has to be Boolean!")
+    # Make sure raw and bold are either True or False
+    msg = "The switch `raw` has to be Boolean!"
+    try:
+        bad = (raw != True and raw != False)
+    except: raise TypeError(msg)
+    if bad: raise TypeError(msg)
+    msg = "The switch `bold` has to be Boolean!"
+    try:
+        bad = (bold != True and bold != False)
+    except: raise TypeError(msg)
+    if bad: raise TypeError(msg)
 
     # Try to open given HDF5 container
     try:
@@ -513,7 +546,7 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
     except: raise ValueError("HDF5 file "+fname+" does not have the required fields!")
 
     # Check if list of names to plot was provided. If yes, make sure they make sense
-    if type(names).__name__ != "str":
+    if str(names) != names:
         doleg = True
         try:
             names = list(names)
@@ -533,9 +566,11 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
             except: raise ValueError("Region "+names+"not found in file!")
             doleg = True
 
+    # Check if figname is actually printable
     if figname != None:
-        if type(figname).__name__ != "str":
-            raise TypeError("Figure name has to be a string, not "+type(figname).__name__+"!")
+        if str(figname) != figname:
+            raise TypeError("Figure name has to be a string!"+type(figname).__name__+"!")
+        figname = str(figname)
 
     # Fix sorting of idx so that smart indexing below works
     if doleg:
@@ -794,10 +829,14 @@ def make_bold(fname, stim_onset=None):
            Dopaminergic Neurotransmission during Complex Voluntary Behaviors. PLoS Computational Biology, 
            10(11), 2014. 
     """
-
-    # Sanity checks
-    if type(fname).__name__ != 'str':
-        raise TypeError("Name of HDF5 file has to be a string!")
+    # Make sure fname doesn't contain unicode and is a valid path
+    if str(fname) != fname:
+        raise TypeError('Filename has to be specified using a string!')
+    fname = str(fname)
+    if fname.find("~") == 0:
+        fname = os.path.expanduser('~') + fname[1:]
+    if not os.path.isfile(fname):
+        raise ValueError('File: '+fname+' does not exist!')
 
     # Try to open given HDF5 container
     try:
@@ -894,9 +933,14 @@ def show_params(fname):
     None
     """
 
-    # Sanity checks
-    if type(fname).__name__ != 'str':
+    # Make sure fname doesn't contain unicode and is a valid path
+    if str(fname) != fname:
         raise TypeError("Name of HDF5 file has to be a string!")
+    fname = str(fname)
+    if fname.find("~") == 0:
+        fname = os.path.expanduser('~') + fname[1:]
+    if not os.path.isfile(fname):
+        raise ValueError('File: '+fname+' does not exist!')
 
     # Try to open given HDF5 container
     try:
@@ -970,8 +1014,7 @@ def regexfind(arr,expr):
     sha = arr.shape
     if len(sha) > 2 or (len(sha) == 2 and min(sha) != 1):
         raise ValueError("Input must be a NumPy 1darray or Python list!")
-
-    if type(expr).__name__ != "str":
+    if str(expr) != expr:
         raise TypeError("Input expression has to be a string, not "+type(expr).__name__+"!")
 
     # Now do something: start by compiling the input expression
@@ -1007,8 +1050,11 @@ def moveit(fname):
     """
 
     # Check if input makes sense
-    if type(fname).__name__ != "str":
+    if str(fname) != fname:
         raise TypeError("File-/Directory-name has to be a string!")
+    fname = str(fname)
+    if fname.find("~") == 0:
+        fname = os.path.expanduser('~') + fname[1:]
 
     # If file already exists, rename it
     if os.path.isfile(fname):

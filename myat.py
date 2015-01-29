@@ -22,7 +22,7 @@ except:
 ##########################################################################################
 def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=None):
     """
-    Solve the Ambrosio--Tortorelli approximation of the Mumford-Shah functional
+    Solve the Ambrosio--Tortorelli approximation of the Mumford--Shah functional
 
     Parameters
     ----------
@@ -68,7 +68,7 @@ def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=N
 
     .. math:: 
 
-       J[u,v] = \\int_{\\Omega}\\frac{\\nu\\varepsilon}{2}|\\nabla v|^2 + \\frac{\\nu}{2\\varepsilon}(1-v)^2 + \\frac{\\delta}{2} v^2|\\nabla u|^2 + \\frac{\\lambda}{2} (u-f)^2 dx
+       J_{\\varepsilon}[u,v] = \\int_{\\Omega}\\frac{\\nu\\varepsilon}{2}|\\nabla v|^2 + \\frac{\\nu}{2\\varepsilon}(1-v)^2 + \\frac{\\delta}{2} v^2|\\nabla u|^2 + \\frac{\\lambda}{2} (u-f)^2 dx
 
     The associated Euler--Lagrange equations are
 
@@ -119,8 +119,8 @@ def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=N
         try: M = f.shape[1]
         except: raise ValueError("f has to be square!")
         if N!=M: raise ValueError("f has to be square!")
-        if np.isnan(f).max() == True or np.isinf(f).max() == True:
-            raise ValueError("f must not contain NaNs or Infs!")
+        if np.isnan(f).max() == True or np.isinf(f).max() == True or np.isreal(f).min() == False:
+            raise ValueError("f must be real and must not contain NaNs or Infs!")
 
     try: ep/2.0
     except: raise TypeError("ep has to be a positive float!")
@@ -149,7 +149,11 @@ def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=N
         itmax = np.round(itmax)
         print "WARNING: itmax has to be an integer - using round(itmax) = ",itmax," now..."
 
-    if type(iplot).__name__ != "bool": raise TypeError("iplot has to be True or False!")
+    msg = "The switch `iplot` has to be Boolean!"
+    try:
+        bad = (iplot != True and iplot != False)
+    except: raise TypeError(msg)
+    if bad: raise TypeError(msg)
 
     if (Dx != None and Dy == None) or (Dx == None and Dy != None):
         print "WARNING: Dx or Dy not provided, switching to default Dx and Dy"
@@ -173,7 +177,6 @@ def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=N
             NN = Dy.shape[0]
             if NN != Dy.shape[1]: raise ValueError("Dy has to be a square matrix!")
             if NN != N**2: raise ValueError("Dy has to be of dimension %s**2 = %s"%(repr(N),repr(N**2)))
-
         
     if Lh != None:
         if type(Lh).__name__.rfind("matrix") == -1:
@@ -184,7 +187,6 @@ def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=N
             if NN != N**2: raise ValueError("Lh has to be of dimension %s**2 = %s"%(repr(N),repr(N**2)))
     else:
         Lh = -(Dx.T*Dx + Dy.T*Dy)
-
 
     # Get squared image dimension
     NN = N**2

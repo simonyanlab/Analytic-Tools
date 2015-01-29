@@ -223,7 +223,7 @@ def mygrid(u,v,x=None,y=None,rowstep=16,colstep=16,interpolation="lanczos"):
         colstep = np.round(colstep)
         print "WARNING: colstep has to be an integer - using round(colstep) = ",colstep," now..."
 
-    if type(interpolation).__name__ != "str":
+    if str(interpolation) != interpolation:
         raise TypeError("interpolation has to be a string!")
 
     # Create lattice

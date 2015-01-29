@@ -170,9 +170,16 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
     numpy.corrcoef, mutual_info
     """
 
-    # Sanity checks 
-    if type(txtpath).__name__ != 'str':
+    # Make sure txtpath doesn't contain nonsense and points to an existing location
+    if str(txtpath) != txtpath:
         raise TypeError('Input has to be a string specifying the path to the txt-file directory!')
+    txtpath = str(txtpath)
+    if txtpath.find("~") == 0:
+        txtpath = os.path.expanduser('~') + txtpath[1:]
+    if not os.path.isdir(txtpath):
+        raise ValueError('Invalid directory: '+txtpath+'!')
+
+    # Check corrtype
     try:
         corrtype = corrtype.lower()
     except: raise TypeError('Correlation type input must be a string!')
@@ -180,6 +187,7 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
     # Get list of all txt-files in txtpath and order them lexicographically
     if txtpath[-1] == ' '  or txtpath[-1] == os.sep: txtpath = txtpath[:-1]
     txtfiles = natsort.natsorted(myglob(txtpath,"s*.[Tt][Xx][Tt]"), key=lambda y: y.lower())
+    if len(txtfiles) < 2: raise ValueError('Found fewer than 2 text files in '+txtpath+'!')
 
     # Load very first file to get length of time-series
     tlen = np.loadtxt(txtfiles[0]).size
@@ -309,14 +317,18 @@ def corrcheck(*args,**kwargs):
 
     # Assign global name for all figures if provided by additional keyword argument 'title'
     figtitle = kwargs.get('title',None); nofigname = False
-    if figtitle == None: nofigname = True
+    if figtitle == None: 
+        nofigname = True
+    else:
+        if str(figtitle) != figtitle:
+            raise ValueError('Figure title must be a string!')
 
     # If labels have been provided, extract them now
     if type(args[-1]).__name__ == 'list':
         myin  -= 1
         labels = args[-1]
         usrlbl = 1
-    elif type(args[-1]).__name__ == 'str':
+    elif str(args[-1]) == args[-1]:
         myin  -= 1
         labels = [args[-1]]
         usrlbl = 1
@@ -372,6 +384,9 @@ def corrcheck(*args,**kwargs):
     # If labels have been provided, check if we got enough of'em; if there are no labels, generate defaults
     if (usrlbl):
         if len(labels) != nmat: raise ValueError('Numbers of labels and matrices do not match up!')
+        for lb in labels:
+            if str(lb) != lb:
+                raise ValueError('Labels must be provided as list of strings or a single string!')
     else:
         labels = ['Matrix '+str(i+1) for i in xrange(nmat)]
 
@@ -918,8 +933,14 @@ def csv2dict(csvfile):
     None 
     """
 
-    # Sanity checks
-    if type(csvfile).__name__ != 'str': raise TypeError('Input has to be a string!')
+    # Make sure csvfile doesn't contain unicode and is a valid file
+    if str(csvfile) != csvfile:
+        raise TypeError("Name of csv-file has to be a string!")
+    csvfile = str(csvfile)
+    if csvfile.find("~") == 0:
+        csvfile = os.path.expanduser('~') + csvfile[1:]
+    if not os.path.isfile(csvfile):
+        raise ValueError('File: '+csvfile+' does not exist!')
     
     # Open csvfile
     fh = open(csvfile,'rU')
@@ -938,7 +959,7 @@ def csv2dict(csvfile):
     return mydict
 
 ##########################################################################################
-def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdths=[5,2,.1],nodecmap='jet',edgecmap='jet',textscale=1):
+def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lwdths=[5,2,.1],nodecmap='jet',edgecmap='jet',textscale=3):
     """
     Plots a 3d network using Mayavi
 
@@ -966,22 +987,22 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
     sizevec : NumPy 1darray 
         Vector of nodal sizes. This could be degree, centrality, etc. Thus `sizevec` has to be of length 
         `N` and all its components must be `>= 0`. 
-    labels : list
+    labels : Python list/NumPy 1darray
         Nodal labels. Format is `['Name1','Name2','Name3',...]` where the ordering HAS to be the same
-        as in the `coords` dictionary. Note that the list has to have length `N`. 
-    threshs : list 
-        List of thresholds for visualization. Edges with weights larger than `threshs[0]` are drawn 
+        as in the `coords` dictionary. Note that the list/array has to have length `N`. 
+    threshs : Python list/NumPy 1darray
+        Thresholds for visualization. Edges with weights larger than `threshs[0]` are drawn 
         thickest, weights `> threshs[1]` are thinner and so on. Note that if `threshs[-1]>0` not all 
         edges of the network are plotted (since edges with `0 < weight < threshs[-1]` will be ignored). 
-    lwdths : list 
-        List of line-widths associated to the list of thresholds. Edges with weights larger than 
+    lwdths : Python list/NumPy 1darray
+        Line-widths associated to the thresholds provided by `threshs`. Edges with weights larger than 
         `threshs[0]` are drawn with line-width `lwdths[0]`, edges with `weights > threshs[1]` 
         have line-width `lwdths[1]` and so on. Thus `len(lwdths) == len(threshs)`. 
     nodecmap : string 
         Mayavi colormap to be used for plotting nodes. See Notes for details. 
     edgecmap : string 
         Mayavi colormap to be used for plotting edges. See Notes for details. 
-    textscale : positive number 
+    textscale : real number
         Scaling factor for labels (larger numbers -> larger text)
 
     Returns
@@ -1009,7 +1030,7 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
               +'rich) graph rendering routine based on Matplotlib.'
         raise ImportError(msg)
 
-    # Sanity checks and assign default values
+    # Make sure the adjacency/weighting matrix makes sense
     try:
         (N,M) = A.shape
     except: 
@@ -1018,11 +1039,18 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
     if np.isnan(A).max() == True or np.isinf(A).max() == True or np.isreal(A).min() == False:
         raise ValueError("A must be real-valued without NaNs or Infs!")
 
-    if type(coords).__name__ != 'dict':
-        raise TypeError("The coordinates have to be a dictionary!")
-    if len(coords.keys()) != N:
-        raise ValueError('The coordinate dictionary has to have N keys!')
+    # Check the coordinate dictionary
+    try:
+        bad = (coords.keys() != N)
+    except: raise TypeError("The coordinates have to be provided as dictionary!")
+    if bad: raise ValueError('The coordinate dictionary has to have N keys!')
+    try:
+        cda = np.array(coords.values())
+    except: raise ValueError('All elements of the coords dictionary have to be 3-dimensional!')
+    if np.isnan(cda).max() == True or np.isinf(cda).max() == True or np.isreal(cda).min() == False: 
+        raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
 
+    # Check colorvec if provided, otherwise assign default value
     if colorvec != None:
         try: tmp = colorvec.size != N
         except: raise TypeError('colorvec has to be a NumPy array!')
@@ -1033,6 +1061,7 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
             raise ValueError('colorvec values must be between 0 and 1!')
     else: colorvec = np.ones((N,))
 
+    # Same for sizevec
     if sizevec != None:
         try: tmp = sizevec.size != N
         except: raise TypeError('sizevec has to be a NumPy array!')
@@ -1043,25 +1072,43 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
             raise ValueError('sizevec values must be >= 0!')
     else: sizevec = np.ones((N,))
 
-    if type(labels).__name__ != 'list':
-        raise TypeError("Nodal labels have to be provided as list!")
+    # Check labels (if any provided)
+    if labels != None:
+        try:
+            bad = (len(labels) != N)
+        except: raise TypeError("Nodal labels have to be provided as list/NumPy 1darray!")
+        if bad: raise ValueError("Number of nodes and labels does not match up!")
+        for lb in labels:
+            if str(lb) != lb:
+                raise ValueError('Each individual label has to be a string type!')
+    else:
+        labels = []
 
-    if type(threshs).__name__ != 'list':
-        raise TypeError("Thresholds have to be provided as list!")
+    # Check thresholds and linewidhts
+    try:
+        n = len(threshs)
+    except: raise TypeError("Visualization thresholds have to be provided as list/NumPy 1darray!")
+    threshs = np.array(threshs)
+    if np.isnan(threshs).max() == True or np.isinf(threshs).max() == True or np.isreal(threshs).min()==False:
+            raise ValueError("threshs must be real-valued without NaNs or Infs!")
+    try:
+        m = len(lwdths)
+    except: raise TypeError("Linewidths have to be provided as list/NumPy 1darray!")
+    lwdths = np.array(lwdths)
+    if np.isnan(lwdths).max() == True or np.isinf(lwdths).max() == True or np.isreal(lwdths).min()==False:
+            raise ValueError("lwdths must be real-valued without NaNs or Infs!")
+    if m != n: raise ValueError("Number of thresholds and linewidths does not match up!")
 
-    if type(lwdths).__name__ != 'list':
-        raise TypeError("Linewidths have to be provided as list!")
-    if len(lwdths) != len(threshs):
-        raise ValueError("Same number of thresholds and linewidths required!")
-
-    if type(nodecmap).__name__ != 'str':
+    # Make sure colormap definitions were given as strings
+    if str(nodecmap) != nodecmap:
         raise TypeError("Colormap for nodes has to be provided as string!")
-
-    if type(edgecmap).__name__ != 'str':
+    if str(edgecmap) != edgecmap:
         raise TypeError("Colormap for edges has to be provided as string!")
 
-    if type(textscale).__name__ != 'float' and type(textscale).__name__ != 'int':
-        raise TypeError("Scaling factor of text has to be provided as number!")
+    # Try to convert textscale to a float, scream if it doesn't work
+    try:
+        textscale = float(textscale)
+    except: raise TypeError("Scaling factor for text has to be provided as float!")
 
     # Now start to actually do something...
     pts = mlab.quiver3d(np.array([coords[i][0] for i in coords.keys()]),\
@@ -1112,12 +1159,12 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=[],threshs=[.8,.3,0],lwdt
 
     # Label nodes if wanted
     for i in xrange(len(labels)):
-        mlab.text3d(coords[i][0]+2,coords[i][1],coords[i][2],labels[i],color=(0,0,0),scale=3)
+        mlab.text3d(coords[i][0]+2,coords[i][1],coords[i][2],labels[i],color=(0,0,0),scale=textscale)
 
     return
 
 ##########################################################################################
-def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(name='jet'),edgecmap=plt.get_cmap(name='jet'),linewidths=None,nodes3d=False,viewtype='axial'):
+def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cmap(name='jet'),edgecmap=plt.get_cmap(name='jet'),linewidths=None,nodes3d=False,viewtype='axial'):
     """
     Matplotlib-based plotting routine for 3d networks
 
@@ -1145,9 +1192,9 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
     sizevec : NumPy 1darray 
         Vector of nodal sizes. This could be degree, centrality, etc. Thus `sizevec` has to be of 
         length `N` and all its components must be `>= 0`. 
-    labels : list
+    labels : Python list/NumPy 1darray
         Nodal labels. Format is `['Name1','Name2','Name3',...]` where the ordering HAS to be the same
-        as in the `coords` dictionary. Note that the list has to have length `N`. 
+        as in the `coords` dictionary. Note that the list/array has to have length `N`. 
     nodecmap : Matplotlib colormap
         Colormap to use for plotting nodes
     edgecmap : Matplotlib colormap
@@ -1194,18 +1241,26 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
     shownet : A Mayavi based implementation with less functionality but MUCH faster rendering
     """
 
-    # Sanity checks and assign default values
+    # Check the graph's connection matrix
     try:
         (N,M) = A.shape
     except: raise TypeError('A has to be a square NumPy array!')
     if N != M: raise ValueError('A has to be square!')
     if np.isnan(A).max() == True or np.isinf(A).max() == True or np.isreal(A).min() == False:
         raise ValueError("A must be real-valued without NaNs or Infs!")
-    if type(coords).__name__ != 'dict':
-        raise TypeError("The coordinates have to be a dictionary!")
-        if len(coords.keys()) != N:
-            raise ValueError('The coordinate dictionary has to have N keys!')
 
+    # Check the coordinate dictionary
+    try:
+        bad = (coords.keys() != N)
+    except: raise TypeError("The coordinates have to be provided as dictionary!")
+    if bad: raise ValueError('The coordinate dictionary has to have N keys!')
+    try:
+        cda = np.array(coords.values())
+    except: raise ValueError('All elements of the coords dictionary have to be 3-dimensional!')
+    if np.isnan(cda).max() == True or np.isinf(cda).max() == True or np.isreal(cda).min() == False: 
+        raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
+
+    # Make sure colorvec and sizevec make sense
     if colorvec != None:
         try: tmp = colorvec.size != N
         except: raise TypeError('colorvec has to be a NumPy array!')
@@ -1215,7 +1270,6 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
         if colorvec.min() < 0 or colorvec.max() > 1:
             raise ValueError('colorvec values must be between 0 and 1!')
     else: colorvec = np.ones((N,))
-
     if sizevec != None:
         try: tmp = sizevec.size != N
         except: raise TypeError('sizevec has to be a NumPy array!')
@@ -1226,15 +1280,25 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
             raise ValueError('sizevec values must be >= 0!')
     else: sizevec = np.ones((N,))
 
-    if type(labels).__name__ != 'list':
-        raise TypeError("Nodal labels have to be provided as list!")
+    # Check labels (if any provided)
+    if labels != None:
+        try:
+            bad = (len(labels) != N)
+        except: raise TypeError("Nodal labels have to be provided as list/NumPy 1darray!")
+        if bad: raise ValueError("Number of nodes and labels does not match up!")
+        for lb in labels:
+            if str(lb) != lb:
+                raise ValueError('Each individual label has to be a string type!')
+    else:
+        labels = []
 
+    # Check the colormaps
     if type(nodecmap).__name__ != 'LinearSegmentedColormap':
         raise TypeError('Nodal colormap has to be a Matplotlib colormap!')
-
     if type(edgecmap).__name__ != 'LinearSegmentedColormap':
         raise TypeError('Edge colormap has to be a Matplotlib colormap!')
 
+    # If no linewidths were provided, use the entries of A as to control edge thickness
     if linewidths != None:
         try:
             (N,M) = linewidths.shape
@@ -1242,11 +1306,15 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
         if N != M: raise ValueError('Linewidths have to be provided as square matrix!')
         if np.isnan(linewidths).max() == True or np.isinf(linewidths).max() == True or np.isreal(linewidths).min() == False:
                 raise ValueError("Linewidths must be real-valued without NaNs or Infs!")
+    else:
+        linewidths = A
 
+    # Make sure nodes3d is Boolean
     if type(nodes3d).__name__ != 'bool':
         raise TypeError('The nodes3d flag has to be a Boolean variable!')
 
-    if type(viewtype).__name__ != 'str':
+    # Check if viewtype is anything strange
+    if str(viewtype) != viewtype:
         raise TypeError("Viewtype must be 'axial(_{t/b})', 'sagittal(_{l/r})' or 'coronal(_{f/b})'")
 
     # Turn on 3d projection
@@ -1258,18 +1326,12 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
     y = np.array([coords[i][1] for i in coords.keys()])
     z = np.array([coords[i][2] for i in coords.keys()])
 
-    # Order matters here: FIRST plot connection, THEN nodes on top of the connections (looks weird otherwise)
+    # Order matters here: FIRST plot connections, THEN nodes on top of connections (looks weird otherwise)
     # Cycle through the matrix and plot every single connection line-by-line (this is *really* slow)
-    if linewidths == None:
-        for i in xrange(N):
-            for j in xrange(i+1,N):
-                if A[i,j] > 0:
-                    plt.plot([x[i],x[j]],[y[i],y[j]],[z[i],z[j]],linewidth=A[i][j],color=edgecmap(A[i][j]))
-    else: 
-        for i in xrange(N):
-            for j in xrange(i+1,N):
-                if A[i,j] > 0:
-                    plt.plot([x[i],x[j]],[y[i],y[j]],[z[i],z[j]],linewidth=linewidths[i][j],color=edgecmap(A[i][j]))
+    for i in xrange(N):
+        for j in xrange(i+1,N):
+            if A[i,j] > 0:
+                plt.plot([x[i],x[j]],[y[i],y[j]],[z[i],z[j]],linewidth=linewidths[i][j],color=edgecmap(A[i][j]))
 
     # Plot nodes (either 3d spheres or flat scatter points)
     if nodes3d == False:
@@ -1318,7 +1380,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=[],nodecmap=plt.get_cmap(
         ax.view_init(elev=0,azim=0)
     else: 
         print "WARNING: Unrecognized viewtype: "+viewtype
-        print "Using default viewtype axial instead"
+        print "Using default viewtype `axial` instead"
         ax.view_init(elev=90,azim=-90)
     plt.axis('scaled')
     plt.axis('off')
@@ -1373,7 +1435,7 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
     try: import bct
     except: raise ImportError("Could not import bctpy! Consider installing it using pip install bctpy")
 
-    # Sanity checks
+    # Check the input network
     try:
         shn = nw.shape; N = shn[0]
     except:
@@ -1388,16 +1450,17 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
     except: raise TypeError("M has to be a natural number > 1!")
     if (tmp): raise ValueError("M has to be a natural number > 1!")
 
-    if type(method).__name__ != 'str':
-        raise TypeError("Input method must be a string, not "+type(method).__name__+"!")
-    mthopts = ["auto","randmio_und_connected","randmio_und","null_model_und_sign"]
-    mthstr  = str(mthopts)
-    mthstr  = mthstr.replace("(","")
-    mthstr  = mthstr.replace(")","")
-    try:
-        mthopts.index(method)
-    except: raise ValueError("Method has to be one of: "+mthstr)
+    # See if the string method is one of the supported randomization algorithms
+    supported = ["auto","randmio_und_connected","randmio_und","null_model_und_sign"]
+    if supported.count(method) == 0:
+        sp_str = str(supported)
+        sp_str = sp_str.replace('[','')
+        sp_str = sp_str.replace(']','')
+        msg = 'Network cannot be randomized with '+str(method)+\
+              '. Available options are: '+sp_str
+        raise ValueError(msg)
 
+    # See if rwr makes sense
     try:
         bad = (np.round(rwr) != rwr)
     except: TypeError("Rewiring parameter rwr has to be an integer, not "+type(rwr).__name__+"!")
@@ -2033,19 +2096,18 @@ def myglob(flpath,spattern):
     >>> print filelist
     >>> ['Documents/MyHolidayFun/img1.PNG','Documents/MyHolidayFun/img1.png']
         
-    Notes
-    -----
-    None
-
     See also
     --------
     glob
     """
 
-    # Sanity checks
-    if type(flpath).__name__ != 'str':
-        raise TypeError('Input has to be a string specifying a path!')
-    if type(spattern).__name__ != 'str':
+    # Make sure provided path is a string and does not contain weird unicode characters
+    if str(flpath) != flpath:
+        raise TypeError('Filepath has to be a string!')
+    flpath = str(flpath)
+    if flpath.find("~") == 0:
+        flpath = os.path.expanduser('~') + flpath[1:]
+    if str(spattern) != spattern:
         raise TypeError('Pattern has to be a string!')
 
     # If user wants to search current directory, make sure that works as expected
@@ -2126,14 +2188,13 @@ def printdata(data,leadrow,leadcol,fname=None):
     except: 
         raise ImportError("Could not import texttable! Consider installing it using pip install texttable")
 
-    # Sanity checks
+    # Check dimensions of input
     try:
         ds = data.shape
     except:
         raise TypeError('Input must be a M-by-N NumPy array, not ' + type(data).__name__+'!')
     if len(ds) > 2:
         raise ValueError('Input must be a M-by-N NumPy array!')
-
     try:
         m = len(leadcol)
     except: 
@@ -2143,10 +2204,16 @@ def printdata(data,leadrow,leadcol,fname=None):
     except: 
         raise TypeError('Input must be a Python list or NumPy 1d array, not '+type(leadrow).__name__+'!')
 
+    # If a filename was provided make sure it's a string and check if the path exists
+    # (unicode chars in filenames are probably a bad idea...)
     if fname != None:
-        if type(fname).__name__ != 'str':
-            raise TypeError('Input fname has to be a string specifying an output filename, not '\
-                            +type(fname).__name__+'!')
+        if str(fname) != fname:
+            raise TypeError('Optional output filename has to be a string!')
+        fname = str(fname)
+        if fname.find("~") == 0:
+            fname = os.path.expanduser('~') + fname[1:]
+        if not os.path.isdir(fname[:fname.rfind(os.sep)]):
+            raise ValueError('Invalid path for output file: '+fname+'!')
         if fname[-4::] != '.csv':
             fname = fname + '.csv'
         save = True

@@ -355,10 +355,13 @@ def myglob(flpath,spattern):
     glob
     """
 
-    # Sanity checks
-    if type(flpath).__name__ != 'str':
-        raise TypeError('Input has to be a string specifying a path!')
-    if type(spattern).__name__ != 'str':
+    # Make sure provided path is a string and does not contain weird unicode characters
+    if str(flpath) != flpath:
+        raise TypeError('Filepath has to be a string!')
+    flpath = str(flpath)
+    if flpath.find("~") == 0:
+        flpath = os.path.expanduser('~') + flpath[1:]
+    if str(spattern) != spattern:
         raise TypeError('Pattern has to be a string!')
 
     # If user wants to search current directory, make sure that works as expected
@@ -368,6 +371,10 @@ def myglob(flpath,spattern):
     # Append trailing slash to filepath
     else:
         if flpath[-1] != os.sep: flpath = flpath + os.sep
+
+    # Now check if the path even exists
+    if not os.path.isdir(flpath[:flpath.rfind(os.sep)]):
+        raise ValueError('Invalid path: '+flpath+'!')
 
     # Return glob-like list
     return [os.path.join(flpath, fnm) for fnm in fnmatch.filter(os.listdir(flpath),spattern)]
@@ -467,12 +474,22 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     h5py : A Pythonic interface to the HDF5 binary data format
     """
 
-    # Sanity checks
-    if type(eegpath).__name__ != 'str':
+    # Make sure eegpath is a regular string and doesn't contain any unicode weirdness 
+    # (and expand "~" if present)
+    if str(eegpath) != eegpath:
         raise TypeError('Input has to be a string specifying the path/name of the EEG files!')
+    eegpath = str(eegpath)
+    if eegpath.find("~") == 0:
+        eegpath = os.path.expanduser('~') + eegpath[1:]
 
-    if type(outfile).__name__ != 'str':
+    # Same for outfile: no unicode and additionally check if the path is valid
+    if str(outfile) != outfile:
         raise TypeError('Output filename has to be a string!')
+    outfile = str(outfile)
+    if outfile.find("~") == 0:
+        outfile = os.path.expanduser('~') + outfile[1:]
+    if not os.path.isdir(outfile[:outfile.rfind(os.sep)]):
+        raise ValueError('Invalid path for output file: '+outfile+'!')
     if os.path.isfile(outfile): 
         raise ValueError("Target HDF5 container already exists!")
 
@@ -481,7 +498,11 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
         except: raise TypeError('Input electrodlist must be a Python list!')
         if le == 0: raise ValueError('Input electrodelist has length 0!')
 
-    if type(savemat).__name__ != 'bool': raise TypeError('Input savemat has to be boolean!')
+    # Make sure savemat and bold are either True or False
+    msg = "The switch `savemat` has to be Boolean!"
+    try:
+        bad = (savemat != True and savemat != False)
+    except: raise TypeError(msg)
 
     # If file extension was provided, remove it to avoid stupid case-sensitive nonsense
     dt = eegpath.rfind('.')
@@ -1065,7 +1086,7 @@ def load_data(h5file,nodes=None):
     # Get indices of nodes to be read
     idx = []
     if nodes != None:
-        if type(nodes[0]).__name__.find("str") > -1:
+        if str(nodes[0]) == nodes[0]:
             for node in nodes:
                 try: idx.append(ec_list.index(node))
                 except KeyError: raise ValueError("Node "+node+" not found in file "+h5file+"!")
@@ -1226,7 +1247,7 @@ def time2ind(h5file,t_start,t_end):
 def check_hdf(h5file):
 
     # See if we can open provided HDF5 container
-    if type(h5file).__name__ == 'str':
+    if str(h5file) == h5file:
         try:
             f = h5py.File(h5file)
         except: raise ValueError("Error opening file "+h5file)

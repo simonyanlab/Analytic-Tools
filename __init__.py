@@ -3,7 +3,6 @@ from chambolle import chambolle
 import difftools as dft
 import imtools as imt
 from imtools import blendedges
-from imtools import imview
 from imtools import imwrite
 from imtools import normalize
 from kmeans import kmeans

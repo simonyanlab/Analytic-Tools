@@ -394,28 +394,28 @@ def printdata(data,leadrow,leadcol,fname=None):
     return
 
 ##########################################################################################
-def printstats(variables,pvals,baseline,testset,basestr='baseline',teststr='testset',fname=None):
+def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',verbose=True,fname=None):
     """
     Pretty-print previously computed statistical results 
 
     Parameters
     ----------
     variables : list or NumPy 1darray
-        List/array of variables that have been tested
+        Python list/NumPy array of strings representing variables that have been tested
     pvals : Numpy 1darray
-        Aray of p-values (has to be same size as `variables`)
-    baseline : NumPy 2darray
-        An #samples-by-#variables array forming the "baseline" set for the previously 
+        Aray of `p`-values (floats) of the same size as `variables`
+    group1 : NumPy 2darray
+        An #samples-by-#variables array forming the "group1" set for the previously 
         computed statistical comparison
-    testset : NumPy 2darray
-        An #samples-by-#variables array forming the "test" set for the previously 
+    group2 : NumPy 2darray
+        An #samples-by-#variables array forming the "group2" set for the previously 
         computed statistical comparison
-    basestr : string
+    g1str : string
         A string to be used in the generated table to highlight computed mean/std values of 
-        the baseline dataset
-    teststr : string
+        the group1 dataset
+    g2str : string
         A string to be used in the generated table to highlight computed mean/std values of 
-        the test dataset
+        the group2 dataset
     fname : string
         Name of a csv-file (with or without extension `.csv`) used to save the table 
         (WARNING: existing files will be overwritten!). Can also be a path + filename 
@@ -433,43 +433,56 @@ def printstats(variables,pvals,baseline,testset,basestr='baseline',teststr='test
     --------
     texttable : a module for creating simple ASCII tables (currently available at the 
                 `Python Package Index <https://pypi.python.org/pypi/texttable/0.8.1>`_)
-    printdata : a function that pretty-prints/-saves data given in an array
+    printdata : a function that pretty-prints/-saves data given in an array (part of 
+                `nws_tools.py <http://research.mssm.edu/simonyanlab/analytical-tools/nws_tools.printdata.html#nws_tools.printdata>`_
     """
 
-    # Sanity checks
+    # Make sure that the groups, p-values and tested variables have appropriate dimensions
     try:
         m = len(variables)
     except: 
-        raise TypeError('Input must be a Python list or NumPy 1d array, not '+type(variables).__name__+'!')
+        raise TypeError('Input variables must be a Python list or NumPy 1d array of strings, not '+\
+                        type(variables).__name__+'!')
+    for var in variables:
+        if str(var) != var:
+            raise TypeError('All variables must be strings!')
     try: 
         M = pvals.size
     except: 
-        raise TypeError('Input must be a NumPy 1d array, not '+type(variables).__name__+'!')
+        raise TypeError('The p-values must be provided as NumPy 1d array, not '+type(variables).__name__+'!')
     if M != m:
-        raise ValueError('No. of labels and p-values do not match up!')
-
+        raise ValueError('No. of variables (=labels) and p-values do not match up!')
     try:
-        N,M = baseline.shape
+        N,M = group1.shape
     except: 
-        raise TypeError('Input must be a NumPy 2d array, not '+type(baseline).__name__+'!')
+        raise TypeError('Dataset 1 must be a NumPy 2d array, not '+type(group1).__name__+'!')
     if M != m:
-        raise ValueError('No. of labels and baseline dimension do not match up!')
-
+        raise ValueError('No. of variables (=labels) and dimension of group1 do not match up!')
     try:
-        N,M = testset.shape
+        N,M = group2.shape
     except: 
-        raise TypeError('Input must be a NumPy 2d array, not '+type(testset).__name__+'!')
+        raise TypeError('Dataset 2 must be a NumPy 2d array, not '+type(group2).__name__+'!')
     if M != m:
-        raise ValueError('No. of labels and testset dimension do not match up!')
+        raise ValueError('No. of variables (=labels) and dimension of group2 do not match up!')
 
-    if type(basestr).__name__ != 'str':
-        raise TypeError('Input basestr to be a string, not '+type(basestr).__name__+'!')
+    # If column labels were provided, make sure they are printable strings
+    if str(g1str) != g1str:
+        raise TypeError('The optional column label `g1str` has to be a string!')
+    if str(g2str) != g2str:
+        raise TypeError('The optional column label `g2str` has to be a string!')
 
-    if type(teststr).__name__ != 'str':
-        raise TypeError('Input teststr to be a string, not '+type(teststr).__name__+'!')
+    # See if we're supposed to print stuff to the terminal or just save everything to a csv file
+    msg = 'The optional switch verbose has to be True or False!'
+    try:
+        bad = (verbose == True or verbose == False)
+    except: raise TypeError(msg)
+    if bad == False:
+        raise TypeError(msg)
 
+    # If a filename was provided make sure it's a string 
+    # (unicode chars in filenames are probably a bad idea...)
     if fname != None:
-        if type(fname).__name__ != 'str':
+        if str(fname) != fname:
             raise TypeError('Input fname has to be a string specifying an output filename, not '\
                             +type(fname).__name__+'!')
         if fname[-4::] != '.csv':
@@ -478,32 +491,32 @@ def printstats(variables,pvals,baseline,testset,basestr='baseline',teststr='test
     else: save = False
 
     # Construct table head
-    head = [" ","p","mean("+basestr+")"," ","std("+basestr+")","</>",\
-            "mean("+teststr+")"," ","std("+teststr+")"]
+    head = [" ","p","mean("+g1str+")"," ","std("+g1str+")","</>",\
+            "mean("+g2str+")"," ","std("+g2str+")"]
 
     # Compute mean/std of input data
-    basemean = baseline.mean(axis=0)
-    basestd  = baseline.std(axis=0)
-    testmean = testset.mean(axis=0)
-    teststd  = testset.std(axis=0)
+    g1mean = group1.mean(axis=0)
+    g1std  = group1.std(axis=0)
+    g2mean = group2.mean(axis=0)
+    g2std  = group2.std(axis=0)
 
     # Put "<" if mean(base) < mean(test) and vice versa
-    gtlt = np.array(['<']*basemean.size)
-    gtlt[np.where(basemean > testmean)] = '>'
+    gtlt = np.array(['<']*g1mean.size)
+    gtlt[np.where(g1mean > g2mean)] = '>'
 
     # Prettify table
-    pmstr = ["+/-"]*basemean.size
+    pmstr = ["+/-"]*g1mean.size
 
     # Assemble data array
     Data = np.column_stack((variables,\
                             pvals.astype('str'),\
-                            basemean.astype('str'),\
+                            g1mean.astype('str'),\
                             pmstr,\
-                            basestd.astype('str'),\
+                            g1std.astype('str'),\
                             gtlt,\
-                            testmean.astype('str'),\
+                            g2mean.astype('str'),\
                             pmstr,\
-                            teststd.astype('str')))
+                            g2std.astype('str')))
 
     # Construct texttable object
     table = Texttable()
@@ -515,9 +528,10 @@ def printstats(variables,pvals,baseline,testset,basestr='baseline',teststr='test
     table.add_rows(Data.tolist(),header=False)
     table.set_deco(Texttable.HEADER)
 
-    # Pump out table
-    print "Summary of statistics:\n"
-    print table.draw() + "\n"
+    # Pump out table if wanted
+    if verbose:
+        print "Summary of statistics:\n"
+        print table.draw() + "\n"
 
     # If wanted, save stuff in a csv file
     if save:

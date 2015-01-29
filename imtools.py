@@ -14,69 +14,6 @@ from glob import glob
 from string import join
 
 ##########################################################################################
-def imview(Im,interpolation="nearest",vmin=None,vmax=None):
-    """
-    Plot a gray-scale image using "sane" defaults for Matplotlib's `imshow`. 
-
-    Parameters
-    ----------
-    Im: NumPy 2darray
-        Grey-scale image to plot (has to be a 2D array)
-    interpolation: str
-        String determining interpolation to be used for plotting. Default 
-        value is 'nearest'. Recommended other values are 'bilinear' or 'lanczos'. 
-        See Matplotlib's `imshow`-documentation for details. 
-    vmin: float
-        Minimal luminance to be used in plot (if `None` then `vmin = Im.min()`)
-    vmax: float
-        Maximal luminance to be used in plot (if `None` then `vmax = Im.max()`)
-       
-    Returns
-    -------
-    Nothing: None
-
-    See also
-    --------
-    imshow : in the `Matplotlib documentation <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow>`_
-    """
-
-    # Sanity checks
-    # Im
-    if type(Im).__name__ != "ndarray":
-        raise TypeError("Im has to be a NumPy ndarray!")
-    else:
-        if len(Im.shape) > 2: raise ValueError("Im has to be 2-dimensional!")
-        try: Im.shape[1]
-        except: raise ValueError("Im has to be an image")
-        if np.isnan(Im).max() == True or np.isinf(Im).max() == True:
-            raise ValueError("Im must not contain NaNs or Infs!")
-        
-    # interpolation
-    if type(interpolation).__name__ != "str":
-        raise TypeError("interpolation has to be a string!")
-
-    # vmin
-    if vmin != None:
-        try: float(vmin)
-        except: raise TypeError("vmin has to be minimal luminance level, i.e. float!")
-        if np.isnan(vmin) == True or np.isinf(vmin) == True:
-            raise ValueError("vmin must not be NaN or Inf!")
-
-    # vmax
-    if vmax != None:
-        try: float(vmax)
-        except: raise TypeError("vmax has to be maximal luminance level, i.e. float!")
-        if np.isnan(vmax) == True or np.isinf(vmax) == True:
-            raise ValueError("vmax must not be NaN or Inf!")
-        
-    # Now do something
-    plt.imshow(Im,cmap="gray",interpolation=interpolation,vmin=vmin,vmax=vmax)
-    plt.axis("off")
-    plt.draw()
-
-    return
-
-##########################################################################################
 def imwrite(figobj,fstr,dpi=None):
     """
     Save a Matplotlib figure camera-ready using a "tight" bounding box
@@ -111,12 +48,18 @@ def imwrite(figobj,fstr,dpi=None):
     savefig : in the `Matplotlib documentation <http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.savefig>`_
     """
 
-    # Sanity checks
+    # Check if figobj is really a figure
     if type(figobj).__name__ != "Figure":
         raise TypeError("figobj has to be a valid matplotlib Figure object!")
 
-    if type(fstr).__name__ != "str":
-        raise TypeError("fstr has to be a string!")
+    # Make sure fstr doesn't contain weirdness and points to an existing place
+    if str(fstr) != fstr:
+        raise TypeError("Output filename has to be a string!")
+    fstr = str(fstr)
+    if fstr.find("~") == 0:
+        fstr = os.path.expanduser('~') + fstr[1:]
+    if not os.path.isdir(fstr[:fstr.rfind(os.sep)]):
+        raise ValueError('Invalid path for output file: '+fstr+'!')
 
     # Check if filename extension has been provided
     dt = fstr.rfind('.')
@@ -366,19 +309,32 @@ def recmovie(figobj=None, movie=None, savedir=None, fps=None):
     if fps == None:
         fps = fpsno
 
-    # Sanity checks
+    # Make sure figobj is actually a figure
     if figobj != None:
         if type(figobj).__name__ != "Figure":
             raise TypeError("figobj has to be a valid Matplotlib Figure object!")
 
-    if type(movie).__name__ != "str":
-        raise TypeError("movie has to be a string!")
+    # Check if movie filename makes sense and points to an existing location
+    if str(movie) != movie:
+        raise TypeError("Output filename for movie has to be a string!")
+    movie = str(movie)
+    if movie.find("~") == 0:
+        movie = os.path.expanduser('~') + movie[1:]
+    if not os.path.isdir(movie[:movie.rfind(os.sep)]):
+        raise ValueError('Invalid path for output filename for movie: '+movie+'!')
 
-    if type(savedir).__name__ != "str":
-        raise TypeError("savedir has to be a string!")
-
+    # Make sure savedir exists
+    if str(savedir) != savedir:
+        raise TypeError('Output filename has to be a string!')
+    savedir = str(savedir)
+    if savedir.find("~") == 0:
+        savedir = os.path.expanduser('~') + savedir[1:]
+    if not os.path.isdir(savedir):
+        raise ValueError('Invalid path for output file: '+savedir+'!')
+        
+    # Convert possible float argument to integer, if it does not work raise a TypeError
     try: 
-        fps = int(fps) # convert possible float argument to integer, if it does not work raise a TypeError
+        fps = int(fps) 
     except:
         raise TypeError("fps has to be an integer (see man mencoder for details)!")
 
