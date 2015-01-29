@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: March 19 2014
-# Last modified: 2015-01-29 11:47:542015-01-29 11:47:14
+# Last modified: <2015-01-29 12:17:59>
 
 from __future__ import division
 import numpy as np

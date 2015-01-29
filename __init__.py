@@ -1,5 +1,5 @@
 # Make shortcuts to imports if from mypy import * is done
-# Last modified: 2015-01-29 11:49:36
+# Last modified: <2015-01-29 12:17:40>
 from chambolle import chambolle
 import difftools as dft
 import imtools as imt

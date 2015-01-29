@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 25th 2014
-# Last modified: 2015-01-29 11:51:53
+# Last modified: <2015-01-29 12:19:26>
 
 from distutils.core import setup
 from distutils.extension import Extension
