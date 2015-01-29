@@ -1,7 +1,8 @@
 # stats_tools.py - Tools to perform statistical tests
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
-# December 30 2014
+# Created: December 30 2014
+# Last modified: 2015-01-29 11:48:27
 
 from __future__ import division
 import numpy as np

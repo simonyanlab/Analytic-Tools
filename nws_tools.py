@@ -1,7 +1,8 @@
 # nws_tools.py - Collection of network creation/processing/analysis/plotting routines
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
-# December 22 2014
+# Created: December 22 2014
+# Last modified: 2015-01-29 11:48:17
 
 from __future__ import division
 import numpy as np

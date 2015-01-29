@@ -1,7 +1,8 @@
 # imtools.py - Simple but often used load/save/show routines for images
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
-# June 13 2012
+# Created: June 13 2012
+# Last modified: 2015-01-29 11:50:06
 
 from __future__ import division
 

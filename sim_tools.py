@@ -1,7 +1,8 @@
 # sim_tools.py - Routines necessary to run a model simulation
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
-# June 23 2014
+# Created: June 23 2014
+# Last modified: 2015-01-29 11:47:49
 
 from __future__ import division
 import numpy as np

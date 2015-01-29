@@ -1,7 +1,8 @@
 # the_model.pyx - Cythonized version of model equations including RK15 solver
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
-# June 25 2014
+# Created: June 25 2014
+# Last modified: 2015-01-29 11:49:06
 
 # Python imports
 from __future__ import division

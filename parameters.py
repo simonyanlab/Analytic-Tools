@@ -1,7 +1,8 @@
 # parameters.py - Default parameters for the NMM
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
-# June 23 2014
+# Created: June 23 2014
+# Last modified: 2015-01-29 11:50:47
 
 from __future__ import division
 

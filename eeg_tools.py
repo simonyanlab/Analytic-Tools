@@ -1,7 +1,8 @@
 # eeg_tools.py - Toolset to read/write EEG data
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
-# March 19 2014
+# Created: March 19 2014
+# Last modified: 2015-01-29 11:47:542015-01-29 11:47:14
 
 from __future__ import division
 import numpy as np
