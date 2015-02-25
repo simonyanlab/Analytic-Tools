@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 30 2014
-# Last modified: <2015-01-29 12:19:59>
+# Last modified: <2015-02-04 10:34:54>
 
 from __future__ import division
 import numpy as np
@@ -18,6 +18,14 @@ import os
 ##########################################################################################
 def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=False,mth=None,\
               verbose=True,fname=None,vars=None,g1str=None,g2str=None):
+    """
+    Perform permutation tests on paired/unpaired uni-/multi-variate data
+
+    Parameters
+    ----------
+    X : NumPy 2darray
+        An #samples-by-#variables array forming the first group
+    """
 
     # Check manadatory inputs and make sure X and Y are tested for the same no. of variables
     try:

@@ -10,14 +10,12 @@ import matplotlib.pyplot as plt
 from numpy.linalg import norm
 from scipy.sparse import spdiags, linalg
 
-# If the mypy package is present, import fidop2d and imview from there, otherwise difftools.py has to be 
+# If the mypy package is present, import fidop2d from there, otherwise difftools.py has to be 
 # in the same directory as this file
 try:
     from mypy.difftools import fidop2d
-    from mypy.imtools import imview
 except:
     from difftools import fidop2d
-    from imtools import imview
 
 ##########################################################################################
 def myat(f,ep,nu=1,de=1,la=1,tol=1e-4,itmax=100,iplot=False,Dx=None,Dy=None,Lh=None):
@@ -298,7 +296,7 @@ def getfig(f,de,la,nu,ep):
     ax = fig.add_subplot(1,3,1)
     plt.sca(ax)
     ax.set_title(r"$f$")
-    imview(f.reshape(N,N,order="F"))
+    plt.imshow(f.reshape(N,N,order="F"),interpolation='nearest',cmap='gray')
     plt.draw()
 
     return fig
@@ -316,12 +314,12 @@ def showit(fig,u,v):
     ax = fig.add_subplot(1,3,2)
     plt.sca(ax)
     ax.set_title(r"$u$")
-    imview(u.reshape(N,N,order="F"))
+    plt.imshow(u.reshape(N,N,order="F"),interpolation='nearest',cmap='gray')
     plt.draw()
 
     # Plot v
     ax = fig.add_subplot(1,3,3)
     plt.sca(ax)
     ax.set_title(r"$v$")
-    imview(v.reshape(N,N,order="F"))
+    plt.imshow(v.reshape(N,N,order="F"),interpolation='nearest',cmap='gray')
     plt.draw()
