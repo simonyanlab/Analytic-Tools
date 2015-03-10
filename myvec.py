@@ -37,7 +37,7 @@ def myquiv(u,v):
     # Now do something
     N  = u.shape[0]
     dN = min(N,16)
-    plt.quiver(v[N-1:0:(-N/dN),0:N:(N/dN)],-u[N-1:0:(-N/dN),0:N:(N/dN)],color="k")
+    plt.quiver(v[N-1:0:(-N/dN),0:N:(N/dN)],u[N-1:0:(-N/dN),0:N:(N/dN)],color="k")
     plt.axis("image")
     plt.axis("off")
     plt.draw()
@@ -202,7 +202,7 @@ def mygrid(u,v,x=None,y=None,rowstep=16,colstep=16,interpolation="lanczos"):
     elif x == None:
         x,y = makegrid(N,M=M)
     else:
-        checkgrid(x,y)
+        checkgrid(u,x,y)
     if x.shape[0] != u.shape[0] or x.shape[1] != u.shape[1]:
         raise IndexError("Grid and vector field must have the same dimensions!")
 
@@ -232,7 +232,7 @@ def mygrid(u,v,x=None,y=None,rowstep=16,colstep=16,interpolation="lanczos"):
     wires[:,0:-1:colstep] = 0
 
     # Apply vector field
-    zipyx = zip(y.flatten(1),x.flatten(1))
+    zipyx  = zip(y.flatten(1),x.flatten(1))
     wiresr = griddata(zipyx,wires.flatten(1),(y+v,x+u),method="linear",fill_value=1)
     
     # Plot it
@@ -289,7 +289,7 @@ def mywire(u,v,x=None,y=None,rowstep=1,colstep=1):
     elif x == None:
         x,y = makegrid(N,M=M)
     else:
-        checkgrid(x,y)
+        checkgrid(u,x,y)
     if x.shape[0] != u.shape[0] or x.shape[1] != u.shape[1]:
         raise IndexError("Grid and vector field must have the same dimensions!")
 
@@ -349,7 +349,7 @@ def checkinput(u,v):
     return
 
 ##########################################################################################
-def checkgrid(x,y):
+def checkgrid(u,x,y):
     """
     Perform sanity checks on the grid
     """

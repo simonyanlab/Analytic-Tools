@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 25 2013
-# Last modified: <2015-01-29 12:19:00>
+# Last modified: <2015-03-06 16:26:46>
 
 from __future__ import division
 import sys
@@ -14,6 +14,7 @@ import numpy as np
 from texttable import Texttable
 from datetime import datetime, timedelta
 from scipy import ndimage
+import matplotlib.pyplot as plt
 
 ##########################################################################################
 def find_contiguous_regions(condition):
@@ -682,3 +683,72 @@ def MA(signal, window_size):
     # Assemble window and compute moving average of signal
     window = np.ones(int(window_size))/float(window_size)
     return ndimage.filters.convolve1d(signal,window,mode='nearest')
+
+##########################################################################################
+def draw_fancy_network(G,pos,sizevec,cvec,ax=None,edgecmap=plt.cm.jet,nodecmap=plt.cm.jet,node_bordercmap=None,\
+                       nodealpha=1.0,edgealpha=1.0,rad=0.1):
+    """
+    Plot a networks using very, very, very specific custom settings. Very flexible but a bit painful code below
+
+    G : NetworkX graph
+    pos: Node dictionary in NetworkX format
+
+    Rest as usual
+    """
+
+    N = len(G.nodes())
+
+    nodealpha = np.array(nodealpha)
+    if nodealpha.size == 1:
+        nodealpha = np.ones(N)
+
+    edgealpha = np.array(edgealpha)
+    if edgealpha.size == 1:
+        edgealpha = np.ones(N)
+
+    # Turn on hold state for axis we're drawing in
+    ax.hold(True)
+
+    # Create circles to get coordinates of nodal centers
+    for n in G:
+        if node_bordercmap == None:
+            G.node[n]['patch'] = Circle(pos[n],radius=sizevec[n],alpha=nodealpha[n],color=nodecmap(cvec[n]))
+        else:
+            G.node[n]['patch'] = Circle(pos[n],radius=sizevec[n],alpha=nodealpha[n],\
+                                        facecolor=nodecmap(cvec[n]),edgecolor=node_bordercmap(cvec[n]))
+
+    # Nodes that were already connected by an edge go to the seen dict
+    seen={}
+
+    # Draw edges
+    for (u,v) in G.edges():
+
+        # Load previously saved patches
+        n1 = G.node[u]['patch']
+        n2 = G.node[v]['patch']
+
+        # If nodes haven't been connected yet...
+        if (u,v) not in seen:
+
+            # ...draw a "bended" edge
+            ax.add_patch(FancyArrowPatch(n1.center,n2.center,\
+                                         arrowstyle='-',\
+                                         connectionstyle='arc3,rad=%s'%rad,\
+                                         lw=0.5,\
+                                         alpha=edgealpha[u],\
+                                         color=edgecmap(G.get_edge_data(u,v)['weight'])))
+
+            # Update radian measure (change pos./neg. curvature intermittently)
+            rad = -rad
+
+            # Edge is drawn, nodes are "seen" now
+            seen[(u,v)]=rad
+
+    # Now draw nodes on top of edges
+    for n in G:
+        ax.add_patch(G.node[n]['patch'])
+
+    # Make aspect ratio of axes equal so that our circles stay circles and don't become ellipses
+    plt.axis('equal')
+
+    return

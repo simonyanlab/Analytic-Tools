@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
 # Created: June 13 2012
-# Last modified: <2015-01-29 12:18:17>
+# Last modified: <2015-03-10 15:40:07>
 
 from __future__ import division
 
@@ -59,7 +59,8 @@ def imwrite(figobj,fstr,dpi=None):
     fstr = str(fstr)
     if fstr.find("~") == 0:
         fstr = os.path.expanduser('~') + fstr[1:]
-    if not os.path.isdir(fstr[:fstr.rfind(os.sep)]):
+    slash = fstr.rfind(os.sep)
+    if slash >= 0 and not os.path.isdir(fstr[:slash]):
         raise ValueError('Invalid path for output file: '+fstr+'!')
 
     # Check if filename extension has been provided
