@@ -7,11 +7,6 @@ from __future__ import division
 
 import numpy as np
 import matplotlib.pyplot as plt
-import os
-
-# Set loading path for images
-IMGPATH = os.path.realpath(__file__)
-IMGPATH = IMGPATH.replace(os.path.basename(__file__),"")
 
 ##########################################################################################
 def onesquare(N,ns=0.0):
