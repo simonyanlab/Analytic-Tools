@@ -1,5 +1,5 @@
 # Make shortcuts to imports if from mypy import * is done
-# Last modified: <2015-01-29 12:17:40>
+# Last modified: <2015-03-27 14:17:11>
 from chambolle import chambolle
 import difftools as dft
 import imtools as imt
@@ -17,3 +17,4 @@ import nws_tools as nwt
 import sde_solvers as sde
 import eeg_tools as eeg
 import sim_tools as smt
+import stats_tools as sta

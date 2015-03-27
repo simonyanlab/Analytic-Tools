@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 30 2014
-# Last modified: <2015-02-04 10:34:54>
+# Last modified: <2015-03-27 16:16:56>
 
 from __future__ import division
 import numpy as np
@@ -13,6 +13,7 @@ import h5py
 import string
 import itertools
 from texttable import Texttable
+from datetime import datetime
 import os
 
 ##########################################################################################
@@ -98,6 +99,12 @@ def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=F
               "Available options are: "+sp_str
         raise ValueError(msg)
 
+    # Just in case: save tail selection for output before we convert it (maybe) to an integer 
+    tail_dt1 = {"less":"less than","two":"different from","greater":"greater than"}
+    tail_dt2 = {"less":"lower","two":"two","greater":"upper"}
+    tail_st1 = tail_dt1[tail]
+    tail_st2 = tail_dt2[tail]
+
     # Depending on `paired`, `tail` is either a str (for coin in R) or -1,0,1 (for mne's t-test)
     if paired == False:
         if tail == 'two':
@@ -117,7 +124,7 @@ def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=F
                       "' is invalid. Available options are: "+sp_str
                 raise ValueError(msg)
         else:
-            print "WARNING: The stats toolbox in MNE only supports standard Tmax correction of p=values!"
+            print "WARNING: The stats toolbox in MNE only supports standard Tmax correction of p-values!"
     else:
         correction = 'single-step'
 
@@ -137,10 +144,11 @@ def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=F
         fname = str(fname)
         if fname.find("~") == 0:
             fname = os.path.expanduser('~') + fname[1:]
-        if not os.path.isdir(fname[:fname.rfind(os.sep)]):
+        slash = fname.rfind(os.sep)
+        if slash >= 0 and not os.path.isdir(fname[:fname.rfind(os.sep)]):
             raise ValueError('Invalid path for output file: '+fname+'!')
 
-    # Warn if output was turn off but labels were provided and assign default values to labels if necessary
+    # Warn if output was turned off but labels were provided and assign default values to labels if necessary
     # (Do error checking here to avoid a breakdown at the very end of the code...)
     if verbose == False and fname == None:
         for chk in [vars,g1str,g2str]:
@@ -273,13 +281,37 @@ def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=F
 
     # If wanted print/save the results
     if verbose or fname != None:
-        printstats(vars,stats_dict['pvals'],X,Y,g1str,g2str,verbose=verbose,fname=fname)
+
+        # Construct string to be used as footer for the output file/last line of command line output
+        permstr = "using "+str(nperms)+" permutations under the alternative hypothesis that "+\
+                  g1str+" is "+tail_st1+" "+g2str+" ("+tail_st2+"-tailed) "
+        if paired:
+            ft = "Statistical symmetry of paired samples was assessed using the permutation t-test "+\
+                 "from the Python package MNE (see http://martinos.org/mne/stable/mne-python.html)\n"+\
+                 permstr+"\n"+\
+                 "adjusted for multiple comparisons using the maximal test statistic Tmax. "
+        else:
+            if mth == None:
+                mth_str = "general independence test"
+            else:
+                mth_str = "maximally selected statistics test"
+            mth_dt  = {}
+            ft = "Statistical independence of unpaired samples was assessed using the "+mth_str+\
+                 " from the R package coin (http://cran.r-project.org/web/packages/coin/index.html)\n"+\
+                 permstr+"\n"+\
+                 "adjusted for multiple testing by a "+correction+" Tmax approach for the maximal test statistic. \n"
+
+        # Append an auto-gen message and add current date/time to the soon-to-be footer
+        ft += "Results were computed by stats_tools.py on "+str(datetime.now())
+
+        # Call printstats to do the heavy lifting
+        printstats(vars,stats_dict['pvals'],X,Y,g1str,g2str,foot=ft,verbose=verbose,fname=fname)
 
     # Return the stocked dictionary
     return stats_dict
 
 ##########################################################################################
-def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',verbose=True,fname=None):
+def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot='',verbose=True,fname=None):
     """
     Pretty-print previously computed statistical results 
 
@@ -356,6 +388,10 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',verbo
     if str(g2str) != g2str:
         raise TypeError('The optional column label `g2str` has to be a string!')
 
+    # If a footer was provided, make sure it is a printable string
+    if str(foot) != foot:
+        raise TypeError('The optional footer `foot` has to be a string!')
+
     # See if we're supposed to print stuff to the terminal or just save everything to a csv file
     msg = 'The optional switch verbose has to be True or False!'
     try:
@@ -373,7 +409,8 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',verbo
         fname = str(fname)
         if fname.find("~") == 0:
             fname = os.path.expanduser('~') + fname[1:]
-        if not os.path.isdir(fname[:fname.rfind(os.sep)]):
+        slash = fname.rfind(os.sep)
+        if slash >= 0 and not os.path.isdir(fname[:fname.rfind(os.sep)]):
             raise ValueError('Invalid path for output file: '+fname+'!')
         if fname[-4::] != '.csv':
             fname = fname + '.csv'
@@ -422,6 +459,7 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',verbo
     if verbose:
         print "Summary of statistics:\n"
         print table.draw() + "\n"
+        print foot + "\n"
 
     # If wanted, save stuff in a csv file
     if save:
@@ -429,11 +467,10 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',verbo
         head = head.replace("[","")
         head = head.replace("]","")
         head = head.replace("'","")
-        np.savetxt(fname,Data,delimiter=",",fmt="%s",header=head,comments="")
+        np.savetxt(fname,Data,delimiter=",",fmt="%s",header=head,footer=foot,comments="")
 
-################################################################################
-# TESTING
-################################################################################
+
+# # TESTING
 
 # # Load data
 # f     = h5py.File('../Python_tools/stat_data.h5','r')
@@ -450,13 +487,14 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',verbo
 # n_jobs  = 1                         # How many CPUs to use (don't use more than 1!!!)
 # verbose = True                      # Be chatty about it
 
-# Paired test
+# # Paired test
 # perm_test(X,Y,paired=True,tail='two')
 # sd = perm_test(X,Y,paired=False,tail='two')
 # print sd['pvals']
 # sd = perm_test(X,Y[:-12],paired=False,tail='two')
 # print sd['pvals']
-# sd = perm_test(X,Y,paired=True,tail='two',verbose=False,fname='~/Desktop/test.csv')
+# sd = perm_test(X,Y,paired=True,tail='less',verbose=False,fname='~/Desktop/test.csv')
+# sd = perm_test(X,Y,paired=False,tail='two',verbose=True,fname='~/Desktop/test2.csv')
 # print sd['pvals']
 
 # sys.exit()
