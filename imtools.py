@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
 # Created: June 13 2012
-# Last modified: <2015-03-10 15:40:07>
+# Last modified: <2015-04-02 12:47:55>
 
 from __future__ import division
 
@@ -218,6 +218,99 @@ def mycmap(x):
     tmp[:,:,3] = x
 
     return tmp
+
+def img2mov(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow'):
+
+    # First and foremost, check if ffmpeg is available, otherwise everything else is irrelevant
+    if os.system("which ffmpeg > /dev/null") != 0:
+        msg = "Could not find ffmpeg. It seems like ffmpeg is either not installed or not in the search path. "
+        raise ValueError(msg)
+
+    # Check if image directory exists and append trailing slash if necessary
+    if str(imgpth) != imgpth:
+        raise TypeError('Path to image directory has to be a string!')
+    imgpth = str(imgpth)
+    if imgpth.find("~") == 0:
+        imgpth = os.path.expanduser('~') + imgpth[1:]
+    if not os.path.isdir(imgpth):
+        raise ValueError('Invalid path to image directory: '+imgpth+'!')
+    slash = imgpth.rfind(os.sep)
+    if slash != len(imgpth-1): 
+        imgpth += os.sep
+
+    # Check if imgfmt is a valid string format specifier 
+    # (don't use split below in case we have something like im.001.tiff)
+    if str(imgfmt) != imgfmt:
+        raise TypeError('Format specifier for images has to be a string!')
+    imgfmt = str(imgfmt)
+    dot    = imgfmt.rfind('.')
+    fmt    = imgfmt[:dot]
+    imtype = imgfmt[dot+1:]
+    if fmt.find('%') < 0: raise ValueError('Invalid image format specifier: '+fmt+'!')
+    if imtype.find('.') >= 0: raise ValueError('Invalid image file type: '+imtype+'!')
+    
+    # Check if image directory actually contains any images of the given type
+    imgs     = natsort.natsorted(glob(imgpth+'*.'+imtype))
+    num_imgs = len(imgs)
+    if num_imgs < 2: raise ValueError('Directory '+imgpth+' contains fewer than 2 files!')
+
+    # Check validity of outfile 
+    if str(outfile) != outfile:
+        raise TypeError('Output filename has to be a string!')
+    outfile = str(outfile)
+    if outfile.find("~") == 0:
+        outfile = os.path.expanduser('~') + outfile[1:]
+    slash = outfile.rfind(os.sep)
+    if slash >= 0 and not os.path.isdir(outfile[:outfile.rfind(os.sep)]):
+        raise ValueError('Invalid path to save movie: '+outfile+'!')
+
+    # Check format specifier for the movie: the if loop separates filename from extension
+    # (use split here to prevent the user from creating abominations like my.movie.mp4)
+    dot = outifle.rfind('.')
+    if dot == 0: raise ValueError(outfile+' is not a valid filename!')
+    if dot > 0:
+        out_split = outfile.split('.')
+        if len(out_split > 2): raise ValueError(outfile+' is not a valid filename!')
+        outfile = out_split[0]
+        ext     = out_split[1]
+    else:
+        if str(ext) != ext:
+            raise TypeError('Filename extension for movie has to be a string!')
+        exl = str(ext).split('.')
+        if len(exl) > 1: raise ValueError(ext+' is not a valid extension for a video file!')
+        ext = exl[0]
+
+    # Make sure fps is a positive integer
+    try:
+        bad = fps != int(fps)
+    except: raise TypeError('Movie framerate has to be provided as interger, not '+type(fps).__name__+'!')
+    if bad or fps < 1: raise ValueError('Invalid framerate: '+fps+'!')
+    
+    # Check if output filesize makes sense (if provided)
+    if filesize != None:
+        try:
+            float(filesize)
+        except: raise TypeError('The output filesize has to be a positive number, not '+type(filesize).__name__+'!')
+        if filesize <= 0: raise ValueError('Invalid filesize: '+filesize+'!')
+
+    # Check if preset is valid (if provided)
+    if str(preset) != preset:
+        raise TypeError('Preset specifier for video encoding has to be a string!')
+    supported = ['ultrafast','superfast','veryfast','faster','fast','medium','slow','slower','veryslow','placebo']
+    if supported.count(preset) == 0:
+        opts = str(supported)
+        opts = opts.replace('[','')
+        opts = opts.replace(']','')
+        raise ValueError('Preset '+preset+' not supoorted by ffmpeg. Supported options are: '+opts)
+
+    # Now let's start to acutally do something and set the null device based on which plattform we're running on
+    if os.uname()[0].find('Windows') > 0:
+        nulldev = 'NUL'
+    else:
+        nulldev = '/dev/null'
+
+    
+    
 
 ##########################################################################################
 def recmovie(figobj=None, movie=None, savedir=None, fps=None):
