@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 30 2014
-# Last modified: <2015-03-27 16:16:56>
+# Last modified: <2015-04-07 13:58:57>
 
 from __future__ import division
 import numpy as np
@@ -17,7 +17,7 @@ from datetime import datetime
 import os
 
 ##########################################################################################
-def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=False,mth=None,\
+def perm_test(X,Y,paired=None,nperms=10000,tail='two',correction=None,get_dist=False,mth=None,\
               verbose=True,fname=None,vars=None,g1str=None,g2str=None):
     """
     Perform permutation tests on paired/unpaired uni-/multi-variate data
@@ -25,10 +25,125 @@ def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=F
     Parameters
     ----------
     X : NumPy 2darray
-        An #samples-by-#variables array forming the first group
+        An #samples-by-#variables array holding the data of the first group
+    X : NumPy 2darray
+        An #samples-by-#variables array holding the data of the second group
+    paired : bool
+        Switch to indicate whether the two data-sets `X` and `Y` represent paired 
+        (`paired = True`) or unpaired data. 
+    nperms : int
+        Number of permutations for shuffling the input data
+    tail : str
+        The alternative hypothesis the data is tested against. If `tail = 'less'', then 
+        the null is tested against the alternative that the mean of the first group is 
+        less than the mean of the second group ('lower tailed'. Alternatively, 
+        `tail = 'greater'` indicates the alternative that the mean of the first group is 
+        greater than the mean of the second group ('upper tailed'). For `tail = 'two'` 
+        the alternative hypothesis is that the means of the data are different ('two tailed'), 
+    correction : str
+        Correction method to adjust `p`-values for multiple comparisons. If the two groups 
+        are paired (`paired = True`) this option is ignored, since `MNE`'s permutation t-test
+        only supports standard `p`-value correction using the maximal test statistic `Tmax` [2]_. 
+        For unpaired data (`paired = False`) the `R` library `coin` is used which supports
+        'single-step' (default), 'step-down' and 'discrete' `Tmax` approaches for the maximal 
+        test statistic to correct for multiple comparisons (see [1]_ for details). 
+    get_dist : bool
+        Switch that determines whether the sampling distribution used for testing is 
+        returned (by default it is not returned). 
+    mth : str
+        Only supported for unpaired data. If `mth` is not specified, a general independence 
+        test is performed (default), for `mth = 'maxstat'` a maximally selected statistics test
+        is carried out (see [1]_ for details). 
+    verbose : bool
+        If `verbose = True` then intermediate results, progression messages and a table 
+        holding the final statistical score are printed to the prompt. 
+    fname : str
+        If provided, testing results are saved to the csv file `fname`. The file-name 
+        can be provided with or without the extension '.csv' 
+        (WARNING: existing files will be overwritten!). By default, the output is not saved. 
+    vars : list or NumPy 1darray
+        Names of the variables that are tested for symmetry/independence. Only relevant 
+        if `verbose = True` and/or `fname` is not `None`. If `vars = None` and output
+        is shown/saved a generic list ['Variable 1','Variable 2',...] will be used 
+        in the table showing the final results. 
+    g1str : str
+        Name of the first group. Only relevant if `verbose = True` and/or `fname` is not `None`. 
+        If `g1str = None` and output is shown/saved a generic group name ('Group 1') will be used 
+        in the table showing the final results. 
+    g2str : str
+        Name of the second group. Only relevant if `verbose = True` and/or `fname` is not `None`. 
+        If `g2str = None` and output is shown/saved a generic group name ('Group 2') will be used 
+        in the table showing the final results. 
+
+    Returns
+    -------
+    stats_dict : dictionary
+        Testing results are saved in a Python dictionary. By default `stats_dict` has 
+        the keys 'pvals' (the adjusted `p`-values) and 'statvals' (values of the test statistic
+        observed for all variables). If `get_dist = True` then the additional key 'dist' points to
+        the used sampling distribution. 
+
+    Notes
+    -----
+    This routine is merely a wrapper and does not do any heavy computational lifting.  
+    For paired data the function `permutation_t_test` of the `MNE` package [2]_ is called. 
+    Unpaired data are tested using the `R` library `coin` [1]_. Thus, this routine has a 
+    number of dependencies: for paired data the Python package `mne` is required, 
+    unpaired samples can only be tested if `pandas` as well as `rpy2` (for `R`/Python conversion)
+    and, of course, `R` and the `R`-library `coin` are installed (and in the search path). 
+    To show/save results the routine `printstats` (part of this module) is called.
+
+    See also
+    --------
+    printstats : routine to pretty-print results computed by a symmetry/independence test
+    coin : a `R` library for conditional inference procedures in a permutation test framework, 
+           currently available `here <http://cran.r-project.org/web/packages/coin/index.html>`_
+    mne : a software package for processing magnetoencephalography (MEG) and electroencephalography (EEG) data,
+          currently available at the Python Package Index `here <https://pypi.python.org/pypi/mne/0.7.1>`_
+
+    Examples
+    --------
+    Assume we want to analyze medical data of 200 healthy adult subjects collected before and after 
+    physical exercise. For each subject, we have measurements of heart-rate (HR), blood pressure (BP) and
+    body temperature (BT) before and after exercise. Thus our data sets contain 200 observations of 
+    3 variables. We want to test the data for a statistically significant difference in any of the 
+    three observed quantities (HR, BP, BT) after physical exercise compared to the measurements 
+    acquired before exercise. 
+
+    Assume all samples are given as Python lists: `HR_before`, `BP_before`, `BT_before`, 
+    `HR_after`, `BP_after`, `BT_after`. To be able to use `perm_test`, we collect the 
+    data in NumPy arrays:
+
+    >>> import numpy as np
+    >>> X = np.zeros((200,3))
+    >>> X[:,0] = HR_before
+    >>> X[:,1] = BP_before
+    >>> X[:,2] = BT_before
+    >>> Y = np.zeros((200,3))
+    >>> Y[:,0] = HR_after
+    >>> Y[:,1] = BP_after
+    >>> Y[:,2] = BT_after
+
+    Our null-hypothesis is that physical exercise did not induce a significant change in 
+    any of the observed variables. As an alternative hypothesis, we assume that 
+    exercise induced an increase in heart rate, blood pressure and body temperature. 
+    To test our hypotheses we use the following command
+
+    >>> perm_test(X,Y,paired=True,nperms=20000,tail='less',fname='stats.csv',\
+                  vars=['Heart Rate','Blood Pressure','Body Temperature'],g1str='Before Exercise',g2str='After Exercise')
+
+    which performs a lower-tailed paired permutation t-test with 20000 permutations, 
+    prints the results to the prompt and also saves them in the file `stats.csv`. 
+    
+    References
+    ----------
+    .. [1] T. Hothorn, K. Hornik, M. A. van de Wiel, A. Zeileis. A Lego System for Conditional Inference. 
+           The American Statistician 60(3), 257-263, 2014. 
+    .. [2] A. Gramfort, M. Luessi, E. Larson, D. Engemann, D. Strohmeier, C. Brodbeck, L. Parkkonen, 
+           M. Haemaelaeinen. MNE software for processing MEG and EEG data. NeuroImage 86, 446-460, 2014
     """
 
-    # Check manadatory inputs and make sure X and Y are tested for the same no. of variables
+    # Check mandatory inputs and make sure X and Y are tested for the same no. of variables
     try:
         [nsamples_x,n_testsx] = X.shape
     except: raise TypeError('First input X has to be a NumPy 2darray!')
@@ -56,7 +171,7 @@ def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=F
         raise TypeError(msg)
 
     if nsamples_x != nsamples_y and paired == True:
-        raise ValueError('Cannot perform paired independence test for different number of samples!')
+        raise ValueError('Cannot perform paired symmetry test for different number of samples!')
 
     # Check get_dist
     msg = 'The switch get_dist has to be True or False!'
@@ -136,11 +251,11 @@ def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=F
     if bad == False:
         raise TypeError(msg)
     
-    # If a filename was provided make sure it's a string and check if the path exists
-    # (unicode chars in filenames are probably a bad idea...)
+    # If a file-name was provided make sure it's a string and check if the path exists
+    # (unicode chars in file-names are probably a bad idea...)
     if fname != None:
         if str(fname) != fname:
-            raise TypeError('Optional output filename has to be a string!')
+            raise TypeError('Optional output file-name has to be a string!')
         fname = str(fname)
         if fname.find("~") == 0:
             fname = os.path.expanduser('~') + fname[1:]
@@ -195,7 +310,7 @@ def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=F
             raise ImportError("The Python module 'mne' is not installed!")
 
         # Just to double check with user, say what's about to happen
-        print "\nTesting statistical symmetry of paired samples using the permuation t-test from mne"
+        print "\nTesting statistical symmetry of paired samples using the permutation t-test from mne"
 
         # Use mne's permutation t-test to check for statistical symmetry of paired samples
         statvals, pvals, dist = mne.stats.permutation_t_test(X-Y,n_permutations=nperms,\
@@ -219,13 +334,13 @@ def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=F
             from rpy2.robjects.packages import importr
             from rpy2.robjects import Formula
 
-            # Set up our R namespaces and see if coin is available
+            # Set up our R name-spaces and see if coin is available
             R    = rpy2.robjects.r
             coin = importr('coin')
 
         except:
             msg = "Either the Python modules 'pandas' and/or 'rpy2' or "+\
-                  "the R pacakge 'coin' is/are not installed!"
+                  "the R package 'coin' is/are not installed!"
             raise ImportError(msg)
  
         # Construct a list of strings of the form 
@@ -245,7 +360,7 @@ def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=F
         group = 2*np.ones((nsamples_x + nsamples_y,1))
         group[:nsamples_x] = 1
 
-        # Build an R dataframe by stacking X and Y on top of each other, with columsn labeled by abclist
+        # Build an R dataframe by stacking X and Y on top of each other, with columns labeled by abclist
         r_dframe = cm.convert_to_r_dataframe(pd.DataFrame(np.hstack([np.vstack([X,Y]),group]),\
                                                           columns=abclist))
 
@@ -297,7 +412,7 @@ def perm_test(X,Y,paired=True,nperms=10000,tail='two',correction=None,get_dist=F
                 mth_str = "maximally selected statistics test"
             mth_dt  = {}
             ft = "Statistical independence of unpaired samples was assessed using the "+mth_str+\
-                 " from the R package coin (http://cran.r-project.org/web/packages/coin/index.html)\n"+\
+                 " from the R library coin (http://cran.r-project.org/web/packages/coin/index.html)\n"+\
                  permstr+"\n"+\
                  "adjusted for multiple testing by a "+correction+" Tmax approach for the maximal test statistic. \n"
 
@@ -322,20 +437,18 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
     pvals : Numpy 1darray
         Aray of `p`-values (floats) of the same size as `variables`
     group1 : NumPy 2darray
-        An #samples-by-#variables array forming the "group1" set for the previously 
-        computed statistical comparison
+        An #samples-by-#variables array holding the data of the first group used in the previously
+        performed statistical comparison
     group2 : NumPy 2darray
-        An #samples-by-#variables array forming the "group2" set for the previously 
-        computed statistical comparison
+        An #samples-by-#variables array holding the data of the second group used in the previously
+        performed statistical comparison
     g1str : string
-        A string to be used in the generated table to highlight computed mean/std values of 
-        the group1 dataset
+        Name of the first group that will be used in the generated table
     g2str : string
-        A string to be used in the generated table to highlight computed mean/std values of 
-        the group2 dataset
+        Name of the first group that will be used in the generated table
     fname : string
-        Name of a csv-file (with or without extension `.csv`) used to save the table 
-        (WARNING: existing files will be overwritten!). Can also be a path + filename 
+        Name of a csv-file (with or without extension '.csv') used to save the table 
+        (WARNING: existing files will be overwritten!). Can also be a path + file-name 
         (e.g., `fname='path/to/file.csv'`). By default output is not saved. 
 
     Returns
@@ -351,7 +464,7 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
     texttable : a module for creating simple ASCII tables (currently available at the 
                 `Python Package Index <https://pypi.python.org/pypi/texttable/0.8.1>`_)
     printdata : a function that pretty-prints/-saves data given in an array (part of 
-                `nws_tools.py <http://research.mssm.edu/simonyanlab/analytical-tools/nws_tools.printdata.html#nws_tools.printdata>`_
+                `nws_tools.py <http://research.mssm.edu/simonyanlab/analytical-tools/nws_tools.printdata.html#nws_tools.printdata>`_)
     """
 
     # Make sure that the groups, p-values and tested variables have appropriate dimensions
@@ -372,13 +485,13 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
     try:
         N,M = group1.shape
     except: 
-        raise TypeError('Dataset 1 must be a NumPy 2d array, not '+type(group1).__name__+'!')
+        raise TypeError('Data-set 1 must be a NumPy 2d array, not '+type(group1).__name__+'!')
     if M != m:
         raise ValueError('No. of variables (=labels) and dimension of group1 do not match up!')
     try:
         N,M = group2.shape
     except: 
-        raise TypeError('Dataset 2 must be a NumPy 2d array, not '+type(group2).__name__+'!')
+        raise TypeError('Data-set 2 must be a NumPy 2d array, not '+type(group2).__name__+'!')
     if M != m:
         raise ValueError('No. of variables (=labels) and dimension of group2 do not match up!')
 
@@ -400,11 +513,11 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
     if bad == False:
         raise TypeError(msg)
 
-    # If a filename was provided make sure it's a string and check if the path exists
-    # (unicode chars in filenames are probably a bad idea...)
+    # If a file-name was provided make sure it's a string and check if the path exists
+    # (unicode chars in file-names are probably a bad idea...)
     if fname != None:
         if str(fname) != fname:
-            raise TypeError('Input fname has to be a string specifying an output filename, not '\
+            raise TypeError('Input fname has to be a string specifying an output file-name, not '\
                             +type(fname).__name__+'!')
         fname = str(fname)
         if fname.find("~") == 0:
@@ -468,39 +581,3 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
         head = head.replace("]","")
         head = head.replace("'","")
         np.savetxt(fname,Data,delimiter=",",fmt="%s",header=head,footer=foot,comments="")
-
-
-# # TESTING
-
-# # Load data
-# f     = h5py.File('../Python_tools/stat_data.h5','r')
-# X     = f['rest'].value
-# Y     = f['seiz'].value
-# p_ref = f['pval'].value
-# H_ref = f['H0'].value
-# t_ref = f['tval'].value
-# f.close()
-
-# # Settings that were used to compute the stats
-# n_perms = 10000                     # No. of permutations to use
-# tail    = 0                         # Two-tailed test
-# n_jobs  = 1                         # How many CPUs to use (don't use more than 1!!!)
-# verbose = True                      # Be chatty about it
-
-# # Paired test
-# perm_test(X,Y,paired=True,tail='two')
-# sd = perm_test(X,Y,paired=False,tail='two')
-# print sd['pvals']
-# sd = perm_test(X,Y[:-12],paired=False,tail='two')
-# print sd['pvals']
-# sd = perm_test(X,Y,paired=True,tail='less',verbose=False,fname='~/Desktop/test.csv')
-# sd = perm_test(X,Y,paired=False,tail='two',verbose=True,fname='~/Desktop/test2.csv')
-# print sd['pvals']
-
-# sys.exit()
-
-# supported = ['maxstat']
-# # supported = ['wilcox','normal','median','ansari','kruskal',\
-# #              'fligner','spearman','oneway','maxstat','chisq','surv','cmh']
-# for mth in supported:
-#     perm_test(X,Y,paired=False,tail='two',mth=mth)
