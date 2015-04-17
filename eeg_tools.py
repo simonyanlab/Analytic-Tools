@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: March 19 2014
-# Last modified: <2015-02-18 11:13:24>
+# Last modified: <2015-04-17 15:44:05>
 
 from __future__ import division
 import numpy as np
@@ -902,7 +902,7 @@ def load_data(h5file,nodes=None):
     return data
 
 ##########################################################################################
-def MA(signal, window_size):
+def MA(signal, window_size, past=True):
     """
     Smooth 1d/2darray using a moving average filter along one axis
 
@@ -915,9 +915,22 @@ def MA(signal, window_size):
         using the same moving average window. 
     window_size : scalar
         Positive scalar defining the size of the window to average over
+    past : bool
+        If `past = True` then only preceding data is used to calculate the moving average. In addition, 
+        the rolling standard deviation is also computed. For `past = False` the input signal is 
+        filtered using an MA sliding window that averages across data points between 
+        `- window_size/2` and `window_size/2`. If `past = False` no rolling standard deviation is 
+        calculated. 
 
     Returns
     -------
+    If `past == True`
+    ma_signal : NumPy 1d/2darray
+        Moving average of signal (same shape as input)
+    sd_signal : NumPy 1d/2darray
+        Rolling Standard deviation of signal (same shape as input)
+
+    If `past == False`
     ma_signal : NumPy 1d/2darray
         Smoothed signal (same shape as input)
 
@@ -936,19 +949,62 @@ def MA(signal, window_size):
     except: raise TypeError("Input `signal` must be a NumPy 1d/2darray, not "+type(signal).__name__+"!")
     if len(shs) > 2:
         raise ValueError("Input `signal` must be a NumPy 1d/2darray!")
-    if np.min(shs) < 2:
+    if np.max(shs) < 2:
         raise ValueError("Input `signal` is an array of only one element! ")
     if np.isnan(signal).max() == True or np.isinf(signal).max() == True or np.isreal(signal).min() == False:
         raise ValueError("Input `signal` must be real without NaNs or Infs!")
 
     try:
         bad = window_size <= 0
-    except: raise TypeError("Input window-size must be a positive scalar!")
+    except: raise TypeError("Input window-size must be a positive scalar, not "+type(window_size).__name__+"!")
     if bad: raise ValueError("Input window-size must be a positive scalar!")
+
+    msg = "The siwtch `past` has to be Boolean, not "+type(past).__name__+"!"
+    try:
+        bad = (past != True and past != False)
+    except: raise TypeError(msg)
+    if bad: raise TypeError(msg)
+
+    # Use only preceding data points to calculate MA
+    if past:
+
+        # If the signal is 1D, reshape it so that the for loops work
+        if len(shs) < 2: signal = signal.reshape((1,signal.size))
+
+        # Allocate space for output
+        ma_signal = np.zeros(signal.shape)
+        sd_signal = np.zeros(signal.shape)
+
+        # The first `window_size` entries are computed using an incremental average/variation computation
+        # (update mean/variance by each new element that is added)
+        ma_signal[:,0] = signal[:,0]
+        for k in xrange(1,window_size):
+            ma_signal[:,k] = (signal[:,k] + k*ma_signal[:,k-1])/(k+1)
+            sd_signal[:,k] = (k*sd_signal[:,k-1] + (signal[:,k] - ma_signal[:,k-1])*(signal[:,k] - ma_signal[:,k]))/(k+1)
+     
+        # The remaining entries are the actual moving average/rolling variation
+        for k in xrange(window_size,signal.shape[1]):
+            ma_signal[:,k] = ma_signal[:,k-1] + (signal[:,k] - signal[:,k-window_size])/window_size
+            sd_signal[:,k] = sd_signal[:,k-1] + (signal[:,k] - ma_signal[:,k] + signal[:,k-window_size] - ma_signal[:,k-1])*\
+                           (signal[:,k] - signal[:,k-window_size])/window_size
+     
+        # To get the standard deviation, compute the sqrt of the rolling variation
+        sd_signal = np.sqrt(sd_signal*(sd_signal>0))
+
+        # In case we had a 1D signal, remove the unnecessary dimension
+        ma_signal = ma_signal.squeeze()
+        sd_signal = sd_signal.squeeze()
+
+        return ma_signal, sd_signal
+
+    # Much faster: use a convolution to compute the mean over [-window_size/2,0,window_size/2]
+    else:
         
-    # Assemble window and compute moving average of signal
-    window = np.ones(int(window_size))/float(window_size)
-    return ndimage.filters.convolve1d(signal,window,mode='nearest')
+        # Assemble window and compute moving average of signal
+        window    = np.ones(int(window_size))/float(window_size)
+        ma_signal = ndimage.filters.convolve1d(signal,window,mode='nearest')
+
+        return ma_signal
 
 ##########################################################################################
 def time2ind(h5file,t_start,t_end):

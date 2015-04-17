@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2015-04-03 17:25:01>
+# Last modified: <2015-04-17 17:13:55>
 
 from __future__ import division
 import numpy as np
@@ -191,7 +191,8 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
     if len(txtfiles) < 2: raise ValueError('Found fewer than 2 text files in '+txtpath+'!')
 
     # Load very first file to get length of time-series
-    tlen = np.loadtxt(txtfiles[0]).size
+    firstsub = txtfiles[0]
+    tlen     = np.loadtxt(txtfiles[0]).size
     if tlen < 2: raise ValueError('File '+firstsub+' is empty or has fewer than 2 lines!')
 
     # Search from left in file-name for first "s" (naming scheme: sNxy_bla_bla_.txt)
@@ -217,6 +218,13 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
     # Get number of subjects
     numsubs = len(sublist)
 
+    # Talk to the user
+    substr = str(sublist)
+    substr = substr.replace('[','')
+    substr = substr.replace(']','')
+    print "Found "+str(numsubs)+" subjects: "+substr
+    print "Extracting data and calculating "+corrtype.upper()+" coefficients"
+
     # Allocate tensor to hold all time series
     bigmat = np.zeros((tlen,numregs,numsubs))
 
@@ -229,9 +237,13 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
         for fl in txtfiles:
             if fl.count(sublist[k]):
                 try:
-                    bigmat[:,col,k] = np.loadtxt(fl)
-                except:
-                    raise ValueError("Error reading file: "+fl)
+                    ts_vec = np.loadtxt(fl)
+                except: raise ValueError("Cannot read file "+fl)
+                if ts_vec.size != tlen:
+                    raise ValueError("Error reading file: "+fl+\
+                                     " Expected a time-series of length "+str(int(tlen))+", "+
+                                     "but actual length is "+str(ts_vec.size))
+                bigmat[:,col,k] = ts_vec
                 col += 1
 
         # Safeguard: stop if subject is missing, i.e., col = 0 still (weirder things have happened...)
@@ -527,7 +539,7 @@ def get_meannw(nws,percval=0.0):
 
         # Cycle through subjects to compute average network
         for i in xrange(numsubs):
-            mean_binary = mean_binary + (nws[:,:,i]>0).astype(float)
+            mean_binary = mean_binary + (nws[:,:,i]!=0).astype(float)
             mean_wghted = mean_wghted + nws[:,:,i]
 
         # Kick out connections not present in at least percval% of subjects (in binary and weighted NWs)
@@ -700,7 +712,7 @@ def thresh_nws(nws,userdens=None,percval=0.0):
     if min_raw == 0: raise ValueError('Network '+str(raw_den.argmin())+' has density 0%!')
     if userdens >= max_raw:
         print "All networks have density lower than desired density "+str(userdens)+"%"
-        th_mnw,mnw_percval = get_meannw(nws)
+        th_mnw,mnw_percval = get_meannw(nws,percval)
         return {'th_nws':nws, 'tau_levels': None, 'den_values': raw_den, \
                 'th_mnw': th_mnw, 'mnw_percval': mnw_percval}
 
@@ -811,7 +823,7 @@ def thresh_nws(nws,userdens=None,percval=0.0):
             den_values[i] = den
 
     # Compute group average network
-    th_mnw,mnw_percval = get_meannw(th_nws)
+    th_mnw,mnw_percval = get_meannw(th_nws,percval)
 
     # Be polite and dismiss the user 
     print "Done...\n"
