@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2015-04-17 17:13:55>
+# Last modified: <2015-04-21 16:07:30>
 
 from __future__ import division
 import numpy as np
@@ -525,6 +525,9 @@ def get_meannw(nws,percval=0.0):
     N       = nws.shape[0]
     numsubs = nws.shape[-1]
 
+    # Remove self-connections
+    nws = rm_selfies(nws)
+
     # Allocate memory for binary/weighted group averaged networks
     mean_binary = np.zeros((N,N))
     mean_wghted = np.zeros((N,N))
@@ -570,14 +573,14 @@ def rm_negatives(corrs):
     Parameters
     ----------
     corrs : NumPy 3darray
-        `N`-by-`N` correlation matrices of `numsubs` subjects. Format is 
-                `corrs.shape = (N,N,numsubs)`,
+        An array of `K` correlation matrices of dimension `N`-by-`N`. Format is 
+                `corrs.shape = (N,N,K)`,
         s.t.
-                `corrs[:,:,i] = N x N` connectivity matrix of `i`-th subject 
+                `corrs[:,:,i]` is the `i`-th `N x N` correlation matrix
 
     Returns
     -------
-    corrs : NumPy 3darray
+    nws : NumPy 3darray
         Same format as input tensor but `corrs >= 0`. 
 
     Notes
@@ -592,27 +595,63 @@ def rm_negatives(corrs):
     # Sanity checks
     tensorcheck(corrs)
 
-    # Get dimensions
-    N       = corrs.shape[0]
-    numsubs = corrs.shape[-1]
+    # See how many matrices are stacked in the array
+    K = corrs.shape[-1]
 
-    # Zero diagonals of connectivity matrices
-    for i in xrange(numsubs):
+    # Zero diagonals of matrices
+    for i in xrange(K):
         np.fill_diagonal(corrs[:,:,i],0)
 
     # Remove negative correlations
     nws = (corrs > 0)*corrs
 
     # Check if we lost some nodes...
-    for i in xrange(numsubs):
+    for i in xrange(K):
         deg = degrees_und(corrs[:,:,i])
         if deg.min() == 0:
-            print "WARNING: In subject "+str(i)+" node(s) "+str(np.nonzero(deg==deg.min())[0])+" got disconnected!"
+            print "WARNING: In network "+str(i)+" node(s) "+str(np.nonzero(deg==deg.min())[0])+" got disconnected!"
 
     return nws
 
 ##########################################################################################
-def thresh_nws(nws,userdens=None,percval=0.0):
+def rm_selfies(conns):
+    """
+    Remove self-connections from connectivity matrices
+
+    Parameters
+    ----------
+    conns : NumPy 3darray
+        An array of `K` connectivity matrices of dimension `N`-by-`N`. Format is 
+                `conns.shape = (N,N,K)`,
+        s.t.
+                `conns[:,:,i]` is the `i`-th `N x N` connectivity matrix
+
+    Returns
+    -------
+    nws : NumPy 3darray
+        Same format as input array but `np.diag(conns[:,:,k]).min() = 0.0`. 
+
+    Notes
+    -----
+    None
+
+    See also
+    --------
+    None
+    """
+
+    # Sanity checks
+    tensorcheck(conns)
+
+    # Create output quantity and zero its diagonals
+    nws = conns.copy()
+    for i in xrange(nws.shape[-1]):
+        np.fill_diagonal(nws[:,:,i],0)
+
+    return nws
+
+##########################################################################################
+def thresh_nws(nws,userdens=None,percval=0.0,force_den=False):
     """
     Threshold networks based on connection density
 
@@ -632,6 +671,10 @@ def thresh_nws(nws,userdens=None,percval=0.0):
         Percentage value, s.t. connections not present in at least `percval`
         percent of subjects are not considered, thus `0 <= percval <= 1`.
         Default setting is `percval = 0.0`. See `get_meannw` for details. 
+    force_den : bool
+        If `force_den = True` then networks are thresholded to the density level
+        defined by the user even if nodes get dis-connected in the process. 
+        By default, `force_den = False`. 
                
     Returns
     -------
@@ -662,7 +705,9 @@ def thresh_nws(nws,userdens=None,percval=0.0):
     60% or lower, it is excluded from thresholding and the original network is copied 
     into `th_nws`. If a density level is provided by the user, then the code tries to use 
     it unless it violates connectedness of all thresholded networks - in this case 
-    the lowest common density of all networks is used. 
+    the lowest common density of all networks is used, unless `force_den = True` which forces 
+    the code to use the user-provided density level disconnecting nodes from the networks in the 
+    process. 
     The code below relies on the routine `get_meannw` in this module to compute the group-averaged
     network. 
 
@@ -674,14 +719,18 @@ def thresh_nws(nws,userdens=None,percval=0.0):
     # Sanity checks
     tensorcheck(nws)
     if userdens != None:
-        try: tmp = np.round(userdens) != userdens 
+        try: bad = np.round(userdens) != userdens 
         except: raise TypeError('Density level has to be a number between 0 and 100!')
-        if (tmp): raise ValueError('The density level must be an integer!')
+        if (bad): raise ValueError('The density level must be an integer!')
         if (userdens <= 0) or (userdens >= 100):
             raise ValueError('The density level must be between 0 and 100!')
-    try: tmp = percval > 1 or percval < 0
+    try: bad = percval > 1 or percval < 0
     except: raise TypeError("Percentage value must be a floating point number >= 0 and <= 1!")
-    if (tmp): raise ValueError("Percentage value must be >= 0 and <= 1!")
+    if (bad): raise ValueError("Percentage value must be >= 0 and <= 1!")
+    msg = "The optional argument `force_den` has to be Boolean!"
+    try: bad = (force_den != True and force_den != False)
+    except: raise TypeError(msg)
+    if bad: raise TypeError(msg)
 
     # Get dimension of per-subject networks
     N       = nws.shape[0]
@@ -765,19 +814,22 @@ def thresh_nws(nws,userdens=None,percval=0.0):
 
     # Compute minimal density before fragmentation across all subjects
     densities = np.round(1e2*den_values)
-    print "\nDensities of per-subject networks are as follows: "
+    print "\nMinimal admissible densities of per-subject networks are as follows: "
     for i in xrange(densities.size): print "Subject #"+str(i)+": "+str(int(densities[i]))+"%"
     min_den = int(np.round(1e2*den_values.max()))
-    print "\nMinimal density before fragmentation across all subjects is "+str(min_den)+"%"
+    print "\nThus, minimal density before fragmentation across all subjects is "+str(min_den)+"%"
 
     # Assign thresholding density level
     if userdens == None:
         thresh_dens = min_den
     else:
-        if userdens < min_den:
-            print "\n User provided density of "+str(int(userdens))+"% lower than minimal admissible density of "+str(min_den)+"%. "
+        if userdens < min_den and force_den == False:
+            print "\nUser provided density of "+str(int(userdens))+"% lower than minimal admissible density of "+str(min_den)+"%. "
             print "Using minimal admissible density instead. "
             thresh_dens = min_den
+        elif userdens < min_den and force_den == True:
+            print "\nWARNING: Provided density of "+str(int(userdens))+"% leads to disconnected networks - proceed with caution..."
+            thresh_dens = int(userdens)
         else: 
             thresh_dens = int(userdens)
 
