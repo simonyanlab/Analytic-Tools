@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2015-04-21 16:07:30>
+# Last modified: <2015-04-23 14:05:14>
 
 from __future__ import division
 import numpy as np
@@ -223,40 +223,53 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
     substr = substr.replace('[','')
     substr = substr.replace(']','')
     print "Found "+str(numsubs)+" subjects: "+substr
-    print "Extracting data and calculating "+corrtype.upper()+" coefficients"
+
+    # Scan files to find time-series length
+    tlens = np.zeros((numsubs,))
+    for k in xrange(numsubs):
+        roi = 0
+        for fl in txtfiles:
+            if fl.count(sublist[k]):
+                try:
+                    ts_vec = np.loadtxt(fl)
+                except: raise ValueError("Cannot read file "+fl)
+                if roi == 0: tlens[k] = ts_vec.size     # Subject's first TS sets our reference length
+                if ts_vec.size != tlens[k]:
+                    raise ValueError("Error reading file: "+fl+\
+                                     " Expected a time-series of length "+str(int(tlens[k]))+", "+
+                                     "but actual length is "+str(ts_vec.size))
+                roi += 1
+
+        # Safeguard: stop if subject is missing, i.e., col = 0 still (weirder things have happened...)
+        if roi == 0: 
+            raise ValueError("Subject "+sublist[k]+" is missing!")
 
     # Allocate tensor to hold all time series
-    bigmat = np.zeros((tlen,numregs,numsubs))
+    bigmat = np.zeros((tlens.max(),numregs,numsubs)) + np.nan
 
     # Allocate tensor holding correlation matrices of all subjects 
     corrs = np.zeros((numregs,numregs,numsubs))
+
+    # Ready to do this...
+    print "Extracting data and calculating "+corrtype.upper()+" coefficients"
 
     # Cycle through subjects and save per-subject time series data column-wise
     for k in xrange(numsubs):
         col = 0
         for fl in txtfiles:
             if fl.count(sublist[k]):
-                try:
-                    ts_vec = np.loadtxt(fl)
-                except: raise ValueError("Cannot read file "+fl)
-                if ts_vec.size != tlen:
-                    raise ValueError("Error reading file: "+fl+\
-                                     " Expected a time-series of length "+str(int(tlen))+", "+
-                                     "but actual length is "+str(ts_vec.size))
-                bigmat[:,col,k] = ts_vec
+                ts_vec = np.loadtxt(fl)
+                bigmat[:tlens[k],col,k] = ts_vec
                 col += 1
-
-        # Safeguard: stop if subject is missing, i.e., col = 0 still (weirder things have happened...)
-        if col == 0: 
-            raise ValueError("Subject "+sub+" is missing!")
 
         # Compute correlations based on corrtype
         if corrtype == 'pearson':
-            corrs[:,:,k] = np.corrcoef(bigmat[:,:,k],rowvar=0,**kwargs)
+            corrs[:,:,k] = np.corrcoef(bigmat[:tlens[k],:,k],rowvar=0,**kwargs)
         elif corrtype == 'mi':
-            corrs[:,:,k] = mutual_info(bigmat[:,:,k],**kwargs)
+            corrs[:,:,k] = mutual_info(bigmat[:tlens[k],:,k],**kwargs)
 
     # Happy breakdown
+    print "Done"
     return {'corrs':corrs, 'bigmat':bigmat, 'sublist':sublist}
 
 ##########################################################################################
