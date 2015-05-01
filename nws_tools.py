@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2015-04-23 14:05:14>
+# Last modified: <2015-05-01 14:25:43>
 
 from __future__ import division
 import numpy as np
@@ -112,9 +112,9 @@ def density_und(CIJ):
     return K/((N**2 - N)/2.0)
 
 ##########################################################################################
-def get_corr(txtpath,corrtype='pearson',**kwargs):
+def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     """
-    Compute correlation matrices of time-series using `corrtype` as measure of statistical dependence
+    Compute pair-wise statistical dependence of time-series
 
     Parameters
     ----------
@@ -128,6 +128,7 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
         (01,02,...,99 or 001,002,...,999) and anything else is separated 
         by an underscore. The files will be read in lexicographic order,
         i.e., `s101_1.txt`, `s101_2.txt`,... or `s101_Amygdala.txt`, `s101_Beemygdala`,...
+        See Notes for more details. 
     corrtype : string
         Specifier indicating which type of statistical dependence to use to compute 
         pairwise correlations. Currently supported options are 
@@ -137,7 +138,9 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
 
                 `mi`: (normalized) mutual information 
                 (see the docstring of mutual_info in this module for details)
-
+    sublist : list or NumPy 1darray
+        List of subject codes to process, e.g., `sublist = ['s101','s102']`. 
+        By default all subjects found in `txtpath` will be processed.
     **kwargs : keyword arguments
         Additional keyword arguments to be passed on to the function computing 
         the pairwise correlations (currently either NumPy's corrcoef or mutual_info
@@ -149,22 +152,30 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
         Dictionary with fields:
 
         corrs : NumPy 3darray
-            `N`-by-`N` correlation matrices of numsubs subjects. Format is 
+            `N`-by-`N` matrices of pair-wise regional statistical dependencies 
+	    of `numsubs` subjects. Format is 
                     `corrs.shape = (N,N,numsubs)`,
             s.t.
                     `corrs[:,:,i]` = `N x N` correlation matrix of `i`-th subject 
         bigmat : NumPy 3darray
             Tensor holding unprocessed time series of all subjects. Format is 
                     `bigmat.shape = (tlen,N,numsubs)`,
-            where `tlen` is the length of the time-series and `N` is the number of                 
-            regions (=nodes in a network). 
+            where `tlen` is the maximum time-series-length across all subjects 
+            (if time-series of different lengths were used in the computation, 
+            any unfilled entries in `bigmat` will be NumPy `nan`'s, see Notes 
+            for details) and `N` is the number of regions (=nodes in the networks). 
         sublist : list of strings
-            List of subjects found in folder specified by `txtpath`, e.g.,
+            List of processed subjects specified by `txtpath`, e.g.,
                     `sublist = ['s101','s103','s110','s111','s112',...]`
 
     Notes
     -----
-    None
+    Per-subject time-series do not necessarily have to be of the same length across 
+    a subject cohort. However, all ROI-time-courses *within* the same subject must have 
+    the same number of entries. 
+    For instance, all ROI-time-courses in `s101` can have 140 entries, and time-series 
+    of `s102` might have 130 entries, but if `s101_2.txt` contains 140 data-points while only 
+    130 entries are found in `s101_3.txt`, the code will raise a `ValueError`. 
 
     See also
     --------
@@ -183,46 +194,66 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
     # Check corrtype
     try:
         corrtype = corrtype.lower()
-    except: raise TypeError('Correlation type input must be a string!')
+    except: raise TypeError('Correlation type input must be a string, not '+type(corrtype).__name__+'!')
+
+    # Check sublist
+    if str(sublist) == sublist:
+        raise TypeError('Subject codes have to be provided as Python list/NumPy 1darray, not as string!')
+    try:
+        sublist = list(sublist)
+    except: 
+        raise TypeError('Subject codes have to be provided as Python list/NumPy 1darray, not '+type(sublist).__name__+'!')
+
+    # Get length of sublist (to see if a subject list was provided)
+    numsubs = len(sublist)
 
     # Get list of all txt-files in txtpath and order them lexicographically
     if txtpath[-1] == ' '  or txtpath[-1] == os.sep: txtpath = txtpath[:-1]
     txtfiles = natsort.natsorted(myglob(txtpath,"s*.[Tt][Xx][Tt]"), key=lambda y: y.lower())
     if len(txtfiles) < 2: raise ValueError('Found fewer than 2 text files in '+txtpath+'!')
 
-    # Load very first file to get length of time-series
-    firstsub = txtfiles[0]
-    tlen     = np.loadtxt(txtfiles[0]).size
-    if tlen < 2: raise ValueError('File '+firstsub+' is empty or has fewer than 2 lines!')
+    # If no subject-list was provided, take first subject to get the number of ROIs to be processed
+    if numsubs == 0:
 
-    # Search from left in file-name for first "s" (naming scheme: sNxy_bla_bla_.txt)
-    firstsub  = firstsub.replace(txtpath+os.sep,'')
-    s_in_name = firstsub.find('s')
+        # Search from left in file-name for first "s" (naming scheme: sNxy_bla_bla_.txt)
+        firstsub  = firstsub.replace(txtpath+os.sep,'')
+        s_in_name = firstsub.find('s')
     
-    # The characters right of "s" until the first "_" are the subject identifier
-    udrline = firstsub[s_in_name::].find('_')
-    subject = firstsub[s_in_name:s_in_name+udrline]
+        # The characters right of "s" until the first "_" are the subject identifier
+        udrline = firstsub[s_in_name::].find('_')
+        subject = firstsub[s_in_name:s_in_name+udrline]
 
-    # Get number of regions
-    numregs = ''.join(txtfiles).count(subject)
-    
-    # Generate list of subjects
-    sublist = [subject]
-    for fl in txtfiles:
-        if fl.count(subject) == 0:
-            s_in_name = fl.rfind('s')
-            udrline   = fl[s_in_name::].find('_')
-            subject   = fl[s_in_name:s_in_name+udrline]
-            sublist.append(subject)
+        # Generate list of subjects
+        sublist = [subject]
+        for fl in txtfiles:
+            if fl.count(subject) == 0:
+                s_in_name = fl.rfind('s')
+                udrline   = fl[s_in_name::].find('_')
+                subject   = fl[s_in_name:s_in_name+udrline]
+                sublist.append(subject)
 
-    # Get number of subjects
-    numsubs = len(sublist)
+        # Prepare output message
+        msg = "Found "
+
+    else:
+
+        # Just take the first entry of user-provided subject list
+        subject = sublist[0]
+
+        # Prepare output message
+        msg = "Processing "
 
     # Talk to the user
     substr = str(sublist)
     substr = substr.replace('[','')
     substr = substr.replace(']','')
-    print "Found "+str(numsubs)+" subjects: "+substr
+    print msg+str(numsubs)+" subjects: "+substr
+
+    # Get number of regions
+    numregs = ''.join(txtfiles).count(subject)
+    
+    # Get (actual) number of subjects
+    numsubs = len(sublist)
 
     # Scan files to find time-series length
     tlens = np.zeros((numsubs,))
@@ -240,9 +271,17 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
                                      "but actual length is "+str(ts_vec.size))
                 roi += 1
 
-        # Safeguard: stop if subject is missing, i.e., col = 0 still (weirder things have happened...)
+        # Safeguard: stop if subject is missing, i.e., roi = 0 still (weirder things have happened...)
         if roi == 0: 
             raise ValueError("Subject "+sublist[k]+" is missing!")
+
+        # Safeguard: stop if subject hast more/fewer ROIs than expected
+        elif roi != numregs:
+            raise ValueError("Found "+str(int(roi+1))+" time-series for subject "+sublist[k]+", expected "+str(int(numregs)))
+
+    # Check the lengths of the detected time-series
+    if tlens.min() <= 2: 
+        raise ValueError('Time-series of Subject '+sublist[tlens.argmin()]+' is empty or has fewer than 2 entries!')
 
     # Allocate tensor to hold all time series
     bigmat = np.zeros((tlens.max(),numregs,numsubs)) + np.nan
@@ -259,7 +298,7 @@ def get_corr(txtpath,corrtype='pearson',**kwargs):
         for fl in txtfiles:
             if fl.count(sublist[k]):
                 ts_vec = np.loadtxt(fl)
-                bigmat[:tlens[k],col,k] = ts_vec
+                bigmat[:tlens[k],col,k] = ts_vec * (ts_vec > 0)
                 col += 1
 
         # Compute correlations based on corrtype
