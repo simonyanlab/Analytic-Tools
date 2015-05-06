@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2015-05-01 14:25:43>
+# Last modified: <2015-05-06 11:39:59>
 
 from __future__ import division
 import numpy as np
@@ -216,6 +216,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     if numsubs == 0:
 
         # Search from left in file-name for first "s" (naming scheme: sNxy_bla_bla_.txt)
+        firstsub  = txtfiles[0]
         firstsub  = firstsub.replace(txtpath+os.sep,'')
         s_in_name = firstsub.find('s')
     
@@ -231,6 +232,9 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
                 udrline   = fl[s_in_name::].find('_')
                 subject   = fl[s_in_name:s_in_name+udrline]
                 sublist.append(subject)
+
+        # Update numsubs
+        numsubs = len(sublist)
 
         # Prepare output message
         msg = "Found "
@@ -867,7 +871,7 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False):
     # Compute minimal density before fragmentation across all subjects
     densities = np.round(1e2*den_values)
     print "\nMinimal admissible densities of per-subject networks are as follows: "
-    for i in xrange(densities.size): print "Subject #"+str(i)+": "+str(int(densities[i]))+"%"
+    for i in xrange(densities.size): print "Subject #"+str(i+1)+": "+str(int(densities[i]))+"%"
     min_den = int(np.round(1e2*den_values.max()))
     print "\nThus, minimal density before fragmentation across all subjects is "+str(min_den)+"%"
 
