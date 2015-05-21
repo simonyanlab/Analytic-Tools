@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2015-01-29 12:19:49>
+# Last modified: <2015-05-21 15:47:19>
 
 from __future__ import division
 import numpy as np
@@ -231,7 +231,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
         pth   = paramfile[0:slash+1]
         fname = paramfile[slash+1:]
 
-    # Import parameters module and initialize corresponding dictionary (remove __file__, ... )
+    # Import parameters module and initialize corresponding dictionary (remove `__file__`, etc)
     param_py = imp.load_module(fname,*imp.find_module(fname,[pth]))
     p_dict   = {}
     for key, value in param_py.__dict__.items():
@@ -284,12 +284,32 @@ def run_model(V0, Z0, DA0, task, outfile, \
         if str(nm) != nm:
             raise ValueError("Names have to be provided as Python list/NumPy array of strings!")
 
-    # Get synaptic couplings from parameter file (and set seed of random number generator)
+    # If user provided some additional parameters as keyword arguments, copy them to `p_dict`
+    for key, value in kwargs.items():
+        p_dict[key] = value
+
+    # Now copy matrices also to `p_dict` (maybe changed by fill_diagonal above, or not part of `kwargs`)
+    p_dict['C'] = C
+    p_dict['D'] = D
+
+    # Get synaptic couplings (and set seed of random number generator)
     np.random.seed(seed)
-    aei = eval(param_py.aei)
-    aie = eval(param_py.aie)
-    ani = eval(param_py.ani)
-    ane = eval(param_py.ane)
+    if kwargs.has_key('aei'):
+        aei = kwargs['aei']
+    else:
+        aei = eval(param_py.aei)
+    if kwargs.has_key('aie'):
+        aie = kwargs['aie']
+    else:
+        aie = eval(param_py.aie)
+    if kwargs.has_key('ani'):
+        ani = kwargs['ani']
+    else:
+        ani = eval(param_py.ani)
+    if kwargs.has_key('ane'):
+        ane = kwargs['ane']
+    else:
+        ane = eval(param_py.ane)
 
     # If wanted, make sure left/right hemispheres have balanced coupling strengths
     if symsyn:
@@ -316,25 +336,24 @@ def run_model(V0, Z0, DA0, task, outfile, \
     p_dict['ane']  = ane
     p_dict['seed'] = seed
 
-    # If a resting state simulation is done, make sure dopamine doesn't kick in 
-    rmin = param_py.rmin
+    # If a resting state simulation is done, make sure dopamine doesn't kick in, i.e., enforce rmax = rmin
     if task == 'rest':
-        rmax = np.ones((N,))*param_py.rmin
+        rmax = np.ones((N,))*p_dict['rmin']
     else:
-        rmax = eval(param_py.rmax)
+        if not kwargs.has_key('rmax'):
+            p_dict['rmax'] = eval(param_py.rmax)
 
-    # Save (possibly updated) dopamine bounds and given task in dictionary
-    p_dict['rmax'] = rmax
-    p_dict['rmin'] = rmin
+    # Save given task in dictionary
     p_dict['task'] = task
 
     # Get ion channel parameters
-    p_dict['TCa'] = eval(param_py.TCa)
+    if not kwargs.has_key('TCa'):
+        p_dict['TCa'] = eval(param_py.TCa)
 
     # Compute length for simulation and speech on-/offset times
-    len_cycle = param_py.stimulus + param_py.production + param_py.acquisition
-    speechon  = param_py.stimulus
-    speechoff = param_py.stimulus + param_py.production
+    len_cycle = p_dict['stimulus'] + p_dict['production'] + p_dict['acquisition']
+    speechon  = p_dict['stimulus']
+    speechoff = p_dict['stimulus'] + p_dict['production']
 
     # Save that stuff
     p_dict['len_cycle'] = len_cycle
@@ -343,20 +362,20 @@ def run_model(V0, Z0, DA0, task, outfile, \
 
     # Set/get initial time for simulation
     if p_dict.has_key('tstart'): 
-        tstart = param_py.tstart
+        tstart = p_dict['tstart']       # Use `p_dict` here, since `tstart` could be a kwarg!
         if verbose: print "WARNING: Using custom initial time of  "+str(tstart)+" (has to be in ms)!"
     else:
         tstart = 0
 
     # Set/get step-size for simulation 
     if p_dict.has_key('dt'): 
-        dt = param_py.dt
+        dt = p_dict['dt']
         if verbose: print "WARNING: Using custom step-size of "+str(dt)+" (has to be in ms)!"
     else:
         dt = 1e-1
 
     # Get sampling step size (in ms) and check if "original" step-size makes sense
-    ds = 1/param_py.s_rate*1000
+    ds = 1/p_dict['s_rate']*1000
     if dt > ds:
         print "WARNING: Step-size dt = "+str(dt)+\
               " larger than chosen sampling frequency of "+str(s_rate)+"Hz."+\
@@ -371,11 +390,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     p_dict['s_step'] = s_step
         
     # Compute end time for simulation (in ms) and allocate time-step array
-    if kwargs.has_key('n_cycles'):
-        n_cycles = kwargs['n_cycles']
-    else:
-        n_cycles = param_py.n_cycles
-    tend   = tstart + len_cycle*n_cycles*1000
+    tend   = tstart + len_cycle*p_dict['n_cycles']*1000
     tsteps = np.arange(tstart,tend,dt)
 
     # Get the size of the time-array
@@ -424,14 +439,6 @@ def run_model(V0, Z0, DA0, task, outfile, \
     f.create_dataset('QV',shape=(N,n_elems),chunks=chunks)
     f.create_dataset('Beta',shape=(N,n_elems),chunks=chunks)
     f.create_dataset('t',data=np.linspace(tstart,tend,n_elems))
-
-    # Now copy matrices also to p_dict and initialize the model's C-class with it
-    p_dict['C'] = C
-    p_dict['D'] = D
-
-    # If user provided some additional parameters as keyword arguments, now's the time to assign them
-    for key, value in kwargs.items():
-        p_dict[key] = value
 
     # Save parameters (but exclude stuff imported in the parameter file)
     pg = f.create_group('params')
