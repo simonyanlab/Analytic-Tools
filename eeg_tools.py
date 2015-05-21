@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: March 19 2014
-# Last modified: <2015-04-17 15:44:05>
+# Last modified: <2015-05-21 14:29:10>
 
 from __future__ import division
 import numpy as np
@@ -1110,7 +1110,7 @@ def check_hdf(h5file):
     try:
         ismat = (f['EEG'].keys().count('eeg_mat') > 0)
     except: 
-        raise TypeError("Input file "+h5file+" does not seem to be an EEG data file...")
+        raise TypeError("Input file "+str(h5file)+" does not seem to be an EEG data file...")
 
     # Get list of electrodes actually present in file
     if (ismat):

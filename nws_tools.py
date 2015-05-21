@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2015-05-06 11:39:59>
+# Last modified: <2015-05-08 14:02:15>
 
 from __future__ import division
 import numpy as np
@@ -302,7 +302,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
         for fl in txtfiles:
             if fl.count(sublist[k]):
                 ts_vec = np.loadtxt(fl)
-                bigmat[:tlens[k],col,k] = ts_vec * (ts_vec > 0)
+                bigmat[:tlens[k],col,k] = ts_vec
                 col += 1
 
         # Compute correlations based on corrtype
