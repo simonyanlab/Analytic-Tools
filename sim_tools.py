@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2015-05-21 15:47:19>
+# Last modified: <2015-05-28 14:30:37>
 
 from __future__ import division
 import numpy as np
@@ -20,6 +20,7 @@ from texttable import Texttable
 from scipy import ndimage
 from nipy.modalities.fmri import hrf, utils
 import shutil
+import tempfile
 
 try:
     from the_model import par, solve_model
@@ -251,9 +252,10 @@ def run_model(V0, Z0, DA0, task, outfile, \
             D = kwargs['D']
         else:
             D = f['D'].value
-        names  = f['names'].value
-        labels = None
-        if f.keys().count('labels'): labels = f['labels'].value
+        names = f['names'].value
+        p_dict['names'] = names
+        if f.keys().count('labels'): 
+            p_dict['labels'] = f['labels'].value
         f.close()
     except: 
         raise ValueError("HDF5 file "+param_py.matrices+" does not have the required fields!")
@@ -399,9 +401,10 @@ def run_model(V0, Z0, DA0, task, outfile, \
     # Before laying out output HDF5 container, rename existing files to not accidentally overwrite 'em
     moveit(outfile)
     
-    # Chunk outifle depending on available memory (eat up ~ 20% of RAM)
+    # Chunk outifle depending on available memory (eat up ~ 100*`ram_use`% of RAM)
+    datype  = np.dtype('float64')
     meminfo = psutil.virtual_memory()
-    maxmem  = int(meminfo.available*0.2/(5*N)/np.dtype('float64').itemsize)
+    maxmem  = int(meminfo.available*ram_use/(5*N)/datype.itemsize)
 
     # If the whole array fits into memory load it once, otherwise chunk it up
     if tsteps.size <= maxmem:
@@ -431,14 +434,14 @@ def run_model(V0, Z0, DA0, task, outfile, \
     f = h5py.File(outfile)
 
     # Create datasets for numeric variables
-    f.create_dataset('C',data=C)
-    f.create_dataset('D',data=D)
-    f.create_dataset('V',shape=(N,n_elems),chunks=chunks)
-    f.create_dataset('Z',shape=(N,n_elems),chunks=chunks)
-    f.create_dataset('DA',shape=(N,n_elems),chunks=chunks)
-    f.create_dataset('QV',shape=(N,n_elems),chunks=chunks)
-    f.create_dataset('Beta',shape=(N,n_elems),chunks=chunks)
-    f.create_dataset('t',data=np.linspace(tstart,tend,n_elems))
+    f.create_dataset('C',data=C,dtype=datype)
+    f.create_dataset('D',data=D,dtype=datype)
+    f.create_dataset('V',shape=(N,n_elems),chunks=chunks,dtype=datype)
+    f.create_dataset('Z',shape=(N,n_elems),chunks=chunks,dtype=datype)
+    f.create_dataset('DA',shape=(N,n_elems),chunks=chunks,dtype=datype)
+    f.create_dataset('QV',shape=(N,n_elems),chunks=chunks,dtype=datype)
+    f.create_dataset('Beta',shape=(N,n_elems),chunks=chunks,dtype=datype)
+    f.create_dataset('t',data=np.linspace(tstart,tend,n_elems),dtype=datype)
 
     # Save parameters (but exclude stuff imported in the parameter file)
     pg = f.create_group('params')
@@ -446,19 +449,53 @@ def run_model(V0, Z0, DA0, task, outfile, \
         valuetype  = type(value).__name__
         if valuetype != 'instance' and valuetype != 'module' and valuetype != 'function':
             pg.create_dataset(key,data=value)
-    pg.create_dataset('names',data=names)
     
-    # If labels were provided in the matrix file too, store them
-    if labels != None: pg.create_dataset('labels',data=labels)
-
     # Close container and write to disk
     f.close()
 
     # Initialize parameter C-class (struct) for the model
     params = par(p_dict)
 
-    # Concatenate initial conditions
+    # Concatenate initial conditions for the "calibration" run 
     VZD0 = np.hstack((np.hstack((V0.squeeze(),Z0.squeeze())),DA0.squeeze()))
+
+    # Set up parameters for an initial `len_init` (in ms) long resting state simulation to "calibrate" the model
+    len_init = 100
+    dt       = 0.1
+    s_step   = 10 
+    rmax     = np.zeros((N,))
+    tinit    = np.arange(0,len_init,dt)
+    tsize    = tinit.size
+    csize    = int(np.ceil(tsize/s_step))
+
+    # Update `p_dict` (we don't use it anymore, so just overwrite stuff) 
+    p_dict['dt']     = dt
+    p_dict['s_step'] = s_step
+    p_dict['rmax']   = rmax
+    parinit          = par(p_dict)
+
+    # Create a temporary container for the simulation
+    tmpname = tempfile.mktemp() + '.h5'
+    tmpfile = h5py.File(tmpname)
+    tmpfile.create_dataset('V',shape=(N,csize),dtype=datype)
+    tmpfile.create_dataset('Z',shape=(N,csize),dtype=datype)
+    tmpfile.create_dataset('DA',shape=(N,csize),dtype=datype)
+    tmpfile.create_dataset('QV',shape=(N,csize),dtype=datype)
+    tmpfile.create_dataset('Beta',shape=(N,csize),dtype=datype)
+    tmpfile.flush()
+
+    # Run 100ms of resting state to get model to a "steady state" for the initial conditions
+    solve_model(VZD0,tinit,parinit,np.array([tsize]),np.array([csize]),seed,0,str(tmpfile.filename))
+
+    # Use final values of `V`, `Z` and `DA` as initial conditions for the "real" simulation
+    V0   = tmpfile['V'][:,-1]
+    Z0   = tmpfile['Z'][:,-1]
+    DA0  = tmpfile['DA'][:,-1]
+    VZD0 = np.hstack((np.hstack((V0.squeeze(),Z0.squeeze())),DA0.squeeze()))
+
+    # Close and delete the temporary container
+    tmpfile.close()
+    os.remove(tmpname)
 
     # Let the user know what's going to happen...
     pstr = "--"
@@ -479,7 +516,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     if verbose: print "\n"+table.draw()+"\n"
 
     # Finally... Run the actual simulation
-    VZD = solve_model(VZD0,tsteps,params,blocksize,chunksize,seed,int(verbose),outfile)
+    solve_model(VZD0,tsteps,params,blocksize,chunksize,seed,int(verbose),outfile)
 
     # Done!
     if verbose: print "\nDone\n"

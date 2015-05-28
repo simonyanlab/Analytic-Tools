@@ -16,7 +16,7 @@ cimport numpy as np
 from libc.math cimport tanh, exp, sqrt
 cimport cython
 
-# Assign default datatype for arrays and compile time types 
+# Assign default data-type for arrays and compile time types 
 DTYPE = np.double 
 ctypedef np.double_t DTYPE_t
 
@@ -128,6 +128,8 @@ cdef class par:
     cdef public np.ndarray QZ
     cdef public np.ndarray W
     cdef public np.ndarray mK
+    cdef public np.ndarray mCa
+    cdef public np.ndarray mNa
     cdef public np.ndarray beta
     cdef public np.ndarray cplng
     cdef public np.ndarray r
@@ -141,7 +143,7 @@ cdef class par:
     # Class constructor
     def __cinit__(self, dict p_dict):
 
-        # Check if C is symmetric and in row-major order (NumPy default)
+        # Check if `C` is symmetric and in row-major order (NumPy default)
         if np.isfortran(p_dict['C']): 
             raise TypeError("Coupling matrix has to be in row-major order (NumPy default)!")
         if np.isfortran(p_dict['D']): 
@@ -199,9 +201,11 @@ cdef class par:
         self.QZ    = np.zeros([self.N,], dtype=DTYPE)
         self.W     = np.zeros([self.N,], dtype=DTYPE)
         self.mK    = np.zeros([self.N,], dtype=DTYPE)
+        self.mCa   = np.zeros([self.N,], dtype=DTYPE)
+        self.mNa   = np.zeros([self.N,], dtype=DTYPE)
         self.beta  = np.ones([self.N,], dtype=DTYPE)
         self.cplng = np.zeros([self.N,], dtype=DTYPE)
-        self.r = np.zeros([self.N,], dtype=DTYPE)
+        self.r     = np.zeros([self.N,], dtype=DTYPE)
         self.C     = p_dict['C']
         self.D     = p_dict['D']
         self.aei   = p_dict['aei']
@@ -218,7 +222,7 @@ cdef DTYPE_t vectanh(np.ndarray[DTYPE_t, ndim = 1] invec, np.ndarray[DTYPE_t, nd
     for i in xrange(n):
         outvec[i] = tanh(invec[i])
 
-# C delcaration of the neural mass model
+# C declaration of the neural mass model
 cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
                      DTYPE_t t, \
                      par p, \
@@ -232,9 +236,9 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     # Declare local variables
     cdef int i
     cdef int n = p.N
-    cdef DTYPE_t tsec, denom, isspeech
+    cdef DTYPE_t tsec, denom, isspeech, rel_len
 
-    # The input has the format X=[V0,...,V997,Z0,...,Z997]
+    # The input has the format `X = [V0,...,V997,Z0,...,Z997]`
     p.V  = X[0:p.N]
     p.Z  = X[p.N:2*p.N]
     p.DA = X[2*p.N:3*p.N]
@@ -245,63 +249,65 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     vectanh((p.Z - p.ZT)/p.deZ,tmp,n)
     p.QZ = 0.5*p.QZmax*(1 + tmp)
 
-    # Get position within the current cycle (in seconds)
+    # Get position within the current cycle (in seconds, `t` runs in ms)
     tsec     = t/1000.
     tsec     = tsec - int(tsec/p.len_cycle)*p.len_cycle
     isspeech = DTYPE(tsec >= p.speechon and tsec <= p.speechoff)
 
-    # Prepare to compute y = alpha*A*x + beta*y, result stored in y. 
+    # Prepare to compute `y = alpha*A*x + beta*y`, result stored in `y`. 
     # Here: alpha = (1-p.a)*(p.b_hi-p.b_lo), beta = p.b_lo and y = p.beta (that's why we set p.beta=1 below)
     p.beta[:] = 1.0
 
-    # Compute dopamine gain: p.beta = p.D.dot(p.DA)*(1 - p.a)*(p.b_hi - p.b_lo) + p.b_lo using CBLAS
+    # Compute dopamine gain: `p.beta = p.D.dot(p.DA)*(1 - p.a)*(p.b_hi - p.b_lo) + p.b_lo` using CBLAS
     dgemv(CblasRowMajor,CblasNoTrans,p.D.shape[0],p.D.shape[1],(1-p.a)*(p.b_hi-p.b_lo),\
           <DTYPE_t*>(p.D.data),p.D.shape[0],<DTYPE_t*>(p.DA.data),p.DA.strides[0]//sizeof(DTYPE_t), p.b_lo,\
           <DTYPE_t*>(p.beta.data), p.beta.strides[0]//sizeof(DTYPE_t))
 
     # Neural activation functions
     vectanh((p.V - p.TCa)/p.deCa,tmp,n)
-    mCa = 0.5*(1 + tmp)
+    p.mCa = 0.5*(1 + tmp)
     vectanh((p.V - p.TNa)/p.deNa,tmp,n)
-    mNa = 0.5*(1 + tmp)
+    p.mNa = 0.5*(1 + tmp)
 
     # Fraction of open potassium channels
     vectanh(p.beta*(p.V - p.TK)/p.deK,tmp,n)
     p.mK = 0.5*(1 + tmp)
-    p.W  = (p.W0 - p.mK*p.phi)*exp(-t/p.tau) + p.mK*p.phi
+    # p.W  = (p.W0 - p.mK*p.phi)*exp(-t/p.tau) + p.mK*p.phi
+    rel_len = 1.0
+    p.W  = (p.W0 - p.mK*p.phi)*exp(-(t - int(t/rel_len)*rel_len)/p.tau) + p.mK*p.phi
 
-    # Compute excitatory coupling based on connection matrix (cplng = C.dot(QV))
+    # Compute excitatory coupling based on connection matrix (`cplng = C.dot(QV)`)
     dsymv(CblasRowMajor,CblasUpper,p.C.shape[1],1.0,<DTYPE_t*>(p.C.data),p.C.shape[0],<DTYPE_t*>(p.QV.data),\
           p.QV.strides[0]//sizeof(DTYPE_t),0.0,<DTYPE_t*>(p.cplng.data),p.cplng.strides[0]//sizeof(DTYPE_t))
 
-    # Deterministic part for V (make sure denom = 1 for rest, other we have a divide by zero on our hands...)
+    # Deterministic part for `V` (make sure `denom = 1` for rest, other we have a divide by zero on our hands...)
     denom    = p.b_hi - p.b_lo + (1. - DTYPE(p.b_lo != p.b_hi))
     tmp      = (p.beta - p.b_lo)/denom + 1
-    A[0:p.N] = - (p.gCa + p.cplng*p.rNMDA*p.aee*tmp)*mCa*(p.V - p.VCa) \
+    A[0:p.N] = - (p.gCa + p.cplng*p.rNMDA*p.aee*tmp)*p.mCa*(p.V - p.VCa) \
                - p.gK*p.W*(p.V - p.VK) - p.gL*(p.V - p.VL) \
-               - (p.gNa*mNa + p.cplng*p.aee*tmp)*(p.V - p.VNa) \
+               - (p.gNa*p.mNa + p.cplng*p.aee*tmp)*(p.V - p.VNa) \
                + p.aie*p.Z*p.QZ
 
-    # Deterministic part for Z
+    # Deterministic part for `Z`
     A[p.N:2*p.N] = p.b*p.aei*p.V*p.QV
 
     # Dopamine model
     p.r            = (p.rmax - p.rmin)*isspeech + p.rmin
     A[2*p.N:3*p.N] = p.r*p.QV - (p.v_m*p.DA)*((p.DA + p.k_m)**(-1))
 
-    # Stochastic (diffusion) parts for V and Z (note that diffusion for DA is 0)
+    # Stochastic (diffusion) parts for `V` and `Z` (note that diffusion for `DA` is 0)
     B[0:p.N]     = p.ane*p.delta
     B[p.N:2*p.N] = p.b*p.ani*p.delta
         
-# RK 15 solver SPECIFIALLY for the model
-cpdef np.ndarray[DTYPE_t, ndim = 2] solve_model(np.ndarray[DTYPE_t, ndim = 1] x0, \
-                                                np.ndarray[DTYPE_t, ndim = 1] tsteps, \
-                                                object myp, \
-                                                np.ndarray[np.long_t, ndim = 1] blocksize, \
-                                                np.ndarray[np.long_t, ndim = 1] chunksize, \
-                                                int seed, \
-                                                int verbose, \
-                                                str outfile):
+# RK 15 solver SPECIFICALLY for the model
+cpdef solve_model(np.ndarray[DTYPE_t, ndim = 1] x0, \
+                  np.ndarray[DTYPE_t, ndim = 1] tsteps, \
+                  object myp, \
+                  np.ndarray[np.long_t, ndim = 1] blocksize, \
+                  np.ndarray[np.long_t, ndim = 1] chunksize, \
+                  int seed, \
+                  int verbose, \
+                  str outfile):
     """
     Solve the model using a custom-tailored Runge--Kutta method of strong order 1.5
     """
@@ -348,7 +354,7 @@ cpdef np.ndarray[DTYPE_t, ndim = 2] solve_model(np.ndarray[DTYPE_t, ndim = 1] x0
     dtplus  = 0.25*dt + dt2*DZ
     dtminus = 0.25*dt - dt2*DZ
 
-    # Due to chunking the last column of Y is the IC
+    # Due to chunking the last column of `Y` is the IC
     Y[:,-1] = x0
 
     # Initialize progressbar
@@ -363,7 +369,7 @@ cpdef np.ndarray[DTYPE_t, ndim = 2] solve_model(np.ndarray[DTYPE_t, ndim = 1] x0
     pb_i  = 0
     for i in xrange(numblocks):
 
-        # Get current block-/chunksize and set new IC for Y to where the last chunk left off
+        # Get current block-/chunksize and set new IC for `Y` to where the last chunk left off
         Y[:,0] = Y[:,-1] 
         bsize  = blocksize[i]
         csize  = chunksize[i]
@@ -372,7 +378,7 @@ cpdef np.ndarray[DTYPE_t, ndim = 2] solve_model(np.ndarray[DTYPE_t, ndim = 1] x0
         k = 0
         for n in xrange(j,j+bsize-1):
 
-            # Get drift/diffusion from func and save stuff in temporaray arrays
+            # Get drift/diffusion from func and save stuff in temporary arrays
             model_eqns(Y[:,k], tsteps[n], myp, A, B, tmp)
             QV[:,k]   = myp.QV 
             Beta[:,k] = myp.beta
