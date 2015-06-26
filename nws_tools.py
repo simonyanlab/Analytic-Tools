@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2015-05-08 14:02:15>
+# Last modified: <2015-06-26 09:44:27>
 
 from __future__ import division
 import numpy as np
@@ -2228,6 +2228,9 @@ def myglob(flpath,spattern):
     flpath = str(flpath)
     if flpath.find("~") == 0:
         flpath = os.path.expanduser('~') + flpath[1:]
+    slash = flpath.rfind(os.sep)
+    if slash >= 0 and not os.path.isdir(flpath[:flpath.rfind(os.sep)]):
+        raise ValueError('Invalid path: '+flpath+'!')
     if str(spattern) != spattern:
         raise TypeError('Pattern has to be a string!')
 
@@ -2333,7 +2336,8 @@ def printdata(data,leadrow,leadcol,fname=None):
         fname = str(fname)
         if fname.find("~") == 0:
             fname = os.path.expanduser('~') + fname[1:]
-        if not os.path.isdir(fname[:fname.rfind(os.sep)]):
+        slash = fname.rfind(os.sep)
+        if slash >= 0 and not os.path.isdir(fname[:fname.rfind(os.sep)]):
             raise ValueError('Invalid path for output file: '+fname+'!')
         if fname[-4::] != '.csv':
             fname = fname + '.csv'

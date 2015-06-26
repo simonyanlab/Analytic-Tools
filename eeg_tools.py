@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: March 19 2014
-# Last modified: <2015-05-21 14:29:10>
+# Last modified: <2015-06-26 10:16:18>
 
 from __future__ import division
 import numpy as np
@@ -17,6 +17,8 @@ import h5py
 import psutil
 from scipy.signal import buttord, butter, kaiserord, kaiser, lfilter, filtfilt, firwin
 from scipy import ndimage
+
+from nws_tools import myglob
 
 ##########################################################################################
 def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,ftype='IIR'):
@@ -321,65 +323,6 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
     
     return filtered
 
-
-##########################################################################################
-def myglob(flpath,spattern):
-    """
-    Return a glob-like list of paths matching a pathname pattern BUT support fancy shell syntax
-
-    Parameters
-    ----------
-    flpath : str
-        Path to search (to search current directory use `flpath=''` or `flpath='.'`
-    spattern : str
-        Pattern to search for in `flpath`
-
-    Returns
-    -------
-    flist : list
-        A Python list of all files found in `flpath` that match the input pattern `spattern`
-
-    Examples
-    --------
-    List all png/PNG files in the folder `MyHolidayFun` found under `Documents`
-
-    >> filelist = myglob('Documents/MyHolidayFun','*.[Pp][Nn][Gg]')
-    >> print filelist
-    >> ['Documents/MyHolidayFun/img1.PNG','Documents/MyHolidayFun/img1.png']
-        
-    Notes
-    -----
-    None
-
-    See also
-    --------
-    glob
-    """
-
-    # Make sure provided path is a string and does not contain weird unicode characters
-    if str(flpath) != flpath:
-        raise TypeError('Filepath has to be a string!')
-    flpath = str(flpath)
-    if flpath.find("~") == 0:
-        flpath = os.path.expanduser('~') + flpath[1:]
-    if str(spattern) != spattern:
-        raise TypeError('Pattern has to be a string!')
-
-    # If user wants to search current directory, make sure that works as expected
-    if (flpath == '') or (flpath.count(' ') == len(flpath)):
-        flpath = '.'
-
-    # Append trailing slash to filepath
-    else:
-        if flpath[-1] != os.sep: flpath = flpath + os.sep
-
-    # Now check if the path even exists
-    if not os.path.isdir(flpath[:flpath.rfind(os.sep)]):
-        raise ValueError('Invalid path: '+flpath+'!')
-
-    # Return glob-like list
-    return [os.path.join(flpath, fnm) for fnm in fnmatch.filter(os.listdir(flpath),spattern)]
-
 ##########################################################################################
 def bcd(int_in):
     """
@@ -503,7 +446,8 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     outfile = str(outfile)
     if outfile.find("~") == 0:
         outfile = os.path.expanduser('~') + outfile[1:]
-    if not os.path.isdir(outfile[:outfile.rfind(os.sep)]):
+    slash = outfile.rfind(os.sep)
+    if slash >= 0 and not os.path.isdir(outfile[:outfile.rfind(os.sep)]):
         raise ValueError('Invalid path for output file: '+outfile+'!')
     if os.path.isfile(outfile): 
         raise ValueError("Target HDF5 container already exists!")
@@ -544,6 +488,8 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     elif len(e21fls) == 0:
         if flpath == '': flpath = 'current directory'
         raise ValueError('File '+flname+'.21E/21e not found in '+flpath)
+
+    import ipdb; ipdb.set_trace()
 
     # Open file handles to *.EEG, *.21E and output files
     fh = open(e21fls[0],'rU')
@@ -791,6 +737,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     eeg.attrs.create('comFlag',data=comFlag)
     eeg.attrs.create('bitLen',data=bitLen)
     eeg.attrs.create('numSamples',data=numSamples)
+    eeg.attrs.create('sourcefile',data=eegfls[0])
 
     # Close and finalize HDF write process
     f.close()
