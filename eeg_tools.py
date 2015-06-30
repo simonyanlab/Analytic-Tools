@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: March 19 2014
-# Last modified: <2015-06-26 10:16:18>
+# Last modified: <2015-06-26 11:05:09>
 
 from __future__ import division
 import numpy as np
@@ -488,8 +488,6 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     elif len(e21fls) == 0:
         if flpath == '': flpath = 'current directory'
         raise ValueError('File '+flname+'.21E/21e not found in '+flpath)
-
-    import ipdb; ipdb.set_trace()
 
     # Open file handles to *.EEG, *.21E and output files
     fh = open(e21fls[0],'rU')
