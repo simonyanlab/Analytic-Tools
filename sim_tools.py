@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2015-05-28 14:30:37>
+# Last modified: <2015-07-15 12:31:00>
 
 from __future__ import division
 import numpy as np
@@ -174,7 +174,8 @@ def run_model(V0, Z0, DA0, task, outfile, \
     outfile = str(outfile)
     if outfile.find("~") == 0:
         outfile = os.path.expanduser('~') + outfile[1:]
-    if not os.path.isdir(outfile[:outfile.rfind(os.sep)]):
+    slash = outfile.rfind(os.sep)
+    if slash >= 0 and not os.path.isdir(outfile[:outfile.rfind(os.sep)]):
         raise ValueError('Invalid path for output file: '+outfile+'!')
 
     # Set or get random number generator seed
