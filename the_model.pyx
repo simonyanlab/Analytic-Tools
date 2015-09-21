@@ -272,9 +272,9 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     # Fraction of open potassium channels
     vectanh(p.beta*(p.V - p.TK)/p.deK,tmp,n)
     p.mK = 0.5*(1 + tmp)
-    # p.W  = (p.W0 - p.mK*p.phi)*exp(-t/p.tau) + p.mK*p.phi
-    rel_len = 1.0
-    p.W  = (p.W0 - p.mK*p.phi)*exp(-(t - int(t/rel_len)*rel_len)/p.tau) + p.mK*p.phi
+    p.W  = (p.W0 - p.mK*p.phi)*exp(-t/p.tau) + p.mK*p.phi
+    # rel_len = 1.0
+    # p.W  = (p.W0 - p.mK*p.phi)*exp(-(t - int(t/rel_len)*rel_len)/p.tau) + p.mK*p.phi
 
     # Compute excitatory coupling based on connection matrix (`cplng = C.dot(QV)`)
     dsymv(CblasRowMajor,CblasUpper,p.C.shape[1],1.0,<DTYPE_t*>(p.C.data),p.C.shape[0],<DTYPE_t*>(p.QV.data),\
@@ -305,7 +305,7 @@ cpdef solve_model(np.ndarray[DTYPE_t, ndim = 1] x0, \
                   object myp, \
                   np.ndarray[np.long_t, ndim = 1] blocksize, \
                   np.ndarray[np.long_t, ndim = 1] chunksize, \
-                  int seed, \
+                  unsigned int seed, \
                   int verbose, \
                   str outfile):
     """
