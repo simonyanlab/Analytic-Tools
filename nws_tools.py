@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2015-06-26 09:44:27>
+# Last modified: <2016-02-26 17:08:11>
 
 from __future__ import division
 import numpy as np
@@ -183,7 +183,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     """
 
     # Make sure txtpath doesn't contain nonsense and points to an existing location
-    if str(txtpath) != txtpath:
+    if not isinstance(txtpath,(str,unicode)):
         raise TypeError('Input has to be a string specifying the path to the txt-file directory!')
     txtpath = str(txtpath)
     if txtpath.find("~") == 0:
@@ -192,16 +192,13 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
         raise ValueError('Invalid directory: '+txtpath+'!')
 
     # Check corrtype
-    try:
-        corrtype = corrtype.lower()
-    except: raise TypeError('Correlation type input must be a string, not '+type(corrtype).__name__+'!')
+    if not isinstance(corrtype,(str,unicode)):
+        raise TypeError('Correlation type input must be a string, not '+type(corrtype).__name__+'!')
+    if corrtype != 'mi' and corrtype != 'pearson':
+        raise ValueError("Currently, only Pearson and (N)MI supported!")
 
     # Check sublist
-    if str(sublist) == sublist:
-        raise TypeError('Subject codes have to be provided as Python list/NumPy 1darray, not as string!')
-    try:
-        sublist = list(sublist)
-    except: 
+    if not isinstance(sublist,list):
         raise TypeError('Subject codes have to be provided as Python list/NumPy 1darray, not '+type(sublist).__name__+'!')
 
     # Get length of sublist (to see if a subject list was provided)
@@ -386,18 +383,18 @@ def corrcheck(*args,**kwargs):
 
     # Assign global name for all figures if provided by additional keyword argument 'title'
     figtitle = kwargs.get('title',None); nofigname = False
-    if figtitle == None: 
+    if figtitle is None: 
         nofigname = True
     else:
-        if str(figtitle) != figtitle:
+        if not isinstance(figtitle,(str,unicode)):
             raise ValueError('Figure title must be a string!')
 
     # If labels have been provided, extract them now
-    if type(args[-1]).__name__ == 'list':
+    if isinstance(args[-1],(list,np.ndarray)):
         myin  -= 1
         labels = args[-1]
         usrlbl = 1
-    elif str(args[-1]) == args[-1]:
+    elif isinstance(args[-1],(str,unicode)):
         myin  -= 1
         labels = [args[-1]]
         usrlbl = 1
@@ -436,7 +433,7 @@ def corrcheck(*args,**kwargs):
     N    = corrs.shape[0]
 
     # Check if those matrices are real and "reasonable"
-    if np.isnan(corrs).max() == True or np.isinf(corrs).max() == True or np.isreal(corrs).min() == False:
+    if np.isfinite(corrs).min() == False:
         raise ValueError("All matrices must be real without NaNs or Infs!")
 
     # Check if we're dealing with Pearson or NMI matrices (or something completely unexpected)
@@ -454,7 +451,7 @@ def corrcheck(*args,**kwargs):
     if (usrlbl):
         if len(labels) != nmat: raise ValueError('Numbers of labels and matrices do not match up!')
         for lb in labels:
-            if str(lb) != lb:
+            if not isinstance(lb,(str,unicode)):
                 raise ValueError('Labels must be provided as list of strings or a single string!')
     else:
         labels = ['Matrix '+str(i+1) for i in xrange(nmat)]
@@ -774,19 +771,23 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False):
 
     # Sanity checks
     tensorcheck(nws)
-    if userdens != None:
-        try: bad = np.round(userdens) != userdens 
-        except: raise TypeError('Density level has to be a number between 0 and 100!')
-        if (bad): raise ValueError('The density level must be an integer!')
+    if userdens is not None:
+        if not np.isscalar(userdens):
+            raise TypeError('Density level has to be a number between 0 and 100!')
+        if not np.isfinite(userdens):
+            raise TypeError('Density level has to be a number between 0 and 100!')
+        if np.round(userdens) != userdens: 
+            raise ValueError('The density level must be an integer!')
         if (userdens <= 0) or (userdens >= 100):
             raise ValueError('The density level must be between 0 and 100!')
-    try: bad = percval > 1 or percval < 0
-    except: raise TypeError("Percentage value must be a floating point number >= 0 and <= 1!")
-    if (bad): raise ValueError("Percentage value must be >= 0 and <= 1!")
-    msg = "The optional argument `force_den` has to be Boolean!"
-    try: bad = (force_den != True and force_den != False)
-    except: raise TypeError(msg)
-    if bad: raise TypeError(msg)
+    if not np.isscalar(percval):
+        raise TypeError("Percentage value must be a floating point number >= 0 and <= 1!")
+    if np.isfinite(percval) == False:
+        raise TypeError("Percentage value must be a floating point number >= 0 and <= 1!")
+    if percval > 1 or percval < 0: 
+        raise ValueError("Percentage value must be >= 0 and <= 1!")
+    if not isinstance(force_den,bool):
+        raise TypeError("The optional argument `force_den` has to be Boolean!")
 
     # Get dimension of per-subject networks
     N       = nws.shape[0]
@@ -876,7 +877,7 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False):
     print "\nThus, minimal density before fragmentation across all subjects is "+str(min_den)+"%"
 
     # Assign thresholding density level
-    if userdens == None:
+    if userdens is None:
         thresh_dens = min_den
     else:
         if userdens < min_den and force_den == False:
@@ -939,36 +940,39 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False):
             'th_mnw': th_mnw, 'mnw_percval': mnw_percval}
 
 ##########################################################################################
-def normalize(I,a=0,b=1):
+def normalize(arr,vmin=0,vmax=1):
     """
     Re-scales a NumPy ndarray
 
     Parameters
     ----------
-    I : NumPy ndarray
+    arr : NumPy ndarray
         An array of size > 1 (shape can be arbitrary)
-    a : float
+    vmin : float
         Floating point number representing the lower normalization bound. 
-        (Note that it has to hold that `a < b`)
-    b : float
+        (Note that it has to hold that `vmin < vmax`)
+    vmin : float
         Floating point number representing the upper normalization bound. 
-        (Note that it has to hold that `a < b`)
+        (Note that it has to hold that `vmin < vmax`)
        
     Returns
     -------
-    In : NumPy ndarray
-        Scaled version of the input array `I`, such that `a = In.min()` and 
-        `b = In.max()`
+    arrn : NumPy ndarray
+        Scaled version of the input array `arr`, such that `arrn.min() == vmin` and 
+        `arrn.max() == vmax`
 
     Notes
     -----
-    None 
+    In contrast to Matplotlib's `Normalize`, *all* values of the input array are re-scaled, 
+    even if outside the specified bounds. For instance, if `arr.min() == -1` and `arr.max() == 0.5` then
+    calling normalize with bounds `vmin = 0` and `vmax = 1` will result in an array `arrn`
+    satisfying `arrn.min() == 0` and `arrn.max() == 1`. 
 
     Examples
     --------
-    >>> I = array([[-1,.2],[100,0]])
-    >>> In = normalize(I,a=-10,b=12)
-    >>> In 
+    >>> arr = array([[-1,.2],[100,0]])
+    >>> arrn = normalize(arr,vmin=-10,vmax=12)
+    >>> arrn 
     array([[-10.        ,  -9.73861386],
            [ 12.        , -10.        ]])
 
@@ -977,36 +981,33 @@ def normalize(I,a=0,b=1):
     None 
     """
 
-    # Ensure that I is a NumPy-ndarray
-    try: tmp = I.size == 1
-    except TypeError: raise TypeError('I has to be a NumPy ndarray!')
-    if (tmp): raise ValueError('I has to be a NumPy ndarray of size > 1!')
+    # Ensure that arr is a NumPy-ndarray
+    try: tmp = arr.size == 1
+    except TypeError: raise TypeError('Input `arr` has to be a NumPy ndarray!')
+    if (tmp): raise ValueError('Input `arr` has to be a NumPy ndarray of size > 1!')
+    if np.isfinite(arr).min() == False: raise ValueError("Input `arr` must be real-valued without Inf's or NaN's!")
 
     # If normalization bounds are user specified, check them
-    try: tmp = b <= a
-    except TypeError: raise TypeError('a and b have to be scalars satisfying a < b!')
-    if (tmp): raise ValueError('a has to be strictly smaller than b!')
-    if np.absolute(a - b) < np.finfo(float).eps:
-            raise ValueError('|a-b|<eps, no normalization possible')
+    for val in [vmin,vmax]:
+        if not np.isscalar(val):
+            raise TypeError('Bounds `vmin` and `vmax` have to be scalars satisfying `vmin < vmax`!')
+    if vmax <= vmin: 
+        raise ValueError('Lower bound `vmin` has to be strictly smaller than upper bound `vmax`!')
+    if np.absolute(vmin - vmax) < np.finfo(float).eps:
+            raise ValueError('Bounds too close: `|vmin - vmax| < eps`, no normalization possible')
 
-    # Get min and max of I
-    Imin   = I.min()
-    Imax   = I.max()
+    # Get min and max of array
+    arrmin = arr.min()
+    arrmax = arr.max()
 
-    # If min and max values of I are identical do nothing, if they differ close to machine precision abort
-    if Imin == Imax:
-        return I
-    elif np.absolute(Imin - Imax) < np.finfo(float).eps:
-        raise ValueError('|Imin-Imax|<eps, no normalization possible')
-
-    # Make a local copy of I
-    I = I.copy()
-
-    # Here the normalization is done
-    I = (I - Imin)*(b - a)/(Imax - Imin) + a
+    # If min and max values of array are identical do nothing, if they differ close to machine precision abort
+    if arrmin == arrmax:
+        return arr
+    elif np.absolute(arrmin - arrmax) < np.finfo(float).eps:
+        raise ValueError('Minimal and maximal values of array too close, no normalization possible')
 
     # Return normalized array
-    return I
+    return (arr - arrmin)*(vmax - vmin)/(arrmax - arrmin) + vmin
 
 ##########################################################################################
 def csv2dict(csvfile):
@@ -1055,9 +1056,8 @@ def csv2dict(csvfile):
     """
 
     # Make sure csvfile doesn't contain unicode and is a valid file
-    if str(csvfile) != csvfile:
+    if not isinstance(csvfile,(str,unicode)):
         raise TypeError("Name of csv-file has to be a string!")
-    csvfile = str(csvfile)
     if csvfile.find("~") == 0:
         csvfile = os.path.expanduser('~') + csvfile[1:]
     if not os.path.isfile(csvfile):
@@ -1157,7 +1157,7 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
     except: 
         raise TypeError('A has to be a square NumPy array!')
     if N != M: raise ValueError('A has to be square!')
-    if np.isnan(A).max() == True or np.isinf(A).max() == True or np.isreal(A).min() == False:
+    if np.isfinite(A).min() == False:
         raise ValueError("A must be real-valued without NaNs or Infs!")
 
     # Check the coordinate dictionary
@@ -1165,71 +1165,74 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
         bad = (coords.keys() != N)
     except: raise TypeError("The coordinates have to be provided as dictionary!")
     if bad: raise ValueError('The coordinate dictionary has to have N keys!')
-    try:
-        cda = np.array(coords.values())
-    except: raise ValueError('All elements of the coords dictionary have to be 3-dimensional!')
-    if np.isnan(cda).max() == True or np.isinf(cda).max() == True or np.isreal(cda).min() == False: 
-        raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
+    for val in coords.values():
+        if not isinstance(coords,(list,np.ndarray)):
+            raise TypeError('All elements of the coords dictionary have to be lists/arrays!')
+        if np.isfinite(val).min() == False:
+            raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
+        if len(val) != 3:
+            raise ValueError('All elements of the coords dictionary have to be 3-dimensional!')
 
     # Check colorvec if provided, otherwise assign default value
-    if colorvec != None:
+    if colorvec is not None:
         try: tmp = colorvec.size != N
         except: raise TypeError('colorvec has to be a NumPy array!')
         if (tmp): raise ValueError('colorvec has to have length N!')
-        if np.isnan(colorvec).max() == True or np.isinf(colorvec).max() == True or np.isreal(colorvec).min()==False:
+        if np.isfinite(colorvec).min() == False:
             raise ValueError("colorvec must be real-valued without NaNs or Infs!")
         if colorvec.min() < 0 or colorvec.max() > 1:
             raise ValueError('colorvec values must be between 0 and 1!')
     else: colorvec = np.ones((N,))
 
     # Same for sizevec
-    if sizevec != None:
+    if sizevec is not None:
         try: tmp = sizevec.size != N
         except: raise TypeError('sizevec has to be a NumPy array!')
         if (tmp): raise ValueError('sizevec has to have length N!')
-        if np.isnan(sizevec).max() == True or np.isinf(sizevec).max() == True or np.isreal(sizevec).min()==False:
+        if np.isfinite(sizevec).min() == False:
             raise ValueError("sizevec must be real-valued without NaNs or Infs!")
         if sizevec.min() < 0:
             raise ValueError('sizevec values must be >= 0!')
     else: sizevec = np.ones((N,))
 
     # Check labels (if any provided)
-    if labels != None:
+    if labels is not None:
         try:
             bad = (len(labels) != N)
         except: raise TypeError("Nodal labels have to be provided as list/NumPy 1darray!")
         if bad: raise ValueError("Number of nodes and labels does not match up!")
         for lb in labels:
-            if str(lb) != lb:
+            if not isinstance(lb,(str,unicode)):
                 raise ValueError('Each individual label has to be a string type!')
     else:
         labels = []
 
     # Check thresholds and linewidhts
-    try:
-        n = len(threshs)
-    except: raise TypeError("Visualization thresholds have to be provided as list/NumPy 1darray!")
+    if not isinstance(threshs,(list,np.ndarray)):
+        raise TypeError("Visualization thresholds have to be provided as list/NumPy 1darray!")
     threshs = np.array(threshs)
-    if np.isnan(threshs).max() == True or np.isinf(threshs).max() == True or np.isreal(threshs).min()==False:
+    n = threshs.size
+    if np.isfinite(threshs).min() == False:
             raise ValueError("threshs must be real-valued without NaNs or Infs!")
-    try:
-        m = len(lwdths)
-    except: raise TypeError("Linewidths have to be provided as list/NumPy 1darray!")
+    if not isinstance(lwdths,(list,np.ndarray)):
+        raise TypeError("Linewidths have to be provided as list/NumPy 1darray!")
     lwdths = np.array(lwdths)
-    if np.isnan(lwdths).max() == True or np.isinf(lwdths).max() == True or np.isreal(lwdths).min()==False:
+    m = lwdths.size
+    if np.isfinite(lwdths).min() == False:
             raise ValueError("lwdths must be real-valued without NaNs or Infs!")
     if m != n: raise ValueError("Number of thresholds and linewidths does not match up!")
 
     # Make sure colormap definitions were given as strings
-    if str(nodecmap) != nodecmap:
+    if not isinstance(nodecmap,(str,unicode)):
         raise TypeError("Colormap for nodes has to be provided as string!")
-    if str(edgecmap) != edgecmap:
+    if not isinstance(edgecmap,(str,unicode)):
         raise TypeError("Colormap for edges has to be provided as string!")
 
-    # Try to convert textscale to a float, scream if it doesn't work
-    try:
-        textscale = float(textscale)
-    except: raise TypeError("Scaling factor for text has to be provided as float!")
+    # Check `textscale`
+    if not np.isscalar(textscale):
+        raise TypeError("Scaling factor for text has to be provided as float!")
+    if not np.isfinite(textscale):
+        raise TypeError("Scaling factor cannot be Inf or NaN!")
 
     # Now start to actually do something...
     pts = mlab.quiver3d(np.array([coords[i][0] for i in coords.keys()]),\
@@ -1367,7 +1370,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
         (N,M) = A.shape
     except: raise TypeError('A has to be a square NumPy array!')
     if N != M: raise ValueError('A has to be square!')
-    if np.isnan(A).max() == True or np.isinf(A).max() == True or np.isreal(A).min() == False:
+    if np.isfinite(A).min() == False:
         raise ValueError("A must be real-valued without NaNs or Infs!")
 
     # Check the coordinate dictionary
@@ -1375,40 +1378,44 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
         bad = (coords.keys() != N)
     except: raise TypeError("The coordinates have to be provided as dictionary!")
     if bad: raise ValueError('The coordinate dictionary has to have N keys!')
-    try:
-        cda = np.array(coords.values())
-    except: raise ValueError('All elements of the coords dictionary have to be 3-dimensional!')
-    if np.isnan(cda).max() == True or np.isinf(cda).max() == True or np.isreal(cda).min() == False: 
-        raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
+    for val in coords.values():
+        if not isinstance(coords,(list,np.ndarray)):
+            raise TypeError('All elements of the coords dictionary have to be lists/arrays!')
+        if np.isfinite(val).min() == False:
+            raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
+        if len(val) != 3:
+            raise ValueError('All elements of the coords dictionary have to be 3-dimensional!')
 
-    # Make sure colorvec and sizevec make sense
-    if colorvec != None:
+    # Check colorvec if provided, otherwise assign default value
+    if colorvec is not None:
         try: tmp = colorvec.size != N
         except: raise TypeError('colorvec has to be a NumPy array!')
         if (tmp): raise ValueError('colorvec has to have length N!')
-        if np.isnan(colorvec).max() == True or np.isinf(colorvec).max() == True or np.isreal(colorvec).min()==False:
+        if np.isfinite(colorvec).min() == False:
             raise ValueError("colorvec must be real-valued without NaNs or Infs!")
         if colorvec.min() < 0 or colorvec.max() > 1:
             raise ValueError('colorvec values must be between 0 and 1!')
     else: colorvec = np.ones((N,))
-    if sizevec != None:
+
+    # Same for sizevec
+    if sizevec is not None:
         try: tmp = sizevec.size != N
         except: raise TypeError('sizevec has to be a NumPy array!')
         if (tmp): raise ValueError('sizevec has to have length N!')
-        if np.isnan(sizevec).max() == True or np.isinf(sizevec).max() == True or np.isreal(sizevec).min()==False:
+        if np.isfinite(sizevec).min() == False:
             raise ValueError("sizevec must be real-valued without NaNs or Infs!")
         if sizevec.min() < 0:
             raise ValueError('sizevec values must be >= 0!')
     else: sizevec = np.ones((N,))
 
     # Check labels (if any provided)
-    if labels != None:
+    if labels is not None:
         try:
             bad = (len(labels) != N)
         except: raise TypeError("Nodal labels have to be provided as list/NumPy 1darray!")
         if bad: raise ValueError("Number of nodes and labels does not match up!")
         for lb in labels:
-            if str(lb) != lb:
+            if not isinstance(lb,(str,unicode)):
                 raise ValueError('Each individual label has to be a string type!')
     else:
         labels = []
@@ -1420,22 +1427,22 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
         raise TypeError('Edge colormap has to be a Matplotlib colormap!')
 
     # If no linewidths were provided, use the entries of A as to control edge thickness
-    if linewidths != None:
+    if linewidths is not None:
         try:
             (N,M) = linewidths.shape
         except: raise TypeError('Linewidths have to be a square NumPy array!')
         if N != M: raise ValueError('Linewidths have to be provided as square matrix!')
-        if np.isnan(linewidths).max() == True or np.isinf(linewidths).max() == True or np.isreal(linewidths).min() == False:
+        if np.isfinite(linewidths).min() == False:
                 raise ValueError("Linewidths must be real-valued without NaNs or Infs!")
     else:
         linewidths = A
 
     # Make sure nodes3d is Boolean
-    if type(nodes3d).__name__ != 'bool':
+    if not isinstance(nodes3d,bool):
         raise TypeError('The nodes3d flag has to be a Boolean variable!')
 
     # Check if viewtype is anything strange
-    if str(viewtype) != viewtype:
+    if not isinstance(viewtype,(str,unicode)):
         raise TypeError("Viewtype must be 'axial(_{t/b})', 'sagittal(_{l/r})' or 'coronal(_{f/b})'")
 
     # Turn on 3d projection
@@ -1565,11 +1572,12 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
         raise ValueError('Input must be a N-by-N NumPy array')
     if (min(shn)==1) or (shn[0]!=shn[1]):
         raise ValueError('Input must be a N-by-N NumPy array!')
-    if np.isnan(nw).max()==True or np.isinf(nw).max()==True or np.isreal(nw).min()==False:
+    if np.isfinite(nw).min() == False:
         raise ValueError('Input must be a real valued NumPy array without Infs or NaNs!')
-    try: tmp = (round(M) != M) or (M < 1)
-    except: raise TypeError("M has to be a natural number > 1!")
-    if (tmp): raise ValueError("M has to be a natural number > 1!")
+    if not np.isscalar(M):
+        raise TypeError("M has to be scalar!")
+    if (round(M) != M) or (M < 1): 
+        raise ValueError("M has to be a natural number > 1!")
 
     # See if the string method is one of the supported randomization algorithms
     supported = ["auto","randmio_und_connected","randmio_und","null_model_und_sign"]
@@ -1582,10 +1590,9 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
         raise ValueError(msg)
 
     # See if rwr makes sense
-    try:
-        bad = (np.round(rwr) != rwr)
-    except: TypeError("Rewiring parameter rwr has to be an integer, not "+type(rwr).__name__+"!")
-    if bad or rwr < 1: 
+    if not np.isscalar(rwr):
+        TypeError("Rewiring parameter rwr has to be an integer, not "+type(rwr).__name__+"!")
+    if (np.round(rwr) != rwr) or rwr < 1: 
         raise TypeError("Rewiring parameter has to be a strictly positive integer!")
 
     # Try to import progressbar module
@@ -1861,23 +1868,17 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
         raise ValueError('Input must be a timepoint-by-index NumPy 2d array')
     if (min(shtsdata)==1):
         raise ValueError('At least two time-series/two time-points are required to compute (N)MI!')
-    if np.isnan(tsdata).max()==True or np.isinf(tsdata).max()==True or np.isreal(tsdata).min()==False:
+    if np.isfinite(tsdata).min() == False:
         raise ValueError('Input must be a real valued NumPy 2d array without Infs or NaNs!')
 
-    try:
-        tmp = (n_bins != int(n_bins))
-    except:
+    if not np.isscalar(n_bins):
         raise TypeError('Bin number must be an integer!')
-    if (tmp): raise ValueError('Bin number must be an integer!')
+    if (n_bins != int(n_bins)): 
+        raise ValueError('Bin number must be an integer!')
 
-    if type(normalized).__name__ != 'bool':
-        raise TypeError('The normalized flag must be Boolean!')
-
-    if type(fast).__name__ != 'bool':
-        raise TypeError('The fast flag must be Boolean!')
-
-    if type(norm_ts).__name__ != 'bool':
-        raise TypeError('The norm_ts flag must be Boolean!')
+    for bvar in [normalized,fast,norm_ts]:
+        if not isinstance(bvar,bool):
+            raise TypeError('The flags `normalized`, `fast` and `norm_ts` must be Boolean!')
     
     #  Get faster reference to length of time series = number of samples
     #  per grid point.
@@ -2188,7 +2189,7 @@ def issym(A,tol=1e-9):
     try:
         is_sym = (norm(A-A.T,ord='fro') <= tol*norm(A,ord='fro'))
     except:
-        raise TypeError('Input argument has to be a square matrix and a scalar tol (optional)!')
+        raise TypeError('Input argument has to be a square matrix/array and a scalar tol (optional)!')
 
     return is_sym
 
@@ -2223,7 +2224,7 @@ def myglob(flpath,spattern):
     """
 
     # Make sure provided path is a string and does not contain weird unicode characters
-    if str(flpath) != flpath:
+    if not isinstance(flpath,(str,unicode)):
         raise TypeError('Filepath has to be a string!')
     flpath = str(flpath)
     if flpath.find("~") == 0:
@@ -2231,7 +2232,7 @@ def myglob(flpath,spattern):
     slash = flpath.rfind(os.sep)
     if slash >= 0 and not os.path.isdir(flpath[:flpath.rfind(os.sep)]):
         raise ValueError('Invalid path: '+flpath+'!')
-    if str(spattern) != spattern:
+    if not isinstance(spattern,(str,unicode)):
         raise TypeError('Pattern has to be a string!')
 
     # If user wants to search current directory, make sure that works as expected
@@ -2319,19 +2320,16 @@ def printdata(data,leadrow,leadcol,fname=None):
         raise TypeError('Input must be a M-by-N NumPy array, not ' + type(data).__name__+'!')
     if len(ds) > 2:
         raise ValueError('Input must be a M-by-N NumPy array!')
-    try:
-        m = len(leadcol)
-    except: 
-        raise TypeError('Input must be a Python list or NumPy 1d array, not '+type(leadcol).__name__+'!')
-    try:
-        n = len(leadrow)
-    except: 
-        raise TypeError('Input must be a Python list or NumPy 1d array, not '+type(leadrow).__name__+'!')
+    for lvar in [leadcol,leadrow]:
+        if not isinstance(lvar,(list,np.ndarray)):
+            raise TypeError("The inputs `leadcol` and `leadrow` must by Python lists or Numpy 1d arrays!")
+    m = len(leadcol)
+    n = len(leadrow)
 
     # If a filename was provided make sure it's a string and check if the path exists
     # (unicode chars in filenames are probably a bad idea...)
-    if fname != None:
-        if str(fname) != fname:
+    if fname is not None:
+        if not isinstance(fname,(str,unicode)):
             raise TypeError('Optional output filename has to be a string!')
         fname = str(fname)
         if fname.find("~") == 0:
@@ -2455,7 +2453,7 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
         raise ValueError(msg)
 
     # Check if image directory exists and append trailing slash if necessary
-    if str(imgpth) != imgpth:
+    if not isinstance(imgpth,(str,unicode)):
         raise TypeError('Path to image directory has to be a string!')
     imgpth = str(imgpth)
     if imgpth.find("~") == 0:
@@ -2468,7 +2466,7 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
 
     # Check if imgfmt is a valid string format specifier 
     # (don't use split below in case we have something like im.001.tiff)
-    if str(imgfmt) != imgfmt:
+    if not isinstance(imgfmt,(str,unicode)):
         raise TypeError('Format specifier for images has to be a string!')
     imgfmt = str(imgfmt)
     dot    = imgfmt.rfind('.')
@@ -2482,7 +2480,7 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
     if num_imgs < 2: raise ValueError('Directory '+imgpth+' contains fewer than 2 `'+imtype+'` files!')
 
     # Check validity of outfile 
-    if str(outfile) != outfile:
+    if not isinstance(outfile,(str,unicode)):
         raise TypeError('Output filename has to be a string!')
     outfile = str(outfile)
     if outfile.find("~") == 0:
@@ -2515,20 +2513,22 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
         ext = exl[0]
 
     # Make sure fps is a positive integer
-    try:
-        bad = fps != int(fps)
-    except: raise TypeError('Movie framerate has to be provided as integer, not '+type(fps).__name__+'!')
-    if bad or fps < 1: raise ValueError('Invalid framerate: '+str(fps)+'!')
+    if not np.isscalar(fps):
+        raise TypeError('Movie framerate has to be provided as integer, not '+type(fps).__name__+'!')
+    if not np.isfinite(fps):
+        raise TypeError('Movie framerate cannot be NaN or Inf!')
+    if fps != int(fps) or fps < 1: 
+        raise ValueError('Invalid framerate: '+str(fps)+'!')
     
     # Check if output filesize makes sense (if provided)
-    if filesize != None:
-        try:
-            float(filesize)
-        except: raise TypeError('The output filesize has to be a positive number, not '+type(filesize).__name__+'!')
-        if filesize <= 0: raise ValueError('Invalid filesize: '+str(filesize)+'!')
+    if filesize is not None:
+        if not np.isscalar(filesize):
+            raise TypeError('The output filesize has to be a positive number, not '+type(filesize).__name__+'!')
+        if not np.isfinite(filesize) or filesize <= 0:
+            raise ValueError('Invalid filesize: '+str(filesize)+'!')
 
     # Check if preset is valid (if provided)
-    if str(preset) != preset:
+    if not isinstance(preset,(str,unicode)):
         raise TypeError('Preset specifier for video encoding has to be a string!')
     supported = ['ultrafast','superfast','veryfast','faster','fast','medium','slow','slower','veryslow','placebo']
     if supported.count(preset) == 0:
@@ -2544,7 +2544,7 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
         nulldev = '/dev/null'
 
     # Encode movie respecting provided file-size limit
-    if filesize != None:
+    if filesize is not None:
 
         # Calculate movie length based on desired frame-rate and bit-rate such that given filesize is not exceeded (MB->kbit/s uses 8192)
         movie_len = np.ceil(num_imgs/fps)
@@ -2584,5 +2584,5 @@ def tensorcheck(corrs):
         raise ValueError('Input must be a N-by-N-by-k NumPy array')
     if (min(shc[0],shc[1])==1) or (shc[0]!=shc[1]):
         raise ValueError('Input must be a N-by-N-by-k NumPy array!')
-    if np.isnan(corrs).max()==True or np.isinf(corrs).max()==True or np.isreal(corrs).min()==False:
+    if np.isfinite(corrs).min() == False:
         raise ValueError('Input must be a real valued NumPy array without Infs or NaNs!')

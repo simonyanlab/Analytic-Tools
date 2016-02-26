@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2015-07-15 12:31:00>
+# Last modified: <2016-02-26 16:04:52>
 
 from __future__ import division
 import numpy as np
@@ -406,6 +406,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     datype  = np.dtype('float64')
     meminfo = psutil.virtual_memory()
     maxmem  = int(meminfo.available*ram_use/(5*N)/datype.itemsize)
+    maxmem  += s_step - np.mod(maxmem,s_step)
 
     # If the whole array fits into memory load it once, otherwise chunk it up
     if tsteps.size <= maxmem:
