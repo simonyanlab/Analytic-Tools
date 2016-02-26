@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-02-26 17:08:11>
+# Last modified: <2016-02-26 17:10:08>
 
 from __future__ import division
 import numpy as np
@@ -198,7 +198,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
         raise ValueError("Currently, only Pearson and (N)MI supported!")
 
     # Check sublist
-    if not isinstance(sublist,list):
+    if not isinstance(sublist,(list,np.np.ndarray)):
         raise TypeError('Subject codes have to be provided as Python list/NumPy 1darray, not '+type(sublist).__name__+'!')
 
     # Get length of sublist (to see if a subject list was provided)
