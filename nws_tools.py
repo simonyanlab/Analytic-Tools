@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-02-26 17:10:08>
+# Last modified: <2016-03-18 16:00:19>
 
 from __future__ import division
 import numpy as np
@@ -14,7 +14,10 @@ import inspect
 import fnmatch
 from scipy import weave
 from numpy.linalg import norm
-from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import Axes3D, proj3d
+from matplotlib.patches import FancyArrowPatch, Circle
+from matplotlib.colors import Normalize, colorConverter, LightSource
+import math
 
 ##########################################################################################
 def strengths_und(CIJ):
@@ -2569,6 +2572,736 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
 
 
     return
+
+##########################################################################################
+def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent=None,positions=None,labels=None,
+               angle=90,branch_colors=None,branch_alpha=1.0,node_cmap=plt.cm.jet,node_alpha=1.0,\
+               edge_cmap=plt.cm.jet,edge_alpha=1.0,edge_vrange=[0,1],node_vrange=[0,1],node_sizes=0.01,\
+               branch_lw=2,edge_lw=0.5,radians=0.15,labelsize=8,node_lw=0.5,nodes3d=False,sphere_res=40,\
+               lightsource=None,full3d=False,viewpoint=None,ethresh=None,show_grid=False):
+    """
+    By default no threshold is applied to edges, i.e., even edges with zero-weights are drawn using 
+    the respective value from the colormap `edge_cmap`. If you want to remove zero-weight edges use 
+    the keyword argument `ethresh = 0`. 
+    """
+    # Define some default values in case the user didn't provide all optional inputs
+    branch_beg = 0.05                   # Start of branches as displacement from `center` (if `branch_extent == None`)
+    branch_end = 0.95                   # Length of branches (if `branch_extent == None`)
+    pos_offset = 0.05                   # Offset percentage for nodes on branches (if `positions == None`)
+    x_offset   = 0.1                    # Offset percentage for x-axis limits
+    y_offset   = 0.1                    # Offset percentage for y-axis limits
+    z_offset   = 0.1                    # Offset percentage for z-axis limits (only relevant if `full3d == True`)
+
+    # Error checking for dictionaries with numeric values
+    def check_dict(dct,name):
+        try:
+            for branch, nodes in dct.items():
+                dct[branch] = np.array(dct[branch])
+        except:
+            raise TypeError('The provided '+name+' have to be a dictionary with the same keys as `branches`!')
+        for branch, nodes in dct.items():
+            if branches[branch].size != dct[branch].size:
+                raise ValueError("Provided branches and "+name+" don't match up!")
+            if not plt.is_numlike(dct[branch]):
+                raise ValueError("Input  "+name+" must be numeric!")
+            if np.isfinite(dct[branch]).min() == False:
+                raise ValueError("Input  "+name+" must not contain NaNs or Infs!")
+
+    # Amend `FancyArrowPatch` by 3D capabilities 
+    # (taken from http://stackoverflow.com/questions/11140163/python-matplotlib-plotting-a-3d-cube-a-sphere-and-a-vector)
+    class Arrow3D(FancyArrowPatch):
+        def __init__(self, xs, ys, zs, *args, **kwargs):
+            FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
+            self._verts3d = xs, ys, zs
+
+        def draw(self, renderer):
+            xs3d, ys3d, zs3d = self._verts3d
+            xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
+            self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+            FancyArrowPatch.draw(self, renderer)
+
+    # Check if `ax` is really an mpl axis object
+    try:
+        plt.sca(ax)
+    except:
+        raise TypeError("Could not make axis "+str(ax)+" active!")
+
+    # See if `branches` is a dictionary of branch numbers/labels holding node-numbers 
+    if not isinstance(branches,dict):
+        raise TypeError('The input `branches` has to be dictionary-like, not '+type(branches).__name__)
+    try:
+        for branch, nodes in branches.items():
+            branches[branch] = np.array(branches[branch]).squeeze()
+    except:
+        raise TypeError('Branches must be provided as dictionary of node arrays/lists!!')
+    for branch, nodes in branches.items():
+        if not plt.is_numlike(branches[branch]):
+            raise ValueError("Node indices in branches must be numeric!")
+        if np.isfinite(branches[branch]).min() == False:
+            raise ValueError("Node indices in branches must not contain NaNs or Infs!")
+    branch_arr = np.array(branches.keys())
+    num_branches = branch_arr.size
+    if num_branches == 1:
+        raise ValueError('Only one branch found - no bueno')
+    if type(branches).__name__ != 'OrderedDict':
+        branch_arr = np.sort(branch_arr)                # if we have a regular dict, sort its keys
+    node_arr = []
+    for nodes in branches.values():
+        node_arr += list(nodes)
+    node_arr = np.unique(node_arr)
+    num_nodes = node_arr.size
+    if np.any(np.diff(node_arr) != 1) or node_arr.min() != 0:
+        raise ValueError('Node numbers have to be contiguous in ascending order starting with 0!')
+    for br in branches.keys():
+        branches[br] = np.array(branches[br])
+
+   # See if `connections` is a 2d array that matches the provided branch dictionary
+    try:
+        csh = connections.shape
+    except:
+        raise TypeError('Connection array has to be a NumPy 2darray, not '+type(csh).__name__)
+    if len(csh) != 2 or np.min(csh) == 1:
+        raise ValueError('Connection array has to be a square NumPy 2darray!')
+    if csh[0] != csh[1]:
+        raise ValueError('Connection array has to be a square NumPy 2darray!')
+    elif csh[0] != num_nodes:
+        raise ValueError('Number of nodes does not match connection matrix!')
+    if not plt.is_numlike(connections):
+        raise ValueError('Connection array must be real-valued!')
+    if np.isfinite(connections).min() == False:
+        raise ValueError("Connection array must be real without NaNs or Infs!")
+    if connections.min() < 0 or connections.max() > 1:
+        raise ValueError('Connections values must be between zero and one!')
+
+    # Let's see if we're going to have fun in 3D
+    if not isinstance(nodes3d,bool):
+        raise TypeError('Three-dimensional nodes are activated using a binary True/False flag!')
+    if not isinstance(full3d,bool):
+        raise TypeError('Full 3D plotting is activated using a binary True/False flag!')
+    if full3d:
+        nodes3d = False         # just internally: turn off this switch to avoid confusion later on
+    if not isinstance(show_grid,bool):
+        raise TypeError('Grid is drawn or not based on a binary True/False flag!')
+    if show_grid and not full3d:
+        print "WARNING: 3D grid is only shown for full 3D plots!"
+
+    # Now check resolution parameter for rendering spheres
+    if np.isscalar(sphere_res):
+        if np.isfinite(sphere_res) == False:
+            raise ValueError("Resolution parameter for rendering spheres must be a positive integer!")
+        if sphere_res < 2 or np.round(sphere_res) != sphere_res:
+            raise ValueError("Resolution parameter for rendering must be a positive integer >= 2!")
+        if sphere_res >= 100:
+            print "WARNING: The resolution parameter for nodal spheres is very large - rendering might take forever..."
+    else:
+        raise TypeError("Resolution parameter for rendering spheres must be a positive integer!")
+
+    # See if a light-source for illumination was provided
+    if lightsource is not None:
+        if isinstance(lightsource,bool):
+            if lightsource == True:
+                lightsource = np.array([90,45])
+            else:
+                lightsource = None
+        if lightsource is not None:
+            lightsource = np.array(lightsource)
+            if plt.is_numlike(lightsource):
+                if np.isfinite(lightsource).min() == False:
+                    raise ValueError("Light-source angles have to be real-valued!")
+                if lightsource.size != 2:
+                    raise ValueError("Light-source has to be provided as azimuth/altitude degrees!")
+                if lightsource.min() < 0 or lightsource[0] > 360 or lightsource[1] > 90:
+                    raise ValueError("Light-source azimuth/elevation have to be between 0-360 and 0-90 degrees, respectively!")
+            else:
+                raise TypeError("Light-source for illumination has to be either `True`/`False` or [`azdeg`,`altdeg`]!")
+
+    # See if a threshold for drawing edges was provided, if not, don't use one
+    if ethresh is not None:
+        if not np.isscalar(ethresh):
+            raise TypeError("Edge-threshold has to be a scalar!")
+        if not np.isfinite(ethresh):
+            raise ValueError("Edge-threshold has to be a finite scalar!")
+        if ethresh < 0 or ethresh > 1:
+            raise ValueError("Edge-threshold has to be a scalar between zero and one!")
+
+    # See if a camera position (in azimuth/elevation degrees) was provided, if not use some defaults
+    if viewpoint is not None:
+        viewpoint = np.array(viewpoint)
+        if plt.is_numlike(viewpoint):
+            if np.isfinite(viewpoint).min() == False:
+                raise ValueError("View-point angles have to be real-valued!")
+            if viewpoint.size != 2:
+                raise ValueError("View-point has to be provided as azimuth/altitude degrees!")
+        else:
+            raise TypeError("View-point for illumination has to [`azdeg`,`altdeg`]!")
+    else:
+        viewpoint = np.array([-60,30])
+        
+    # See if nodal values were provided, if not create simple dict
+    if node_vals is not None:
+        check_dict(node_vals,'nodal values')
+        for vals in node_vals.values():
+            if vals.min() < 0 or vals.max() > 1:
+                raise ValueError('Nodal values must be between zero and one!')
+    else:
+        node_vals = {}
+        for branch, nodes in branches.items():
+            node_vals[branch] = np.ones(branches[branch].shape)
+
+    # See if center makes sense, if provided
+    try:
+        center = np.array(center)
+    except:
+        raise TypeError('Unsupported type for input `center`: '+type(dict).__name__)
+    if not plt.is_numlike(center):
+        raise ValueError("Center coordinates must be real numbers!")
+    if np.isfinite(center).min() == False:
+        raise ValueError("Center coordinates must not contain Infs or NaNs!")
+    if np.all(center) == 0:
+        if full3d:
+            center = np.zeros((3,))
+    else:
+        if full3d == False and center.size != 2:
+            raise ValueError("Center coordinates have to be two-dimensional!")
+        if full3d == True and center.size != 3:
+            raise ValueError("For 3D plots center coordinates have to be three-dimensional!")
+
+    # See if branch lengths were provided, otherwise construct'em
+    if branch_extent is not None:
+        try:
+            for branch in branches.keys():
+                branch_extent[branch] = np.array(branch_extent[branch])
+        except:
+            raise TypeError("The provided branch dimensions have to be a dictionary with the same keys as `branches`!")
+        for branch in branches.keys():
+            if not plt.is_numlike(branch_extent[branch]):
+                raise ValueError("Branch dimensions must be numeric!")
+            if np.isfinite(branch_extent[branch]).min() == False:
+                raise ValueError("Branch dimensions must not contain NaNs or Infs!")
+            if branch_extent[branch].size != 2:
+                raise ValueError("Only two values by branch supported for branch dimensions!")
+            if branch_extent[branch].min() < 0:
+                raise ValueError("Branch dimensions have to be strictly positive!")
+            if branch_extent[branch][0] >= branch_extent[branch][1]:
+                raise ValueError("Branch dimensions have to be increasing (beginning -> end)!")
+    else:
+        branch_extent = {}
+        for branch in branches.keys():
+            branch_extent[branch] = [branch_beg,branch_end]
+
+    # See if nodal positions were provided, if not create simple dict
+    if positions is not None:
+        check_dict(positions,'nodal positions')
+        for branch in branches.keys():
+            if positions[branch].min() < branch_extent[branch][0] or positions[branch].max() > branch_extent[branch][1]:
+                raise ValueError('Nodal positions on branches must be within branch extent!')
+    else:
+        positions = {}
+        for branch, extent in branch_extent.items():
+            length = extent[1] - extent[0]
+            offset = pos_offset*length
+            positions[branch] = np.linspace(extent[0]+offset,extent[1]-offset,branches[branch].size)
+
+    # See if labels were provided and make sense, otherwise don't use labels
+    if labels is not None:
+        try:
+            for branch in branches.keys():
+                labels[branch] = np.array(labels[branch])
+        except:
+            raise TypeError("The provided nodal labels have to be a dictionary with the same keys as `branches`!")
+        for branch in branches.keys():
+            if branches[branch].size != labels[branch].size:
+                raise ValueError("Provided branches and nodal labels don't match up!")
+            if plt.is_numlike(labels[branch]):
+                raise ValueError("The provided nodal labels must be strings!")
+        if full3d or nodes3d:
+            print "WARNING: Due to limiations in mplot3d the positiong of text in 3d space is somewhat screwed up..."
+
+    # Now make sure label font-size makes sense
+    if np.isscalar(labelsize):
+        if np.isfinite(labelsize) == False:
+            raise ValueError('Label font-size has to be real-valued!')
+        if labelsize < 0:
+            raise ValueError('Label font-sizes have to be strictly positive!')
+    else:
+        raise TypeError('Label font-size has to be provided as scalar!')
+
+    # Check branch angle(s) were provided, if not, generate'em
+    if isinstance(angle,dict):
+        try:
+            for branch in branches.keys():
+                tmp = np.array(angle[branch])
+        except:
+            raise TypeError("The provided branch angles have to be a dictionary with the same keys as `branches`!")
+        for branch in branches.keys():
+            if full3d:
+                angle[branch] = np.array(angle[branch])
+                if not plt.is_numlike(angle[branch]):
+                    raise TypeError("3D branch angles must be numeric, two value per branch!")
+                if len(angle[branch]) != 2:
+                    raise ValueError("3D branch angles must be provided as two values per branch!")
+                if np.min(np.isfinite(angle[branch])) == False:
+                    raise ValueError("Branch angles must not be NaN or Inf!")
+                if angle[branch][0] < 0 or angle[branch][0] > 360:
+                    raise ValueError("Azimuth must be between 0 and 360 degrees!")
+                if angle[branch][1] < -90 or angle[branch][1] > 90:
+                    raise ValueError("Elevation must be between -90 and +90 degrees!")
+                azim = math.radians(angle[branch][0])
+                elev = math.radians(angle[branch][1])
+                elev = np.pi/2 - (elev > 0)*elev + (elev < 0)*np.abs(elev)
+                angle[branch] = np.array([azim,elev])
+            else:
+                if not np.isscalar(angle[branch]):
+                    raise TypeError("Branch angles must be numeric, one value per branch!")
+                if np.isfinite(angle[branch]) == False:
+                    raise ValueError("Branch angles must not be NaN or Inf!")
+                if angle[branch] < 0 or angle[branch] > 360:
+                    raise ValueError("Branch angles must be between 0 and 360 degrees!")
+                angle[branch] = math.radians(ange[branch])
+    elif np.isscalar(angle):
+        if full3d:
+            angle = {}
+            angle[branch_arr[0]] = np.zeros((2,)) # in spherical coordinates (main branch is vertical line from origin)
+            start = 1/4*np.pi 
+            degs = np.linspace(start,start+2*np.pi,num_branches)        # these are the "azimuth" angles (well, not really...)
+            elev = 3/4*np.pi
+            for br, branch in enumerate(branch_arr[1:]):         # Here order is important! Use the generated (sorted) array!
+                angle[branch] = np.array([degs[br],elev])
+        else:
+            angle = math.radians(angle)
+            degs = np.linspace(angle,angle+2*np.pi,num_branches+1)
+            angle = {}
+            for br, branch in enumerate(branch_arr):         # Here order is important! Use the generated (sorted) array!
+                angle[branch] = degs[br]
+    else:
+        raise TypeError("Branch angles have to be provided either as scalar or dictionary!")
+
+    # Check color-values of branches - if not provided, construct'em
+    if branch_colors is not None:
+        if isinstance(branch_colors,dict):
+            for branch in branches.keys():
+                if len(branch_colors[branch]) > 1:
+                    raise ValueError("Only one color per branch is supported!")
+                if plt.is_numlike(branch_colors[branch]):
+                    raise ValueError("The provided branch colors must be strings!")
+        elif isinstance(branch_colors,str):
+            bc = branch_colors
+            branch_colors = {}
+            for branch in branches.keys():
+                branch_colors[branch] = bc
+        else:
+            raise TypeError("The provided branch colors have to be either a string or "+\
+                            "a dictionary with the same keys as `branches`!")
+    else:
+        branch_colors = {}
+        for branch in branches.keys():
+            branch_colors[branch] = 'Black'
+
+    # Check node and edge color maps
+    for cmap in [node_cmap,edge_cmap]:
+        if type(cmap).__name__.find('Colormap') < 0:
+            raise TypeError("Node/Edge colormaps have to be matplotlib colormaps!")
+
+    # Check value ranges for nodes and edges
+    for vrange in [node_vrange,edge_vrange]:
+        try:
+            vrange = np.array(vrange)
+        except:
+            raise TypeError('Unsupported type for input `center`: '+type(dict).__name__)
+        if vrange.size != 2:
+            raise ValueError("Node/Edge value range has to be two-dimensional!")
+        if not plt.is_numlike(vrange):
+            raise ValueError("Node/Edge value range must be real!")
+        if np.isfinite(vrange).min() == False:
+            raise ValueError("Node/Edge value range must not contain Infs or NaNs!")
+        if vrange[0] >= vrange[1] or vrange.min() < 0 or vrange.max() > 1:
+            raise ValueError("Node/Edge value range must be non-negative and strictly increasing!")
+
+    # See if nodal sizes have been provided, if not construct dictionary 
+    if isinstance(node_sizes,dict):
+        check_dict(node_sizes,'nodal sizes')
+        for vals in node_sizes.values():
+            if vals.min() < 0:
+                raise ValueError("Nodal sizes have to be non-negative!")
+    elif np.isscalar(node_sizes):
+        ns = node_sizes
+        node_sizes = {}
+        for branch,nodes in branches.items():
+            node_sizes[branch] = ns*np.ones(nodes.shape)
+    else:
+        raise TypeError("Nodal sizes have to be provided either as scalar or dictionary!")
+
+    # See if nodal alpha values have been provided, if not construct dictionary 
+    if isinstance(node_alpha,dict):
+        check_dict(node_alpha,'nodal alpha values')
+        for vals in node_alpha.values():
+            if vals.min() < 0 or vals.max() > 1:
+                raise ValueError("Nodal alpha values have to be between zero and one!")
+    elif np.isscalar(node_alpha):
+        ns = node_alpha
+        node_alpha = {}
+        for branch,nodes in branches.items():
+            node_alpha[branch] = ns*np.ones(nodes.shape)
+    else:
+        raise TypeError("Nodal alpha values have to be provided either as scalar or dictionary!")
+
+    # Now make sure node line-width makes sense
+    if np.isscalar(node_lw):
+        if np.isfinite(node_lw) == False:
+            raise ValueError('Node line-width has to be real-valued!')
+        if node_lw < 0:
+            raise ValueError('Node line-width has to be strictly positive!')
+        if full3d:
+            print "WARNING: Line-width specifications for nodes is ignored for full 3D plots!"
+    else:
+        raise TypeError('Node line-width has to be provided as scalar!')
+
+    # Check if line-widths for branches have been provided, otherwise assign default values
+    if isinstance(branch_lw,dict):
+        try:
+            for branch in branches.keys():
+                tmp = np.array(branch_lw[branch])
+        except:
+            raise TypeError("The provided branch line-widths have to be a dictionary with the same keys as `branches`!")
+        for branch in branches.keys():
+            if not np.isscalar(branch_lw[branch]):
+                raise ValueError("Branch line-widths must be numeric, one value per branch!")
+            if np.isfinite(branch_lw[branch]) == False:
+                raise ValueError("Branch line-widths must not be NaN or Inf!")
+            if branch_lw[branch] < 0:
+                raise ValueError("Branch line-widths have to be non-negative!")
+    elif np.isscalar(branch_lw):
+        bw = branch_lw
+        branch_lw = {}
+        for branch in branches.keys():
+            branch_lw[branch] = bw
+    else:
+        raise TypeError("Branch line-widths have to be provided either as scalar or dictionary!")
+
+    # Check if alpha-values for branches have been provided, otherwise assign default values
+    if isinstance(branch_alpha,dict):
+        try:
+            for branch in branches.keys():
+                tmp = np.array(branch_alpha[branch])
+        except:
+            raise TypeError("The provided branch alpha values have to be a dictionary with the same keys as `branches`!")
+        for branch in branches.keys():
+            if not np.isscalar(branch_alpha[branch]):
+                raise ValueError("Branch alpha values must be numeric, one value per branch!")
+            if np.isfinite(branch_alpha[branch]) == False:
+                raise ValueError("Branch alpha values must not be NaN or Inf!")
+            if branch_alpha[branch] < 0 or branch_alpha[branch] > 1:
+                raise ValueError("Branch alpha values must be between zero and one!")
+    elif np.isscalar(branch_alpha):
+        bw = branch_alpha
+        branch_alpha = {}
+        for branch in branches.keys():
+            branch_alpha[branch] = bw
+    else:
+        raise TypeError("Branch alpha values have to be provided either as scalar or dictionary!")
+
+    # Check if line-widths for edges have been provided, otherwise assign default values
+    if np.isscalar(edge_lw):
+        edge_lw = np.ones(connections.shape) * edge_lw
+    else:
+        try:
+            esh = edge_lw.shape
+        except:
+            raise TypeError('Edge line-widths have to be a NumPy 2darray, not '+type(esh).__name__)
+        if np.any(esh != csh):
+            raise ValueError("Edge line-widths have to be provided in the same format as connection array!")
+        if not plt.is_numlike(edge_lw):
+            raise ValueError('Edge line widhts must be real-valued!')
+        if np.isfinite(edge_lw).min() == False:
+            raise ValueError("Edge line widhts must be real without NaNs or Infs!")
+        if edge_lw.min() < 0:
+            raise ValueError('Edge line-widths values must be non-negative!')
+
+    # Check if alpha values for edges have been provided, otherwise assign default values
+    if np.isscalar(edge_alpha):
+        edge_alpha = np.ones(connections.shape) * edge_alpha
+    else:
+        try:
+            esh = edge_alpha.shape
+        except:
+            raise TypeError('Edge alpha values have to be a NumPy 2darray, not '+type(esh).__name__)
+        if np.any(esh != csh):
+            raise ValueError("Edge alpha values have to be provided in the same format as connection array!")
+        if not plt.is_numlike(edge_alpha):
+            raise ValueError('Edge alpha values must be real-valued!')
+        if np.isfinite(edge_alpha).min() == False:
+            raise ValueError("Edge alpha values must be real without NaNs or Infs!")
+        if edge_alpha.min() < 0 or edge_alpha.max() > 1:
+            raise ValueError('Edge alpha values values must be non-negative!')
+
+    # Check if an intial setting for the arch radian was provided, otherwise use the default
+    if np.isscalar(radians):
+        if np.isfinite(radians) == False:
+            raise ValueError('Radian value has to be real-valued!')
+    else:
+        try:
+            rsh = radians.shape
+        except:
+            raise TypeError('Arch radian(s) has/have to be provided as scalar/array!')
+        if not plt.is_numlike(radians):
+            raise ValueError("Arch radians must be real-valued!")
+        if np.isfinite(radians).min() == False:
+            raise ValueError("Arch radians must be real-valued without Infs or NaNs!")
+        if len(rsh) != 2 or np.min(rsh) == 1:
+            raise ValueError("Arch radians mus be provided as square array!")
+        if rsh[0] != rsh[1]:
+            raise ValueError("Arch radians array must be square!")
+        if rsh[0] != num_branches:
+            raise ValueError("Arch radians must be provided as square array matching no. of branches!!")
+
+    # Prepare axis
+    ax.set_aspect('equal')
+    ax.hold(True)
+
+    # If nodes have to be rendered as spheres, some tuning is required...
+    if nodes3d or full3d:
+
+        # Turn on 3d projection if nodes are to be rendered as spheres
+        bgcol = ax.get_axis_bgcolor()
+        ax = plt.gca(projection='3d',axisbg=bgcol)
+        ax.hold(True)
+        if not full3d:
+            ax.view_init(azim=-90,elev=90)
+        else:
+            ax.view_init(azim=viewpoint[0],elev=viewpoint[1])
+
+        # Turn off 3D grid and change background of panes (or not)
+        if not show_grid:
+            ax.grid(False)
+            ax.w_xaxis.set_pane_color(colorConverter.to_rgb(bgcol))
+            ax.w_yaxis.set_pane_color(colorConverter.to_rgb(bgcol))
+            ax.w_zaxis.set_pane_color(colorConverter.to_rgb(bgcol))
+
+        # Turn off all axes highlights
+        ax.zaxis.line.set_lw(0)
+        ax.set_zticks([])
+        ax.xaxis.line.set_lw(0)
+        ax.set_xticks([])
+        ax.yaxis.line.set_lw(0)
+        ax.set_yticks([])
+
+        # Generate surface data for the prototype nodal sphere
+        theta  = np.arange(-sphere_res,sphere_res+1,2)/sphere_res*np.pi
+        phi    = np.arange(-sphere_res,sphere_res+1,2)/sphere_res*np.pi/2
+        cosphi = np.cos(phi); cosphi[0] = 0; cosphi[-1] = 0
+        sinth  = np.sin(theta); sinth[0] = 0; sinth[-1] = 0    
+        xsurf  = np.outer(cosphi,np.cos(theta))
+        ysurf  = np.outer(cosphi,sinth)
+        zsurf  = np.outer(np.sin(phi),np.ones((sphere_res+1,)))
+        
+        # If virtual lighting is wanted, create a light source for illumination
+        if lightsource is not None:
+            light   = LightSource(*lightsource)
+            rgb_arr = np.ones((zsurf.shape[0],zsurf.shape[1],3))
+
+    # Start by truncating color-values based on vrange limits that were provided
+    if [0,1] != node_vrange:
+        node_cmap = plt.cm.ScalarMappable(norm=Normalize(node_vrange[0],node_vrange[1]),cmap=node_cmap).to_rgba
+    if [0,1] != edge_vrange:
+        edge_cmap = plt.cm.ScalarMappable(norm=Normalize(edge_vrange[0],edge_vrange[1]),cmap=edge_cmap).to_rgba
+
+    # Plot branches and construct nodal patches (we do this no matter if we're 3-dimensional or not)
+    node_patches = {}
+    branch_dvecs = {}
+    branch_kwargs = {'lw':-1, 'color': -np.ones((3,)), 'alpha': -1, 'zorder':1}
+    for branch in branch_arr:
+
+        # Compute normed directional vector of branch
+        if full3d:
+            azim,elev = angle[branch]
+            bdry = branch_extent[branch][1]*np.array([np.sin(elev)*np.cos(azim),np.sin(elev)*np.sin(azim),np.cos(elev)])
+        else:
+            bdry = branch_extent[branch][1]*np.array([np.cos(angle[branch]),np.sin(angle[branch])])
+        vec  = bdry - center
+        vec /= np.linalg.norm(vec)
+        bstart = center + branch_extent[branch][0]*vec
+        branch_dvecs[branch] = vec
+
+        # Plot branch as straight line
+        branch_kwargs['lw'] = branch_lw[branch]
+        branch_kwargs['color'] = branch_colors[branch]
+        branch_kwargs['alpha'] = branch_alpha[branch]
+        if full3d:
+            plt.plot([bstart[0],bdry[0]],[bstart[1],bdry[1]],zs=[bstart[2],bdry[2]],zdir='z',**branch_kwargs)
+        elif nodes3d:
+            plt.plot([bstart[0],bdry[0]],[bstart[1],bdry[1]],zs=0,zdir='z',**branch_kwargs)
+        else:
+            plt.plot([bstart[0],bdry[0]],[bstart[1],bdry[1]],**branch_kwargs)
+
+        # Now construct circular patches for all nodes and save'em in the `patch_list` list (and the `node_patch` dict)
+        patch_list = []
+        for node in xrange(branches[branch].size):
+            pos = center + vec*positions[branch][node]
+            patch_list.append(Circle(pos,radius=node_sizes[branch][node],\
+                                     facecolor=node_cmap(node_vals[branch][node]),\
+                                     alpha=node_alpha[branch][node],\
+                                     lw=node_lw,\
+                                     zorder=3))
+        node_patches[branch] = patch_list
+
+    # Determine if our network is directed or not
+    sym = issym(connections)
+
+    # Allocate dicionary for all edge-related parameters
+    edge_kwargs = {'connectionstyle':'a string','lw': -1, 'alpha': -1, 'color': -np.ones((3,)), 'zorder': 2}
+    if sym:
+        edge_kwargs['arrowstyle'] = '-'
+    else:
+        edge_kwargs['arrowstyle'] = '-|>'
+
+    # 3D is again the special snowflake, so do this nonsense separately...
+    if full3d:
+
+        # In a fully three-dimensional environment, we can't go 'round the tree to plot edges - everything may be connected
+        seen = []
+        for br, branch in enumerate(branch_arr):
+            seen.append(branch)
+            neighbors = np.setdiff1d(branch_arr,seen)
+            for twig in neighbors:
+                if np.isscalar(radians):
+                    br_vec = branch_dvecs[branch]
+                    tw_vec = branch_dvecs[twig]
+                    ang_bt = np.arctan2(np.linalg.norm(np.cross(br_vec,tw_vec)),br_vec.dot(tw_vec))
+                    ang_bt += 2*np.pi*(ang_bt >= 0)
+                    rad    = (-1)**(ang_bt > np.pi)*radians
+                else:
+                    rad = radians[br,np.where(branch_arr==twig)[0][0]]
+                for n1,node1 in enumerate(branches[branch]):
+                    for n2,node2 in enumerate(branches[twig]):
+                        edge_kwargs['connectionstyle'] = 'arc3,rad=%s'%rad
+                        edge_kwargs['lw'] = edge_lw[node1,node2]
+                        edge_kwargs['alpha'] = edge_alpha[node1,node2]
+                        edge_kwargs['color'] = edge_cmap(connections[node1,node2])
+                        xcoords = [node_patches[branch][n1].center[0],node_patches[twig][n2].center[0]]
+                        ycoords = [node_patches[branch][n1].center[1],node_patches[twig][n2].center[1]]
+                        zcoords = [node_patches[branch][n1].center[2],node_patches[twig][n2].center[2]]
+                        if sym:
+                            if connections[node1,node2] > ethresh:
+                                ax.add_artist(Arrow3D(xcoords,ycoords,zcoords,**edge_kwargs))
+                        else:
+                            if connections[node1,node2] > ethresh:
+                                ax.add_artist(Arrow3D(xcoords,ycoords,zcoords,**edge_kwargs))
+                            if connections[node2,node1] > ethresh:
+                                rad = - rad
+                                edge_kwargs['connectionstyle'] = 'arc3,rad=%s'%rad
+                                ax.add_artist(Arrow3D(xcoords[::-1],ycoords[::-1],zcoords[::-1],**edge_kwargs))
+
+    # 2D rendering of edges is a lot easier (just go branch by branch)
+    else:
+        for br, branch in enumerate(branch_arr):
+            if br < branch_arr.size-1:
+                twig = branch_arr[br+1]
+            else:
+                twig = branch_arr[0]
+            if np.isscalar(radians):
+                br_vec = branch_dvecs[branch]
+                tw_vec = branch_dvecs[twig]
+                ang_bt = np.arctan2(tw_vec[1],tw_vec[0]) - np.arctan2(br_vec[1],br_vec[0])
+                ang_bt += 2*np.pi*(ang_bt < 0)
+                rad    = (-1)**(ang_bt > np.pi)*radians
+            else:
+                rad = radians[br,br+1]
+            for n1,node1 in enumerate(branches[branch]):
+                for n2,node2 in enumerate(branches[twig]):
+                    edge_kwargs['connectionstyle'] = 'arc3,rad=%s'%rad
+                    edge_kwargs['lw'] = edge_lw[node1,node2]
+                    edge_kwargs['alpha'] = edge_alpha[node1,node2]
+                    edge_kwargs['color'] = edge_cmap(connections[node1,node2])
+                    xcoords = [node_patches[branch][n1].center[0],node_patches[twig][n2].center[0]]
+                    ycoords = [node_patches[branch][n1].center[1],node_patches[twig][n2].center[1]]
+                    if sym:
+                        if connections[node1,node2] > ethresh:
+                            if nodes3d:
+                                ax.add_artist(Arrow3D(xcoords,ycoords,[0,0],**edge_kwargs))
+                            else:
+                                ax.add_patch(FancyArrowPatch(node_patches[branch][n1].center,\
+                                                             node_patches[twig][n2].center,\
+                                                             **edge_kwargs))
+                    else:
+                        if connections[node1,node2] > ethresh:
+                            if nodes3d:
+                                ax.add_artist(Arrow3D(xcoords,ycoords,[0,0],**edge_kwargs))
+                            else:
+                                ax.add_patch(FancyArrowPatch(node_patches[branch][n1].center,\
+                                                             node_patches[twig][n2].center,\
+                                                             **edge_kwargs))
+                        if connections[node2,node1] > ethresh:
+                            rad = - rad
+                            edge_kwargs['connectionstyle'] = 'arc3,rad=%s'%rad
+                            if nodes3d:
+                                ax.add_artist(Arrow3D(xcoords[::-1],ycoords[::-1],[0,0],**edge_kwargs))
+                            else:
+                                ax.add_patch(FancyArrowPatch(node_patches[twig][n2].center,\
+                                                             node_patches[branch][n1].center,\
+                                                             **edge_kwargs))
+
+    # Finally, draw nodes and compute maximal extent of branches
+    top = -np.inf 
+    bot = np.inf 
+    lft = np.inf 
+    rgt = -np.inf
+    up  = -np.inf
+    lo  = np.inf
+    lbl_kwargs = {'fontsize':labelsize,'ha':'center','va':'center'}
+    nd_kwargs = {'cstride':1,'rstride':1,'linewidth':0,'antialiased':False,'alpha':-1,'zorder':-1}
+    zcord = 0
+    for branch in branch_arr:
+        branch_tvec = branch_extent[branch][1]*branch_dvecs[branch]
+        top = np.max([top,branch_tvec[1]])
+        bot = np.min([bot,branch_tvec[1]])
+        lft = np.min([lft,branch_tvec[0]])
+        rgt = np.max([rgt,branch_tvec[0]])
+        if full3d:
+            up = np.max([up,branch_tvec[2]])
+            lo = np.min([lo,branch_tvec[2]])
+        for node in xrange(branches[branch].size):
+            if nodes3d or full3d:
+                circ = node_patches[branch][node]
+                if full3d:
+                    zcord = circ.center[2]
+                nd_kwargs['alpha'] = circ.get_alpha()
+                nd_kwargs['zorder'] = circ.get_zorder()
+                if lightsource is not None:
+                    nd_kwargs['facecolors'] = light.shade_rgb(rgb_arr*np.array(circ.get_facecolor()[:-1]),zsurf)
+                else:
+                    nd_kwargs['color'] = circ.get_facecolor()
+                ax.plot_surface(circ.get_radius()*xsurf + circ.center[0],\
+                                circ.get_radius()*ysurf + circ.center[1],\
+                                circ.get_radius()*zsurf + zcord,\
+                                **nd_kwargs)
+                if labels is not None:
+                    if nodes3d:
+                        lcord = 1.5*circ.get_radius()
+                    else:
+                        lcord = node_patches[branch][node].center[2]
+                    ax.text(node_patches[branch][node].center[0],\
+                            node_patches[branch][node].center[1],\
+                            lcord,\
+                            labels[branch][node],**lbl_kwargs)
+            else:
+                ax.add_patch(node_patches[branch][node])
+                if labels is not None:
+                    ax.text(node_patches[branch][node].center[0],\
+                            node_patches[branch][node].center[1],\
+                            labels[branch][node],**lbl_kwargs)
+
+    # Set axes limits based on extent of branches
+    x_width = rgt - lft
+    y_heght = top - bot
+    ax.set_xlim(left=lft-x_offset*x_width,right=rgt+x_offset*x_width)
+    ax.set_ylim(bottom=bot-y_offset*y_heght,top=top+y_offset*y_heght)
+    if full3d:
+        z_len = up - lo
+        ax.set_zlim(bottom=lo-z_offset*z_len,top=up+z_offset*z_len)
+
+    # Draw the beauty and get the hell out of here
+    plt.draw()
+    if full3d or nodes3d: plt.axis('equal')
 
 ##########################################################################################
 def tensorcheck(corrs):
