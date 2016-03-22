@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-03-18 16:00:19>
+# Last modified: <2016-03-22 11:40:29>
 
 from __future__ import division
 import numpy as np
@@ -2163,29 +2163,29 @@ def issym(A,tol=1e-9):
     """
     Check for symmetry of a 2d NumPy array A
 
-    Inputs:
-    -------
+    Parameters
+    ----------
     A : square NumPy 2darray
         A presumably symmetric matrix
     tol : positive real scalar
-        Tolerance for checking if (A - A.T) is sufficiently small
+        Tolerance :math:`\\tau` for checking if :math:`A` is sufficiently close to :math:`A^\\top`.
 
-    Returns:
-    --------
+    Returns
+    -------
     is_sym : bool
-        True if A satisfies
-                |A - A.T| <= tol * |A|,
-        where |.| denotes the Frobenius norm. Thus, if the above inequality 
-        holds, A is approximately symmetric. 
+        True if :math:`A` satisfies :math:`|A - A^\\top| \\leq \\tau |A|`,
+        where :math:`|\\cdot|` denotes the Frobenius norm. Thus, if this inequality 
+        holds, :math:`A` is approximately symmetric. 
 
-    Notes:
-    ------
-    An absolute-value based comparison is readily provided by NumPy's `isclose`
-
-    See also:
-    ---------
-    The following thread at MATLAB central
-    .. http://www.mathworks.com/matlabcentral/newsreader/view_thread/252727
+    Notes
+    -----
+    For further details regarding the Frobenius norm approach used, please refer to the 
+    discussion in `this <http://www.mathworks.com/matlabcentral/newsreader/view_thread/252727>`_ 
+    thread at MATLAB central
+    
+    See also
+    --------
+    isclose : An absolute-value based comparison readily provided by NumPy. 
     """
 
     # Check if Frobenius norm of A - A.T is sufficiently small (respecting round-off errors)
