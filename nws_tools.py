@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-03-22 11:40:29>
+# Last modified: <2016-03-25 17:27:34>
 
 from __future__ import division
 import numpy as np
@@ -436,6 +436,8 @@ def corrcheck(*args,**kwargs):
     N    = corrs.shape[0]
 
     # Check if those matrices are real and "reasonable"
+    if not plt.is_numlike(corrs):
+        raise TypeError("Input arrays must be numeric!")
     if np.isfinite(corrs).min() == False:
         raise ValueError("All matrices must be real without NaNs or Infs!")
 
@@ -572,10 +574,8 @@ def get_meannw(nws,percval=0.0):
     """
 
     # Sanity checks
-    tensorcheck(nws)
-    try: tmp = percval > 1 or percval < 0
-    except: raise TypeError("Percentage value must be a floating point number >= 0 and <= 1!")
-    if (tmp): raise ValueError("Percentage value must be >= 0 and <= 1!")
+    arrcheck(nws,'tensor','nws')
+    scalarcheck(percval,'percval',bounds=[0,1])
     
     # Get shape of input tensor
     N       = nws.shape[0]
@@ -649,7 +649,7 @@ def rm_negatives(corrs):
     """
 
     # Sanity checks
-    tensorcheck(corrs)
+    arrcheck(corrs,'tensor','corrs')
 
     # See how many matrices are stacked in the array
     K = corrs.shape[-1]
@@ -697,7 +697,7 @@ def rm_selfies(conns):
     """
 
     # Sanity checks
-    tensorcheck(conns)
+    arrcheck(conns,'tensor','conns')
 
     # Create output quantity and zero its diagonals
     nws = conns.copy()
@@ -773,22 +773,10 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False):
     """
 
     # Sanity checks
-    tensorcheck(nws)
+    arrcheck(nws,'tensor','nws')
     if userdens is not None:
-        if not np.isscalar(userdens):
-            raise TypeError('Density level has to be a number between 0 and 100!')
-        if not np.isfinite(userdens):
-            raise TypeError('Density level has to be a number between 0 and 100!')
-        if np.round(userdens) != userdens: 
-            raise ValueError('The density level must be an integer!')
-        if (userdens <= 0) or (userdens >= 100):
-            raise ValueError('The density level must be between 0 and 100!')
-    if not np.isscalar(percval):
-        raise TypeError("Percentage value must be a floating point number >= 0 and <= 1!")
-    if np.isfinite(percval) == False:
-        raise TypeError("Percentage value must be a floating point number >= 0 and <= 1!")
-    if percval > 1 or percval < 0: 
-        raise ValueError("Percentage value must be >= 0 and <= 1!")
+        scalarcheck(userdens,'userdens',kind='int',bounds=[0,100])
+    scalarcheck(percval,'percval',bounds=[0,1])
     if not isinstance(force_den,bool):
         raise TypeError("The optional argument `force_den` has to be Boolean!")
 
@@ -986,14 +974,18 @@ def normalize(arr,vmin=0,vmax=1):
 
     # Ensure that arr is a NumPy-ndarray
     try: tmp = arr.size == 1
-    except TypeError: raise TypeError('Input `arr` has to be a NumPy ndarray!')
-    if (tmp): raise ValueError('Input `arr` has to be a NumPy ndarray of size > 1!')
-    if np.isfinite(arr).min() == False: raise ValueError("Input `arr` must be real-valued without Inf's or NaN's!")
+    except TypeError: 
+        raise TypeError('Input `arr` has to be a NumPy ndarray!')
+    if (tmp): 
+        raise ValueError('Input `arr` has to be a NumPy ndarray of size > 1!')
+    if not plt.is_numlike(arr):
+        raise TypeError("Input array hast to be numeric!")
+    if np.isfinite(arr).min() == False: 
+        raise ValueError("Input `arr` must be real-valued without Inf's or NaN's!")
 
     # If normalization bounds are user specified, check them
-    for val in [vmin,vmax]:
-        if not np.isscalar(val):
-            raise TypeError('Bounds `vmin` and `vmax` have to be scalars satisfying `vmin < vmax`!')
+    scalarcheck(vmin,'vmin')
+    scalarcheck(vmax,'vmax')
     if vmax <= vmin: 
         raise ValueError('Lower bound `vmin` has to be strictly smaller than upper bound `vmax`!')
     if np.absolute(vmin - vmax) < np.finfo(float).eps:
@@ -1155,22 +1147,21 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
         raise ImportError(msg)
 
     # Make sure the adjacency/weighting matrix makes sense
-    try:
-        (N,M) = A.shape
-    except: 
-        raise TypeError('A has to be a square NumPy array!')
-    if N != M: raise ValueError('A has to be square!')
-    if np.isfinite(A).min() == False:
-        raise ValueError("A must be real-valued without NaNs or Infs!")
+    arrcheck(A,'matrix','A')
+    (N,M) = A.shape
 
     # Check the coordinate dictionary
     try:
         bad = (coords.keys() != N)
-    except: raise TypeError("The coordinates have to be provided as dictionary!")
-    if bad: raise ValueError('The coordinate dictionary has to have N keys!')
+    except: 
+        raise TypeError("The coordinates have to be provided as dictionary!")
+    if bad: 
+        raise ValueError('The coordinate dictionary has to have N keys!')
     for val in coords.values():
-        if not isinstance(coords,(list,np.ndarray)):
+        if not isinstance(val,(list,np.ndarray)):
             raise TypeError('All elements of the coords dictionary have to be lists/arrays!')
+        if not plt.is_numlike(val):
+            raise TypeError("Coordinates have to be numeric!")
         if np.isfinite(val).min() == False:
             raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
         if len(val) != 3:
@@ -1178,20 +1169,31 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
 
     # Check colorvec if provided, otherwise assign default value
     if colorvec is not None:
-        try: tmp = colorvec.size != N
-        except: raise TypeError('colorvec has to be a NumPy array!')
-        if (tmp): raise ValueError('colorvec has to have length N!')
+        try: 
+            tmp = colorvec.size != N
+        except: 
+            raise TypeError('colorvec has to be a NumPy array!')
+        if (tmp): 
+            raise ValueError('colorvec has to have length N!')
+        if not plt.is_numlike(colorvec):
+            raise TypeError("colorvec has to be numeric!")
         if np.isfinite(colorvec).min() == False:
             raise ValueError("colorvec must be real-valued without NaNs or Infs!")
         if colorvec.min() < 0 or colorvec.max() > 1:
             raise ValueError('colorvec values must be between 0 and 1!')
-    else: colorvec = np.ones((N,))
+    else: 
+        colorvec = np.ones((N,))
 
     # Same for sizevec
     if sizevec is not None:
-        try: tmp = sizevec.size != N
-        except: raise TypeError('sizevec has to be a NumPy array!')
-        if (tmp): raise ValueError('sizevec has to have length N!')
+        try: 
+            tmp = sizevec.size != N
+        except: 
+            raise TypeError('sizevec has to be a NumPy array!')
+        if (tmp): 
+            raise ValueError('sizevec has to have length N!')
+        if not plt.is_numlike(sizevec):
+            raise TypeError("sizevec has to be numeric!")
         if np.isfinite(sizevec).min() == False:
             raise ValueError("sizevec must be real-valued without NaNs or Infs!")
         if sizevec.min() < 0:
@@ -1202,8 +1204,10 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
     if labels is not None:
         try:
             bad = (len(labels) != N)
-        except: raise TypeError("Nodal labels have to be provided as list/NumPy 1darray!")
-        if bad: raise ValueError("Number of nodes and labels does not match up!")
+        except: 
+            raise TypeError("Nodal labels have to be provided as list/NumPy 1darray!")
+        if bad: 
+            raise ValueError("Number of nodes and labels does not match up!")
         for lb in labels:
             if not isinstance(lb,(str,unicode)):
                 raise ValueError('Each individual label has to be a string type!')
@@ -1215,15 +1219,20 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
         raise TypeError("Visualization thresholds have to be provided as list/NumPy 1darray!")
     threshs = np.array(threshs)
     n = threshs.size
+    if not plt.is_numlike(threshs):
+        raise TypeError("threshs has to be numeric!")
     if np.isfinite(threshs).min() == False:
             raise ValueError("threshs must be real-valued without NaNs or Infs!")
     if not isinstance(lwdths,(list,np.ndarray)):
         raise TypeError("Linewidths have to be provided as list/NumPy 1darray!")
     lwdths = np.array(lwdths)
     m = lwdths.size
+    if not plt.is_numlike(lwdths):
+        raise TypeError("lwdths must be numeric!")
     if np.isfinite(lwdths).min() == False:
-            raise ValueError("lwdths must be real-valued without NaNs or Infs!")
-    if m != n: raise ValueError("Number of thresholds and linewidths does not match up!")
+        raise ValueError("lwdths must be real-valued without NaNs or Infs!")
+    if m != n: 
+        raise ValueError("Number of thresholds and linewidths does not match up!")
 
     # Make sure colormap definitions were given as strings
     if not isinstance(nodecmap,(str,unicode)):
@@ -1232,10 +1241,7 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
         raise TypeError("Colormap for edges has to be provided as string!")
 
     # Check `textscale`
-    if not np.isscalar(textscale):
-        raise TypeError("Scaling factor for text has to be provided as float!")
-    if not np.isfinite(textscale):
-        raise TypeError("Scaling factor cannot be Inf or NaN!")
+    scalarcheck(textscale,'textscale')
 
     # Now start to actually do something...
     pts = mlab.quiver3d(np.array([coords[i][0] for i in coords.keys()]),\
@@ -1369,21 +1375,21 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
     """
 
     # Check the graph's connection matrix
-    try:
-        (N,M) = A.shape
-    except: raise TypeError('A has to be a square NumPy array!')
-    if N != M: raise ValueError('A has to be square!')
-    if np.isfinite(A).min() == False:
-        raise ValueError("A must be real-valued without NaNs or Infs!")
+    arrcheck(A,'matrix','A')
+    (N,M) = A.shape
 
     # Check the coordinate dictionary
     try:
         bad = (coords.keys() != N)
-    except: raise TypeError("The coordinates have to be provided as dictionary!")
-    if bad: raise ValueError('The coordinate dictionary has to have N keys!')
+    except: 
+        raise TypeError("The coordinates have to be provided as dictionary!")
+    if bad: 
+        raise ValueError('The coordinate dictionary has to have N keys!')
     for val in coords.values():
-        if not isinstance(coords,(list,np.ndarray)):
+        if not isinstance(val,(list,np.ndarray)):
             raise TypeError('All elements of the coords dictionary have to be lists/arrays!')
+        if not plt.is_numlike(val):
+            raise TypeError("Coordinates have to be numeric!")
         if np.isfinite(val).min() == False:
             raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
         if len(val) != 3:
@@ -1391,32 +1397,46 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
 
     # Check colorvec if provided, otherwise assign default value
     if colorvec is not None:
-        try: tmp = colorvec.size != N
-        except: raise TypeError('colorvec has to be a NumPy array!')
-        if (tmp): raise ValueError('colorvec has to have length N!')
+        try: 
+            tmp = colorvec.size != N
+        except: 
+            raise TypeError('colorvec has to be a NumPy array!')
+        if (tmp): 
+            raise ValueError('colorvec has to have length N!')
+        if not plt.is_numlike(colorvec):
+            raise TypeError("colorvec has to be numeric!")
         if np.isfinite(colorvec).min() == False:
             raise ValueError("colorvec must be real-valued without NaNs or Infs!")
         if colorvec.min() < 0 or colorvec.max() > 1:
             raise ValueError('colorvec values must be between 0 and 1!')
-    else: colorvec = np.ones((N,))
+    else: 
+        colorvec = np.ones((N,))
 
     # Same for sizevec
     if sizevec is not None:
-        try: tmp = sizevec.size != N
-        except: raise TypeError('sizevec has to be a NumPy array!')
-        if (tmp): raise ValueError('sizevec has to have length N!')
+        try: 
+            tmp = sizevec.size != N
+        except: 
+            raise TypeError('sizevec has to be a NumPy array!')
+        if (tmp): 
+            raise ValueError('sizevec has to have length N!')
+        if not plt.is_numlike(sizevec):
+            raise TypeError("sizevec has to be numeric!")
         if np.isfinite(sizevec).min() == False:
             raise ValueError("sizevec must be real-valued without NaNs or Infs!")
         if sizevec.min() < 0:
             raise ValueError('sizevec values must be >= 0!')
-    else: sizevec = np.ones((N,))
+    else: 
+        sizevec = np.ones((N,))
 
     # Check labels (if any provided)
     if labels is not None:
         try:
             bad = (len(labels) != N)
-        except: raise TypeError("Nodal labels have to be provided as list/NumPy 1darray!")
-        if bad: raise ValueError("Number of nodes and labels does not match up!")
+        except: 
+            raise TypeError("Nodal labels have to be provided as list/NumPy 1darray!")
+        if bad: 
+            raise ValueError("Number of nodes and labels does not match up!")
         for lb in labels:
             if not isinstance(lb,(str,unicode)):
                 raise ValueError('Each individual label has to be a string type!')
@@ -1431,12 +1451,10 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
 
     # If no linewidths were provided, use the entries of A as to control edge thickness
     if linewidths is not None:
-        try:
-            (N,M) = linewidths.shape
-        except: raise TypeError('Linewidths have to be a square NumPy array!')
-        if N != M: raise ValueError('Linewidths have to be provided as square matrix!')
-        if np.isfinite(linewidths).min() == False:
-                raise ValueError("Linewidths must be real-valued without NaNs or Infs!")
+        arrcheck(linewidths,'matrix','linewidths')
+        (ln,lm) = linewidths.shape
+        if linewidths.shape != A.shape:
+            raise ValueError("Linewidths must be provided as square array of the same dimension as the connectivity matrix!")
     else:
         linewidths = A
 
@@ -1519,25 +1537,27 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
     return 
 
 ##########################################################################################
-def generate_randnws(nw,M=100,method="auto",rwr=5):
+def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
     """
     Generate random networks given an input network
 
     Parameters
     ----------
     nw : NumPy 2darray
-        Undirected binary/weighted connection matrix
+        Undirected weighted connection matrix
     M : integer > 1
         Number of random networks to generate
     method : string
         String specifying which method to use to randomize 
         the input network. Currently supported options are 
         `'auto'` (default), `'null_model_und_sign'`, `'randmio_und'`, and `'randmio_und_connected'`. 
-        If `'auto'` is chosen then `'randmio_und_connected'` is used
+        If `'auto'` is chosen then `'randmio_und'` is used
         to compute the random networks unless the input graph is very dense
-        (then `'randmio_und'` is used). 
+        (then `'null_model_und_sign'` is used to shuffle edge weights). 
     rwr : integer
         Number of approximate rewirings per edge (default 5). 
+    rwr_max : integer
+        Maximal number of rewirings per edge to force randomization (default 10). 
 
     Returns
     -------
@@ -1549,38 +1569,34 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
 
     Notes
     -----
-    This function requires `bctpy` to be installed! The `bctpy` package is 
-    an unofficial Python port of the Brain Connectivity Toolbox for MATLAB. 
-    It is currently available at the 
-    `Python Package Index <https://pypi.python.org/pypi/bctpy>`_
-    and can be installed using `pip`. 
+    This function calls routines from the Brain Connectivity Toolbox (BCT) for MATLAB via Octave. 
+    Thus, it requires Octave to be installed with the BCT in its search path. Further, 
+    `oct2py` is needed to launch an Octave instance from within Python. 
 
     See also
     --------
-    randmio_und_connected : in bctpy
-    randmio_und : in bctpy
-    null_model_und_sign : in bctpy
+    randmio_und_connected : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                            `here <https://sites.google.com/site/bctnet/>`_
+    randmio_und : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                  `here <https://sites.google.com/site/bctnet/>`_
+    null_model_und_sign : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                          `here <https://sites.google.com/site/bctnet/>`_
     """
 
-    # Try to import bct
-    try: import bct
-    except: raise ImportError("Could not import bctpy! Consider installing it using pip install bctpy")
+    # Try to import octave from oct2py
+    try: 
+        from oct2py import octave
+    except: 
+        errmsg = "Could not import octave from oct2py! "+\
+                 "To use this routine octave must be installed and in the search path. "+\
+                 "Furthermore, the Brain Connectivity Toolbox (BCT) for MATLAB must be installed "+\
+                 "in the octave search path. "
+        raise ImportError(errmsg)
 
-    # Check the input network
-    try:
-        shn = nw.shape; N = shn[0]
-    except:
-        raise TypeError('Input must be a N-by-N NumPy array, not '+type(nw).__name__+'!')
-    if len(shn) != 2:
-        raise ValueError('Input must be a N-by-N NumPy array')
-    if (min(shn)==1) or (shn[0]!=shn[1]):
-        raise ValueError('Input must be a N-by-N NumPy array!')
-    if np.isfinite(nw).min() == False:
-        raise ValueError('Input must be a real valued NumPy array without Infs or NaNs!')
-    if not np.isscalar(M):
-        raise TypeError("M has to be scalar!")
-    if (round(M) != M) or (M < 1): 
-        raise ValueError("M has to be a natural number > 1!")
+    # Check the two mandatory inputs
+    arrcheck(nw,'matrix','nw')
+    N = nw.shape[0]
+    scalarcheck(M,'M',kind='int',bounds=[1,np.inf])
 
     # See if the string method is one of the supported randomization algorithms
     supported = ["auto","randmio_und_connected","randmio_und","null_model_und_sign"]
@@ -1592,11 +1608,8 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
               '. Available options are: '+sp_str
         raise ValueError(msg)
 
-    # See if rwr makes sense
-    if not np.isscalar(rwr):
-        TypeError("Rewiring parameter rwr has to be an integer, not "+type(rwr).__name__+"!")
-    if (np.round(rwr) != rwr) or rwr < 1: 
-        raise TypeError("Rewiring parameter has to be a strictly positive integer!")
+    # See if `rwr` makes sense
+    scalarcheck(rwr,'rwr',kind='int',bounds=[1,np.inf])
 
     # Try to import progressbar module
     try: 
@@ -1606,47 +1619,63 @@ def generate_randnws(nw,M=100,method="auto",rwr=5):
         print "WARNING: progressbar module not found - consider installing it using pip install progressbar"
         showbar = False
 
-    # Allocate space for random networks and convert input network to list
-    rnws = np.zeros((N,N,M))
+    # Allocate space for random networks
+    rnws = np.empty((N,N,M))
+    rnw  = np.empty((N,N))
+    rw   = rwr
 
     # Check if input network is fully connected
     if method == "auto":
-        if density_und(nw) > .95:
-            print "Network has maximal density. Using randmio_und instead of randmio_und_connected..."
-            method = "randmio_und"
+        if density_und(nw) > .75:
+            msg = "Network has very high density. "+\
+                  "Using `null_model_und_sign` instead of `randmio_und` to at least shuffle edge weights..."
+            print msg
+            method = "null_model_und_sign"
         else:
-            method = "randmio_und_connected"
+            method = "randmio_und"
 
     # If available, initialize progressbar
     if (showbar): 
         widgets = ['Calculating Random Networks: ',pb.Percentage(),' ',pb.Bar(marker='#'),' ',pb.ETA()]
         pbar = pb.ProgressBar(widgets=widgets,maxval=M)
 
-    # Populate tensor either using randmio (mthd = 0) or null_model_und (mthd = 1)
+    # Populate tensor
     if (showbar): pbar.start()
-    if method == "randmio_und_connected":
-        counter  = 0
+    if method == "randmio_und":
         for m in xrange(M):
-            rnws[:,:,m], eff = bct.randmio_und_connected(nw,rwr)
-            counter += eff
+            rwr = rw
+            eff = 0
+            while rwr <= rwr_max and eff == 0:
+                rnw,eff = octave.randmio_und(nw,rwr)
+                rwr += 1
+            if eff == 0:
+                print "WARNING: network "+str(m)+" has not been randomized!"
+            rnws[:,:,m] = rnw.copy()
             if (showbar): pbar.update(m)
-    elif method == "null_model_und_sign":
-        counter = 1
+    elif method == "randmio_und_connected":
         for m in xrange(M):
-            rnws[:,:,m] = bct.null_model_und_sign(nw)[0]
-            if ((rnws[:,:,m] == nw).min()): print "WARNING: network has not been rewired!"
+            rwr = rw
+            eff = 0
+            while rwr <= rwr_max and eff == 0:
+                rnw,eff = octave.randmio_und_connected(nw,rwr)
+                rwr += 1
+            if eff == 0:
+                print "WARNING: network "+str(m)+" has not been randomized!"
+            rnws[:,:,m] = rnw.copy()
             if (showbar): pbar.update(m)
     else:
-        counter = 0
         for m in xrange(M):
-            rnws[:,:,m], eff = bct.randmio_und(nw,rwr)
-            counter += eff
+            rwr = rw
+            ok = False
+            while rwr <= rwr_max and ok == False:
+                rnw = octave.null_model_und_sign(nw,rwr,1)[0]
+                ok = not np.allclose(rnw,nw)
+                rwr += 1
+            if not ok:
+                print "WARNING: network "+str(m)+" has not been randomized!"
+            rnws[:,:,m] = rnw.copy()
             if (showbar): pbar.update(m)
     if (showbar): pbar.finish()
-
-    # If networks have not been randomized, let the user know
-    if counter == 0:
-        print "WARNING: Number of effective re-wirings is zero. Networks have not been randomized!"
 
     return rnws
 
@@ -1871,13 +1900,12 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
         raise ValueError('Input must be a timepoint-by-index NumPy 2d array')
     if (min(shtsdata)==1):
         raise ValueError('At least two time-series/two time-points are required to compute (N)MI!')
+    if not plt.is_numlike(tsdata):
+        raise TypeError("Input must be numeric!")
     if np.isfinite(tsdata).min() == False:
         raise ValueError('Input must be a real valued NumPy 2d array without Infs or NaNs!')
 
-    if not np.isscalar(n_bins):
-        raise TypeError('Bin number must be an integer!')
-    if (n_bins != int(n_bins)): 
-        raise ValueError('Bin number must be an integer!')
+    scalarcheck(n_bins,'n_bins',kind='int',bounds=[2,np.inf])
 
     for bvar in [normalized,fast,norm_ts]:
         if not isinstance(bvar,bool):
@@ -2516,19 +2544,11 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
         ext = exl[0]
 
     # Make sure fps is a positive integer
-    if not np.isscalar(fps):
-        raise TypeError('Movie framerate has to be provided as integer, not '+type(fps).__name__+'!')
-    if not np.isfinite(fps):
-        raise TypeError('Movie framerate cannot be NaN or Inf!')
-    if fps != int(fps) or fps < 1: 
-        raise ValueError('Invalid framerate: '+str(fps)+'!')
+    scalarcheck(fps,'fps',kind='int',bounds=[1,np.inf])
     
     # Check if output filesize makes sense (if provided)
     if filesize is not None:
-        if not np.isscalar(filesize):
-            raise TypeError('The output filesize has to be a positive number, not '+type(filesize).__name__+'!')
-        if not np.isfinite(filesize) or filesize <= 0:
-            raise ValueError('Invalid filesize: '+str(filesize)+'!')
+        scalarcheck(filesize,'filesize',bounds=[0,np.inf])
 
     # Check if preset is valid (if provided)
     if not isinstance(preset,(str,unicode)):
@@ -2655,21 +2675,10 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
     for br in branches.keys():
         branches[br] = np.array(branches[br])
 
-   # See if `connections` is a 2d array that matches the provided branch dictionary
-    try:
-        csh = connections.shape
-    except:
-        raise TypeError('Connection array has to be a NumPy 2darray, not '+type(csh).__name__)
-    if len(csh) != 2 or np.min(csh) == 1:
-        raise ValueError('Connection array has to be a square NumPy 2darray!')
-    if csh[0] != csh[1]:
-        raise ValueError('Connection array has to be a square NumPy 2darray!')
-    elif csh[0] != num_nodes:
+    # See if `connections` is a 2d array that matches the provided branch dictionary
+    arrcheck(connections,'matrix','connections')
+    if connections.shape[0] != num_nodes:
         raise ValueError('Number of nodes does not match connection matrix!')
-    if not plt.is_numlike(connections):
-        raise ValueError('Connection array must be real-valued!')
-    if np.isfinite(connections).min() == False:
-        raise ValueError("Connection array must be real without NaNs or Infs!")
     if connections.min() < 0 or connections.max() > 1:
         raise ValueError('Connections values must be between zero and one!')
 
@@ -2686,15 +2695,9 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         print "WARNING: 3D grid is only shown for full 3D plots!"
 
     # Now check resolution parameter for rendering spheres
-    if np.isscalar(sphere_res):
-        if np.isfinite(sphere_res) == False:
-            raise ValueError("Resolution parameter for rendering spheres must be a positive integer!")
-        if sphere_res < 2 or np.round(sphere_res) != sphere_res:
-            raise ValueError("Resolution parameter for rendering must be a positive integer >= 2!")
-        if sphere_res >= 100:
-            print "WARNING: The resolution parameter for nodal spheres is very large - rendering might take forever..."
-    else:
-        raise TypeError("Resolution parameter for rendering spheres must be a positive integer!")
+    scalarcheck(sphere_res,'sphere_res',kind='int',bounds=[2,np.inf])
+    if sphere_res >= 100:
+        print "WARNING: The resolution parameter for nodal spheres is very large - rendering might take forever..."
 
     # See if a light-source for illumination was provided
     if lightsource is not None:
@@ -2717,12 +2720,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
 
     # See if a threshold for drawing edges was provided, if not, don't use one
     if ethresh is not None:
-        if not np.isscalar(ethresh):
-            raise TypeError("Edge-threshold has to be a scalar!")
-        if not np.isfinite(ethresh):
-            raise ValueError("Edge-threshold has to be a finite scalar!")
-        if ethresh < 0 or ethresh > 1:
-            raise ValueError("Edge-threshold has to be a scalar between zero and one!")
+        scalarcheck(ethresh,'ethresh',bounds=[0,1])
 
     # See if a camera position (in azimuth/elevation degrees) was provided, if not use some defaults
     if viewpoint is not None:
@@ -2818,13 +2816,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
             print "WARNING: Due to limiations in mplot3d the positiong of text in 3d space is somewhat screwed up..."
 
     # Now make sure label font-size makes sense
-    if np.isscalar(labelsize):
-        if np.isfinite(labelsize) == False:
-            raise ValueError('Label font-size has to be real-valued!')
-        if labelsize < 0:
-            raise ValueError('Label font-sizes have to be strictly positive!')
-    else:
-        raise TypeError('Label font-size has to be provided as scalar!')
+    scalarcheck(labelsize,'labelsize',bounds=[0,np.inf])
 
     # Check branch angle(s) were provided, if not, generate'em
     if isinstance(angle,dict):
@@ -2851,7 +2843,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
                 elev = np.pi/2 - (elev > 0)*elev + (elev < 0)*np.abs(elev)
                 angle[branch] = np.array([azim,elev])
             else:
-                if not np.isscalar(angle[branch]):
+                if not np.isscalar(angle[branch]) or not plt.is_numlike(angle[branch]):
                     raise TypeError("Branch angles must be numeric, one value per branch!")
                 if np.isfinite(angle[branch]) == False:
                     raise ValueError("Branch angles must not be NaN or Inf!")
@@ -2859,6 +2851,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
                     raise ValueError("Branch angles must be between 0 and 360 degrees!")
                 angle[branch] = math.radians(ange[branch])
     elif np.isscalar(angle):
+        scalarcheck(angle,'angle',bounds=[0,360])
         if full3d:
             angle = {}
             angle[branch_arr[0]] = np.zeros((2,)) # in spherical coordinates (main branch is vertical line from origin)
@@ -2907,7 +2900,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         try:
             vrange = np.array(vrange)
         except:
-            raise TypeError('Unsupported type for input `center`: '+type(dict).__name__)
+            raise TypeError('Unsupported type for node/edge value ranges: '+type(dict).__name__)
         if vrange.size != 2:
             raise ValueError("Node/Edge value range has to be two-dimensional!")
         if not plt.is_numlike(vrange):
@@ -2924,6 +2917,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
             if vals.min() < 0:
                 raise ValueError("Nodal sizes have to be non-negative!")
     elif np.isscalar(node_sizes):
+        scalarcheck(node_sizes,'node_sizes',bounds=[0,np.inf])
         ns = node_sizes
         node_sizes = {}
         for branch,nodes in branches.items():
@@ -2938,6 +2932,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
             if vals.min() < 0 or vals.max() > 1:
                 raise ValueError("Nodal alpha values have to be between zero and one!")
     elif np.isscalar(node_alpha):
+        scalarcheck(node_alpha,'node_alpha',bounds=[0,1])
         ns = node_alpha
         node_alpha = {}
         for branch,nodes in branches.items():
@@ -2946,15 +2941,9 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         raise TypeError("Nodal alpha values have to be provided either as scalar or dictionary!")
 
     # Now make sure node line-width makes sense
-    if np.isscalar(node_lw):
-        if np.isfinite(node_lw) == False:
-            raise ValueError('Node line-width has to be real-valued!')
-        if node_lw < 0:
-            raise ValueError('Node line-width has to be strictly positive!')
-        if full3d:
-            print "WARNING: Line-width specifications for nodes is ignored for full 3D plots!"
-    else:
-        raise TypeError('Node line-width has to be provided as scalar!')
+    scalarcheck(node_lw,'node_lw',bounds=[0,np.inf])
+    if full3d:
+        print "WARNING: Line-width specifications for nodes is ignored for full 3D plots!"
 
     # Check if line-widths for branches have been provided, otherwise assign default values
     if isinstance(branch_lw,dict):
@@ -2964,13 +2953,14 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         except:
             raise TypeError("The provided branch line-widths have to be a dictionary with the same keys as `branches`!")
         for branch in branches.keys():
-            if not np.isscalar(branch_lw[branch]):
+            if not np.isscalar(branch_lw[branch]) or not plt.is_numlike(branch_lw[branch]):
                 raise ValueError("Branch line-widths must be numeric, one value per branch!")
             if np.isfinite(branch_lw[branch]) == False:
                 raise ValueError("Branch line-widths must not be NaN or Inf!")
             if branch_lw[branch] < 0:
                 raise ValueError("Branch line-widths have to be non-negative!")
     elif np.isscalar(branch_lw):
+        scalarcheck(branch_lw,'branch_lw',bounds=[-0.1,np.inf])
         bw = branch_lw
         branch_lw = {}
         for branch in branches.keys():
@@ -2986,13 +2976,14 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         except:
             raise TypeError("The provided branch alpha values have to be a dictionary with the same keys as `branches`!")
         for branch in branches.keys():
-            if not np.isscalar(branch_alpha[branch]):
+            if not np.isscalar(branch_alpha[branch]) or not plt.is_numlike(branch_alpha[branch]):
                 raise ValueError("Branch alpha values must be numeric, one value per branch!")
             if np.isfinite(branch_alpha[branch]) == False:
                 raise ValueError("Branch alpha values must not be NaN or Inf!")
             if branch_alpha[branch] < 0 or branch_alpha[branch] > 1:
                 raise ValueError("Branch alpha values must be between zero and one!")
     elif np.isscalar(branch_alpha):
+        scalarcheck(branch_alpha,'branch_alpha',bounds=[0,1])
         bw = branch_alpha
         branch_alpha = {}
         for branch in branches.keys():
@@ -3002,55 +2993,31 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
 
     # Check if line-widths for edges have been provided, otherwise assign default values
     if np.isscalar(edge_lw):
+        scalarcheck(edge_lw,'edge_lw',bounds=[0,np.inf])
         edge_lw = np.ones(connections.shape) * edge_lw
     else:
-        try:
-            esh = edge_lw.shape
-        except:
-            raise TypeError('Edge line-widths have to be a NumPy 2darray, not '+type(esh).__name__)
-        if np.any(esh != csh):
+        arrcheck(edge_lw,'matrix','edge_lw')
+        if edge_lw.shape != connections.shape:
             raise ValueError("Edge line-widths have to be provided in the same format as connection array!")
-        if not plt.is_numlike(edge_lw):
-            raise ValueError('Edge line widhts must be real-valued!')
-        if np.isfinite(edge_lw).min() == False:
-            raise ValueError("Edge line widhts must be real without NaNs or Infs!")
         if edge_lw.min() < 0:
             raise ValueError('Edge line-widths values must be non-negative!')
 
     # Check if alpha values for edges have been provided, otherwise assign default values
     if np.isscalar(edge_alpha):
+        scalarcheck(edge_alpha,'edge_alpha',bounds=[0,1])
         edge_alpha = np.ones(connections.shape) * edge_alpha
     else:
-        try:
-            esh = edge_alpha.shape
-        except:
-            raise TypeError('Edge alpha values have to be a NumPy 2darray, not '+type(esh).__name__)
-        if np.any(esh != csh):
+        arrcheck(edge_alpha,'matrix','edge_alpha')
+        if np.any(edge_alpha.shape != connections.shape):
             raise ValueError("Edge alpha values have to be provided in the same format as connection array!")
-        if not plt.is_numlike(edge_alpha):
-            raise ValueError('Edge alpha values must be real-valued!')
-        if np.isfinite(edge_alpha).min() == False:
-            raise ValueError("Edge alpha values must be real without NaNs or Infs!")
         if edge_alpha.min() < 0 or edge_alpha.max() > 1:
             raise ValueError('Edge alpha values values must be non-negative!')
 
     # Check if an intial setting for the arch radian was provided, otherwise use the default
     if np.isscalar(radians):
-        if np.isfinite(radians) == False:
-            raise ValueError('Radian value has to be real-valued!')
+        scalarcheck(radians,'radians')
     else:
-        try:
-            rsh = radians.shape
-        except:
-            raise TypeError('Arch radian(s) has/have to be provided as scalar/array!')
-        if not plt.is_numlike(radians):
-            raise ValueError("Arch radians must be real-valued!")
-        if np.isfinite(radians).min() == False:
-            raise ValueError("Arch radians must be real-valued without Infs or NaNs!")
-        if len(rsh) != 2 or np.min(rsh) == 1:
-            raise ValueError("Arch radians mus be provided as square array!")
-        if rsh[0] != rsh[1]:
-            raise ValueError("Arch radians array must be square!")
+        arrcheck(radians,'matrix','radians')
         if rsh[0] != num_branches:
             raise ValueError("Arch radians must be provided as square array matching no. of branches!!")
 
@@ -3304,18 +3271,56 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
     if full3d or nodes3d: plt.axis('equal')
 
 ##########################################################################################
-def tensorcheck(corrs):
+def arrcheck(arr,kind,varname,bounds=None):
     """
-    Local helper function performing sanity checks on a N-by-N-by-k tensor
+    Local helper function performing sanity checks on arrays (2d/3d)
     """
 
     try:
-        shc = corrs.shape
+        sha = arr.shape
     except:
-        raise TypeError('Input must be a N-by-N-by-k NumPy array, not '+type(corrs).__name__+'!')
-    if len(shc) != 3:
-        raise ValueError('Input must be a N-by-N-by-k NumPy array')
-    if (min(shc[0],shc[1])==1) or (shc[0]!=shc[1]):
-        raise ValueError('Input must be a N-by-N-by-k NumPy array!')
-    if np.isfinite(corrs).min() == False:
-        raise ValueError('Input must be a real valued NumPy array without Infs or NaNs!')
+        raise TypeError('Input '+varname+' must be a NumPy array, not '+type(arr).__name__+'!')
+
+    if kind == 'tensor':
+        if len(sha) != 3:
+            raise ValueError('Input `'+varname+'` must be a N-by-N-by-k NumPy array')
+        if (min(sha[0],sha[1])==1) or (sha[0]!=sha[1]):
+            raise ValueError('Input `'+varname+'` must be a N-by-N-by-k NumPy array!')
+        if not plt.is_numlike(arr):
+            raise TypeError('Input `'+varname+'` must be a numeric N-by-N-by-k NumPy array!')
+        if np.isfinite(arr).min() == False:
+            raise ValueError('Input `'+varname+'` must be a real valued NumPy array without Infs or NaNs!')
+    elif kind == 'matrix':
+        if len(sha) != 2:
+            raise ValueError('Input `'+varname+'` must be a N-by-N NumPy array')
+        if (min(sha)==1) or (sha[0]!=sha[1]):
+            raise ValueError('Input `'+varname+'` must be a N-by-N NumPy array!')
+        if not plt.is_numlike(arr):
+            raise TypeError('Input `'+varname+'` must be a numeric N-by-N NumPy array!')
+        if np.isfinite(arr).min() == False:
+            raise ValueError('Input `'+varname+'` must be a real valued NumPy array without Infs or NaNs!')
+    else:
+        print "Error checking could not be performed - something's wrong here..."
+
+    if bounds is not None:
+        if arr.min() < bounds[0] or arr.max() > bounds[1]:
+            raise ValueError("Values of input array `"+varname+"` must be between "+str(bounds[0])+" and "+str(bounds[1])+"!")
+
+##########################################################################################
+def scalarcheck(val,varname,kind=None,bounds=None):
+    """
+    Local helper function performing sanity checks on scalars
+    """
+
+    if not np.isscalar(val) or not plt.is_numlike(val):
+        raise TypeError("Input `"+varname+"` must be scalar!")
+    if not np.isfinite(val):
+        raise TypeError("Input `"+varname+"` must be finite!")
+
+    if kind == 'int':
+        if (round(val) != val):
+            raise ValueError("Input `"+varname+"` must be an integer!")
+
+    if bounds is not None:
+        if val < bounds[0] or val > bounds[1]:
+            raise ValueError("Input scalar `"+varname+"` must be between "+str(bounds[0])+" and "+str(bounds[1])+"!")
