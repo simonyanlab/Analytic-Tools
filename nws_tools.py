@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-03-25 17:27:34>
+# Last modified: <2016-04-05 12:28:09>
 
 from __future__ import division
 import numpy as np
@@ -2287,11 +2287,11 @@ def printdata(data,leadrow,leadcol,fname=None):
     data : NumPy 2darray
         An `M`-by-`N` array of data
     leadrow : Python list or NumPy 1darray
-        List/array of length `M` providing labels to be printed in the first column of the table
-        (strings/numerals or both)
-    leadcol : Python list or NumPy 1darray
         List/array of length `N` or `N+1` providing labels to be printed in the first row of the table
         (strings/numerals or both). See Examples for details
+    leadcol : Python list or NumPy 1darray
+        List/array of length `M` providing labels to be printed in the first column of the table
+        (strings/numerals or both)
     fname : string
         Name of a csv-file (with or without extension `.csv`) used to save the table 
         (WARNING: existing files will be overwritten!). Can also be a path + filename 
