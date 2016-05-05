@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 30 2014
-# Last modified: <2016-05-05 10:18:15>
+# Last modified: <2016-05-05 11:17:07>
 
 from __future__ import division
 import numpy as np
@@ -51,14 +51,14 @@ def perm_test(X,Y,paired=None,useR=False,nperms=10000,tail='two',correction="max
         supports the options
         "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none", "Fisher", "Liptak", 
         "Tippett", "MahalanobisT", "MahalanobisP", "minP", "maxT", "maxTstd", "sumT", "Direct", 
-        "sumTstd", "sumT2" (see [1]_ for a detailed explanaition). By default "maxT" 
+        "sumTstd", "sumT2" (see [1]_ for a detailed explanation). By default "maxT" 
         is used. 
     get_dist : bool
         Switch that determines whether the sampling distribution used for testing is 
         returned (by default it is not returned). 
     mth : str
         Only relevant if testing is done in `R` (`useR = True` or `paired = False`). If `mth` is 
-        not specified a permutation t-test will be performed. Availalbe (but completely untested!)
+        not specified a permutation t-test will be performed. Available (but completely untested!)
         options are: "t", "F", "ANOVA","Kruskal-Wallis", "kruskal", "Mann-Whitney", "sum", 
         "Wilcoxon", "rank", "Sign" (see [1]_ for details). Note that by design this wrapper only 
         supports two-sample problems (`X` and `Y`). To analyze `k`-sample data using, e.g., an ANOVA,
@@ -107,7 +107,7 @@ def perm_test(X,Y,paired=None,useR=False,nperms=10000,tail='two',correction="max
     See also
     --------
     printstats : routine to pretty-print results computed by a hypothesis test
-    flip : a `R` library for univariate and multivariate permutation (and rotation) tests,
+    flip : a `R` library for uni-variate and multivariate permutation (and rotation) tests,
            currently available `here <https://cran.r-project.org/web/packages/flip/index.html>`_
     mne : a software package for processing magnetoencephalography (MEG) and electroencephalography (EEG) data,
           currently available at the Python Package Index `here <https://pypi.python.org/pypi/mne/0.7.1>`_
@@ -203,7 +203,7 @@ def perm_test(X,Y,paired=None,useR=False,nperms=10000,tail='two',correction="max
 
     # Check `mth` 
     if not isinstance(mth,(str,unicode)):
-        raise TypeError("The test-statisic has to be specified using a string, not "+type(mth).__name__+"!")
+        raise TypeError("The test-statistic has to be specified using a string, not "+type(mth).__name__+"!")
     if useR:
         msg = ''
         if paired:
@@ -390,7 +390,7 @@ def perm_test(X,Y,paired=None,useR=False,nperms=10000,tail='two',correction="max
             dfmat = np.hstack([dfmat,np.tile(np.arange(1,nsamples_x+1),(1,2)).T])
             stratarg = Formula("~pairing")
             
-        # Create a pandas dataframe with columns labeled by abclist, that we immidiately convert to an R-dataframe
+        # Create a pandas dataframe with columns labeled by abclist, that we immediately convert to an R-dataframe
         r_dframe = pandas2ri.py2ri(pd.DataFrame(dfmat,columns=abclist))
 
         # Convert the string to an R formula
@@ -449,10 +449,10 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
     pvals : Numpy 1darray
         Aray of `p`-values (floats) of the same size as `variables`
     group1 : NumPy 2darray
-        An #samples-by-#variables array holding the data of the first group used in the previously
+        An #samples-by-#variables array holding the data of the first group sample used in the previously
         performed statistical comparison
     group2 : NumPy 2darray
-        An #samples-by-#variables array holding the data of the second group used in the previously
+        An #samples-by-#variables array holding the data of the second group sample used in the previously
         performed statistical comparison
     g1str : string
         Name of the first group that will be used in the generated table
@@ -480,55 +480,58 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
     """
 
     # Make sure that the groups, p-values and tested variables have appropriate dimensions
-    try:
-        m = len(variables)
-    except: 
+    if not isinstance(variables,(list,np.ndarray)):
         raise TypeError('Input variables must be a Python list or NumPy 1d array of strings, not '+\
                         type(variables).__name__+'!')
+    m = len(variables)
     for var in variables:
-        if str(var) != var:
+        if not isinstance(var,(str,unicode)):
             raise TypeError('All variables must be strings!')
-    try: 
-        M = pvals.size
-    except: 
+
+    if not isinstance(pvals,(list,np.ndarray)):
         raise TypeError('The p-values must be provided as NumPy 1d array, not '+type(variables).__name__+'!')
+    pvals = np.array(pvals)
+    if not plt.is_numlike(pvals):       # Don't check for NaNs and Infs - some tests might return that...
+        raise ValueError('Provided p-values must be real-valued!')
+    M = pvals.size
     if M != m:
         raise ValueError('No. of variables (=labels) and p-values do not match up!')
+
+    # Don't check for NaNs and Infs - just make sure we can compute mean and std
     try:
         N,M = group1.shape
     except: 
         raise TypeError('Data-set 1 must be a NumPy 2d array, not '+type(group1).__name__+'!')
     if M != m:
         raise ValueError('No. of variables (=labels) and dimension of group1 do not match up!')
+    if not plt.is_numlike(group1):       
+        raise ValueError('Provided p-values must be real-valued!')
     try:
         N,M = group2.shape
     except: 
         raise TypeError('Data-set 2 must be a NumPy 2d array, not '+type(group2).__name__+'!')
     if M != m:
         raise ValueError('No. of variables (=labels) and dimension of group2 do not match up!')
+    if not plt.is_numlike(group2):       
+        raise ValueError('Provided p-values must be real-valued!')
 
     # If column labels were provided, make sure they are printable strings
-    if str(g1str) != g1str:
+    if not isinstance(g1str,(str,unicode)):
         raise TypeError('The optional column label `g1str` has to be a string!')
-    if str(g2str) != g2str:
+    if not isinstance(g2str,(str,unicode)):
         raise TypeError('The optional column label `g2str` has to be a string!')
 
     # If a footer was provided, make sure it is a printable string
-    if str(foot) != foot:
+    if not isinstance(foot,(str,unicode)):
         raise TypeError('The optional footer `foot` has to be a string!')
 
     # See if we're supposed to print stuff to the terminal or just save everything to a csv file
-    msg = 'The optional switch verbose has to be True or False!'
-    try:
-        bad = (verbose == True or verbose == False)
-    except: raise TypeError(msg)
-    if bad == False:
-        raise TypeError(msg)
+    if not isinstance(verbose,bool):
+        raise TypeError("The switch `verbose` has to be Boolean!")
 
     # If a file-name was provided make sure it's a string and check if the path exists
-    # (unicode chars in file-names are probably a bad idea...)
     if fname != None:
-        if str(fname) != fname:
+        if not isinstance(fname,(str,unicode)):
             raise TypeError('Input fname has to be a string specifying an output file-name, not '\
                             +type(fname).__name__+'!')
         fname = str(fname)
@@ -540,7 +543,8 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
         if fname[-4::] != '.csv':
             fname = fname + '.csv'
         save = True
-    else: save = False
+    else:
+        save = False
 
     # Construct table head
     head = [" ","p","mean("+g1str+")"," ","std("+g1str+")","</>",\
