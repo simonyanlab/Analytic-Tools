@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-05-04 16:21:15>
+# Last modified: <2016-05-06 15:10:28>
 
 from __future__ import division
 import numpy as np
@@ -393,7 +393,7 @@ def corrcheck(*args,**kwargs):
             raise ValueError('Figure title must be a string!')
 
     # If labels have been provided, extract them now
-    if isinstance(args[-1],(list,np.ndarray)):
+    if isinstance(args[-1],(list)):
         myin  -= 1
         labels = args[-1]
         usrlbl = 1
