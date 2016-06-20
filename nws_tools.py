@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-05-06 15:10:28>
+# Last modified: <2016-06-20 16:46:17>
 
 from __future__ import division
 import numpy as np
@@ -42,10 +42,9 @@ def strengths_und(CIJ):
     --------
     strengths_und.m : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
                       `here <https://sites.google.com/site/bctnet/>`_
-
     bctpy : An unofficial Python port of the BCT is currently available at the 
             `Python Package Index <https://pypi.python.org/pypi/bctpy>`_
-            and can be installed using pip. 
+            and can be installed using `pip`. 
     """
 
     return np.sum(CIJ,axis=0)
@@ -73,10 +72,9 @@ def degrees_und(CIJ):
     --------
     degrees_und.m : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
                     `here <https://sites.google.com/site/bctnet/>`_
-
     bctpy : An unofficial Python port of the BCT is currently available at the 
             `Python Package Index <https://pypi.python.org/pypi/bctpy>`_
-            and can be installed using pip. 
+            and can be installed using `pip`. 
     """
 
     return (CIJ != 0).sum(1)
@@ -104,10 +102,9 @@ def density_und(CIJ):
     --------
     density_und.m : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
                     `here <https://sites.google.com/site/bctnet/>`_
-
     bctpy : An unofficial Python port of the BCT is currently available at the 
             `Python Package Index <https://pypi.python.org/pypi/bctpy>`_
-            and can be installed using pip. 
+            and can be installed using `pip`. 
     """
 
     N = CIJ.shape[0]                    # no. of nodes
@@ -129,24 +126,24 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
 
         where `N` is the group id (1,2,3,...), `xy` denotes the subject number 
         (01,02,...,99 or 001,002,...,999) and anything else is separated 
-        by an underscore. The files will be read in lexicographic order,
+        by underscores. The files will be read in lexicographic order,
         i.e., `s101_1.txt`, `s101_2.txt`,... or `s101_Amygdala.txt`, `s101_Beemygdala`,...
         See Notes for more details. 
     corrtype : string
         Specifier indicating which type of statistical dependence to use to compute 
-        pairwise correlations. Currently supported options are 
+        pairwise dependence. Currently supported options are 
 
                 `pearson`: the classical zero-lag Pearson correlation coefficient 
-                (see NumPy's corrcoef for details)
+                (see NumPy's `corrcoef` for details)
 
                 `mi`: (normalized) mutual information 
-                (see the docstring of mutual_info in this module for details)
+                (see the docstring of `mutual_info` in this module for details)
     sublist : list or NumPy 1darray
         List of subject codes to process, e.g., `sublist = ['s101','s102']`. 
         By default all subjects found in `txtpath` will be processed.
     **kwargs : keyword arguments
         Additional keyword arguments to be passed on to the function computing 
-        the pairwise correlations (currently either NumPy's corrcoef or mutual_info
+        the pairwise dependence (currently either NumPy's `corrcoef` or `mutual_info`
         in this module). 
        
     Returns
@@ -158,8 +155,8 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
             `N`-by-`N` matrices of pair-wise regional statistical dependencies 
 	    of `numsubs` subjects. Format is 
                     `corrs.shape = (N,N,numsubs)`,
-            s.t.
-                    `corrs[:,:,i]` = `N x N` correlation matrix of `i`-th subject 
+            such that
+                    `corrs[:,:,i]` = `N x N` statistical dependence matrix of `i`-th subject 
         bigmat : NumPy 3darray
             Tensor holding unprocessed time series of all subjects. Format is 
                     `bigmat.shape = (tlen,N,numsubs)`,
@@ -182,7 +179,8 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
 
     See also
     --------
-    numpy.corrcoef, mutual_info
+    numpy.corrcoef : Pearson product-moment correlation coefficents
+    mutual_info : Compute (normalized) mutual information coefficients
     """
 
     # Make sure txtpath doesn't contain nonsense and points to an existing location
@@ -318,15 +316,15 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
 ##########################################################################################
 def corrcheck(*args,**kwargs):
     """
-    Sanity checks for correlation matrices (Pearson or NMI)
+    Sanity checks for statistical dependence matrices (Pearson or NMI)
     
     Parameters
     ----------
     Dynamic : Usage as follows
     corrcheck(A) : input is NumPy 2darray                    
         shows some statistics for the correlation matrix `A`
-    corrcheck(A,label) : input is NumPy 2darray and ['string']                    
-        shows some statistics for the correlation matrix `A` and uses
+    corrcheck(A,label) : input is NumPy 2darray and `['string']`
+        shows some statistics for the matrix `A` and uses
         `label`, a list containing one string, as title in figures. 
     corrcheck(A,B,C,...) : input are many NumPy 2darrays            
         shows some statistics for the correlation matrices `A`, `B`, `C`,....
@@ -346,9 +344,9 @@ def corrcheck(*args,**kwargs):
 
                 etc.
 
-        where `A`, `B`, `C`,... are correlation matrices. 
+        where `A`, `B`, `C`,... are matrices. 
     corrcheck(T,label) : input is NumPy 3darray and list of strings
-        shows some statistics for correlation matrices stored 
+        shows some statistics for matrices stored 
         in the tensor `T`. The storage scheme has to be
                 `T[:,:,0] = A`
 
@@ -358,7 +356,7 @@ def corrcheck(*args,**kwargs):
 
                 etc.
 
-        where `A`, `B`, `C`,... are correlation matrices. The list of strings `label`
+        where `A`, `B`, `C`,... are matrices. The list of strings `label`
         is used to generate titles in figures. Note that `len(label)`
         has to be equal to `T.shape[2]`
     corrcheck(...,title='mytitle') : input is any of the above
@@ -436,8 +434,8 @@ def corrcheck(*args,**kwargs):
     N    = corrs.shape[0]
 
     # Check if those matrices are real and "reasonable"
-    if not plt.is_numlike(corrs):
-        raise TypeError("Input arrays must be numeric!")
+    if not plt.is_numlike(corrs) or not np.isreal(corrs).all():
+        raise TypeError("Input arrays must be real-valued!")
     if np.isfinite(corrs).min() == False:
         raise ValueError("All matrices must be real without NaNs or Infs!")
 
@@ -542,12 +540,12 @@ def get_meannw(nws,percval=0.0):
     Parameters
     ----------
     nws : NumPy 3darray
-        `N`-by-`N` connectivity matrices of numsubs subjects. Format is 
+        `N`-by-`N` connection matrices of `numsubs` subjects. Format is 
                 `nws.shape = (N,N,numsubs)`,
-        s.t.
-                `nws[:,:,i] = N x N` connectivity matrix of `i`-th subject 
+        such that
+                `nws[:,:,i] = N x N` connection matrix of `i`-th subject 
     percval : float
-        Percentage value, s.t. connections not present in at least `percval`
+        Percentage value, such that connections not present in at least `percval`
         percent of subjects are not considered, thus `0 <= percval <= 1`.
         Default setting is `percval = 0.0`
        
@@ -563,7 +561,7 @@ def get_meannw(nws,percval=0.0):
     Notes
     -----
     If the current setting of `percval` leads to a disconnected network, 
-    the code increases `percval` in 5% steps to assure connectedness of the group-averaged graph. 
+    the code increases `percval` in 5% steps to ensure connectedness of the group-averaged graph. 
     The concept of using only a certain percentage of edges present in subjects was taken from 
     M. van den Heuvel, O. Sporns: "Rich-Club Organization of the Human Connectome" (2011), J. Neurosci. 
     Currently available `here <http://www.jneurosci.org/content/31/44/15775.full>`_
@@ -624,14 +622,14 @@ def get_meannw(nws,percval=0.0):
 ##########################################################################################
 def rm_negatives(corrs):
     """
-    Remove negative correlations from correlation matrices
+    Remove negative entries from correlation matrices
 
     Parameters
     ----------
     corrs : NumPy 3darray
         An array of `K` correlation matrices of dimension `N`-by-`N`. Format is 
                 `corrs.shape = (N,N,K)`,
-        s.t.
+        such that
                 `corrs[:,:,i]` is the `i`-th `N x N` correlation matrix
 
     Returns
@@ -672,15 +670,15 @@ def rm_negatives(corrs):
 ##########################################################################################
 def rm_selfies(conns):
     """
-    Remove self-connections from connectivity matrices
+    Remove self-connections from connection matrices
 
     Parameters
     ----------
     conns : NumPy 3darray
-        An array of `K` connectivity matrices of dimension `N`-by-`N`. Format is 
+        An array of `K` connection matrices of dimension `N`-by-`N`. Format is 
                 `conns.shape = (N,N,K)`,
-        s.t.
-                `conns[:,:,i]` is the `i`-th `N x N` connectivity matrix
+        such that
+                `conns[:,:,i]` is the `i`-th `N x N` connection matrix
 
     Returns
     -------
@@ -707,69 +705,123 @@ def rm_selfies(conns):
     return nws
 
 ##########################################################################################
-def thresh_nws(nws,userdens=None,percval=0.0,force_den=False):
+def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
     """
     Threshold networks based on connection density
 
     Parameters
     ----------
     nws : NumPy 3darray
-        Undirected `N`-by-`N` connectivity matrices of `numsubs` subjects. Format is 
+        Undirected `N`-by-`N` (un)weighted connection matrices of `numsubs` subjects. Format is 
                 `corrs.shape = (N,N,numsubs)`,
-        s.t.
-                `corrs[:,:,i] = N x N` connectivity matrix of `i`-th subject 
+        such that
+                `corrs[:,:,i] = N x N` connection matrix of `i`-th subject 
     userdens : int
         By default, the input networks are thresholded down to the lowest common 
-        connection density without disconnecting any nodes in the networks. If `userdens` 
-        is provided, then it is used as density level to which all networks should be 
-        thresholded, i.e., `0 < userdens < 100`. See Notes below for details. 
+        connection density without disconnecting any nodes in the networks using 
+        a relative thresholding strategy (`force_den = False` and `span_tree = False`). 
+        If `userdens` is provided and `span_tree = False`, then `userdens`
+        is used as target density in the relative thresholding strategy. However, 
+        if `userdens` is below the minimum density before networks fragment, 
+        it will not be used unless `force_den = True`. 
+        If `span_tree = True` and `userdens` is `None`, then minimum spanning 
+        trees will be returned for all input networks. If `userdens` is provided, 
+        the spanning trees will be populated with the strongest connections 
+        found in the original networks up to the desired edge density. 
+        For both relative thresholding and minimum spanning tree density reduction, 
+        `userdens` should be either `None` or an integer between 0 and 100. 
+        See Notes below for more details. 
     percval : float
-        Percentage value, s.t. connections not present in at least `percval`
-        percent of subjects are not considered, thus `0 <= percval <= 1`.
+        Percentage value for computing mean network averaged across all thresholded 
+        graphs, such that connections not present in at least `percval`
+        percent of subjects are not considered (`0 <= percval <= 1`).
         Default setting is `percval = 0.0`. See `get_meannw` for details. 
     force_den : bool
-        If `force_den = True` then networks are thresholded to the density level
-        defined by the user even if nodes get dis-connected in the process. 
-        By default, `force_den = False`. 
+        If `force_den = True` relative thresholding is applied to the networks 
+        until all graphs hit the desired density level defined by the user 
+        even if nodes get disconnected in the process. This argument has no 
+        effect if `span_tree = True`. By default, `force_den = False`. 
                
     Returns
     -------
+    Dictionary holding computed quantities. The fields of the dictionary depend upon 
+    the values of the optional keyword arguments `userdens` and `span_tree`. 
     res : dict 
         Dictionary with fields
 
         th_nws : NumPy 3darray
-            Thresholded networks for all subjects. Format is the same as for `nws`. 
-        tau_levels : NumPy 1darray
-            The threshold values for each subject's network corresponding to the 
-            networks stored in `th_nws`, i.e. `tau_levels[i]` is the threshold that 
-            generated the network `th_nws[:,:,i]`, i.e., the network of subject `i`. 
+            Sparse networks. Format is the same as for `nws` 
+            (Not returned if `userdens` is `None` and `span_tree = True`). 
         den_values : NumPy 1darray
-            Same format as `tau_levels` but holding the exact density values for each subject
+            Density values of the networks stored in `th_nws`, such that `den_values[i]`
+            is the edge density of the graph `th_nws[:,:,i]`
+            (not returned if `userdens` is `None` and `span_tree = True`). 
         th_mnw : NumPy 2darray
-            The group averaged (across all subjects) weighted network
+            Mean network averaged across all sparse networks `th_nws` 
+            (not returned if `userdens` is `None` and `span_tree = True`). 
         mnw_percval: float
             Percentage value used to compute `th_mnw` (see documentation of `get_meannw` for
-            details)
+            details, not returned if `userdens` is `None` and `span_tree = True`). 
+        tau_levels : NumPy 1darray
+            Cutoff values used in the relative thresholding strategy to compute 
+            `th_nws`, i.e., `tau_levels[i]` is the threshold that generated 
+            network `th_nws[:,:,i]` (only returned if `span_tree = False`). 
+        nws_forest : NumPy 3darray
+            Minimum spanning trees calculated for all input networks 
+            (only returned if `span_tree = True`). 
+        mean_tree : NumPy 2darray
+            Mean spanning tree averaged across all spanning trees stored in 
+            `nws_forest` (only returned if `span_tree = True`). 
+        mtree_percval : float
+            Percentage value used to compute `mean_tree` (see documentation of `get_meannw` for
+            details, only returned if `span_tree = True`). 
 
     Notes
     -----
-    By default, the thresholding algorithm uses the lowest common connection density 
-    before a node is disconnected. 
-    That means, if networks `A`, `B` and `C` can be thresholded down to 40%, 50% and 60% density, 
-    respectively, without disconnecting any nodes, then the lowest common density for thresholding 
-    `A`, `B` and `C` together is 60%. If, e.g., the raw network `A` already has a density of 
-    60% or lower, it is excluded from thresholding and the original network is copied 
-    into `th_nws`. If a density level is provided by the user, then the code tries to use 
-    it unless it violates connectedness of all thresholded networks - in this case 
-    the lowest common density of all networks is used, unless `force_den = True` which forces 
-    the code to use the user-provided density level disconnecting nodes from the networks in the 
-    process. 
+    This routine uses either a relative thresholding strategy or a minimum spanning tree 
+    approach to decrease the density of a given set of input networks. 
+
+    During relative thresholding (`span_tree = False`) edges are discarded based on their value relative to the 
+    maximum edge weight found across all networks beginning with the weakest links. By default, 
+    the thresholding algorithm uses the lowest common connection density across all input networks 
+    before a node is disconnected as target edge density. That means, if networks `A`, `B` and `C` 
+    can be thresholded down to 40%, 50% and 60% density, respectively, without disconnecting any 
+    nodes, then the lowest common density for thresholding `A`, `B` and `C` together is 60%. 
+    In this case the raw network `A` already has a density of 60% or lower, which is thus excluded 
+    from thresholding and the original network is copied into `th_nws`. If a density level 
+    is provided by the user, then the code tries to use it unless it violates connectedness 
+    of all thresholded networks - in this case the lowest common density of all networks is used, 
+    unless `force_den = True` which causes the code to employ the user-provided density level 
+    for thresholding, disconnecting nodes from the networks in the process. 
+
+    The minimum spanning tree approach (`span_tree = True`) can be interpreted as the inverse of relative 
+    thresholding. Instead of chipping away weak edges in the input networks until a target density 
+    is met (or nodes disconnect), a minimal backbone of the network is calculated and then 
+    populated with the strongest connections found in the original network until a desired 
+    edge density level is reached. The backbone of the network is calculated by computing the graph's minimum
+    spanning tree, that connects all nodes with the minimum number of maximum-weight edges. 
+    Note, that unless each edge has a distinct unique weight value a graph has numerous different 
+    minimum spanning trees. Thus, the spanning trees computed by this routine are usually *not* unique, 
+    and consequently the thresholded networks may not be unique either (particularly for low 
+    density levels, for which the computed populated networks are very similar to the underlying spanning trees). 
+    Thus, in contrast to the more common relative thresholding strategy, this bottom-up approach 
+    allows to reduce a given network's density to an almost arbitrary level 
+    (>= density of the minimum spanning tree) without disconnecting nodes. However, unlike relative 
+    thresholding, the computed sparse networks are not necessarily unique and strongly depend 
+    on the intial minimum spanning tree. Note that if `userdens` is `None`, only minimum spanning 
+    trees will be computed. 
+
     The code below relies on the routine `get_meannw` in this module to compute the group-averaged
-    network. 
+    network. Futher, minimum spanning trees are calculated using `backbone_wu.m` from the 
+    Brain Connectivity Toolbox (BCT) for MATLAB via Octave. Thus, it requires Octave to be installed 
+    with the BCT in its search path. Further, `oct2py` is needed to launch an Octave instance 
+    from within Python. 
 
     See also
     --------
     get_meannw : Helper function to compute group-averaged networks
+    backbone_wu : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                  `here <https://sites.google.com/site/bctnet/>`_
     """
 
     # Sanity checks
@@ -779,7 +831,22 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False):
     scalarcheck(percval,'percval',bounds=[0,1])
     if not isinstance(force_den,bool):
         raise TypeError("The optional argument `force_den` has to be Boolean!")
+    if not isinstance(span_tree,bool):
+        raise TypeError("The optional argument `span_tree` has to be Boolean!")
+    if force_den and span_tree:
+        print "\nWARNING: The flag `foce_den` has no effect if `span_tree == True`!"
 
+    # Try to import `octave` from `oct2py`
+    if span_tree:
+        try: 
+            from oct2py import octave
+        except: 
+            errmsg = "Could not import octave from oct2py! "+\
+                     "To compute the minimum spanning tree octave must be installed and in the search path. "+\
+                     "Furthermore, the Brain Connectivity Toolbox (BCT) for MATLAB must be installed "+\
+                     "in the octave search path. "
+            raise ImportError(errmsg)
+        
     # Get dimension of per-subject networks
     N       = nws.shape[0]
     numsubs = nws.shape[-1]
@@ -810,125 +877,204 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False):
     if userdens >= max_raw:
         print "All networks have density lower than desired density "+str(userdens)+"%"
         th_mnw,mnw_percval = get_meannw(nws,percval)
-        return {'th_nws':nws, 'tau_levels': None, 'den_values': raw_den, \
-                'th_mnw': th_mnw, 'mnw_percval': mnw_percval}
+        res_dict = {'th_nws':nws, 'den_values': raw_den, \
+                    'th_mnw': th_mnw, 'mnw_percval': mnw_percval}
+
+        # The structure of `backbone_wu.m` requires *exact* symmetry...
+        if span_tree:
+            nws_forest = np.zeros(nws.shape)
+            for i in xrange(numsubs):
+                mnw = nws[:,:,i].squeeze()
+                mnw = np.triu(mnw,1)                              
+                nws_forest[:,:,i] = octave.backbone_wu(mnw + mnw.T,2)
+            mean_tree,mtree_percval = get_meannw(nws_forest,percval)
+            res_dict['nws_forest'] = nws_forest
+            res_dict['mean_tree'] = mean_tree
+            res_dict['mtree_percval'] = mtree_percval
+        else:
+            res_dict['tau_levels'] = None
+        return res_dict 
 
     # Inform user about minimal/maximal density in raw data
     print "\nRaw data has following density values: \n"
     print "\tMinimal density: "+str(min_raw)+"%"
     print "\tMaximal density: "+str(max_raw)+"%"
 
-    # Create vector of thresholds to iterate on
-    dt      = 1e-3
-    threshs = np.arange(0,1+2*dt,dt)
-
-    # Allocate space for output
+    # Allocate space for output (needed for both regular thresholding and de-foresting)
     th_nws     = np.zeros(nws.shape)
-    tau_levels = np.zeros((numsubs,))
     den_values = np.zeros((numsubs,))
     th_mnw     = np.zeros((N,N))
 
-    # Cycle through subjects and threshold the connectivity matrices until a node disconnects
-    for i in xrange(numsubs):
-        tau = -1
-        mnw = nws[:,:,i]
-        den = density_und(mnw)
+    # Minimum spanning tree shenanigans
+    if span_tree:
 
-        # Start with 1%-weight threshold and increase 
-        for th in threshs:
+        # Allocate space for the spanning trees
+        nws_forest = np.zeros(nws.shape)
 
-            # Save old iterates
-            den_old = den
-            tau_old = tau
-            mnw_old = mnw
-
-            # Threshold based on percentage of max. weight: throw out all weights < than 1%-max. weight, 2%, ...
-            # Thin out connectivity matrix step by step (that's why we only have to load nws(:,:,i) once
-            tau = th*maxw
-            mnw = mnw*(mnw >= tau).astype(float)
-
-            # Compute density of thinned graph (weight info is discarded)
-            den     = density_und(mnw)
-
-            # Compute nodal degrees of network 
-            deg = degrees_und(mnw)
-
-            # As soon as one node gets disconnected (i.e. deg[i]=0) stop thresholding and save previous dens
-            if deg.min() == 0:
-                th_nws[:,:,i] = mnw_old
-                tau_levels[i] = tau_old
-                den_values[i] = den_old
-                break
-
-    # Compute minimal density before fragmentation across all subjects
-    densities = np.round(1e2*den_values)
-    print "\nMinimal admissible densities of per-subject networks are as follows: "
-    for i in xrange(densities.size): print "Subject #"+str(i+1)+": "+str(int(densities[i]))+"%"
-    min_den = int(np.round(1e2*den_values.max()))
-    print "\nThus, minimal density before fragmentation across all subjects is "+str(min_den)+"%"
-
-    # Assign thresholding density level
-    if userdens is None:
-        thresh_dens = min_den
-    else:
-        if userdens < min_den and force_den == False:
-            print "\nUser provided density of "+str(int(userdens))+"% lower than minimal admissible density of "+str(min_den)+"%. "
-            print "Using minimal admissible density instead. "
-            thresh_dens = min_den
-        elif userdens < min_den and force_den == True:
-            print "\nWARNING: Provided density of "+str(int(userdens))+"% leads to disconnected networks - proceed with caution..."
-            thresh_dens = int(userdens)
-        else: 
-            thresh_dens = int(userdens)
-
-    # Inform the user about what's gonna happen 
-    print "\nUsing density of "+str(int(thresh_dens))+"%. Starting thresholding procedure...\n"
-
-    # Backtracking parameter
-    beta = 0.3
-
-    # Cycle through subjects
-    for i in xrange(numsubs):
-
-        den_perc = 100
-        th       = -dt
-        mnw      = nws[:,:,i]
-        raw_dper = int(np.round(1e2*raw_den[i]))
-
-        if raw_dper <= thresh_dens:
-
-            print "Density of raw network #"+str(i)+" is "+str(raw_dper)+"%"+\
-                " which is already lower than thresholding density of "+str(thresh_dens)+"%"
-            print "Returning original unthresholded network"
-            th_nws[:,:,i] = mnw
-            tau_levels[i] = 0
-            den_values[i] = raw_den[i]
-
+        # If no target density was provided, just compute trees and get out of here
+        if userdens is None:
+            print "\nCalculating minimum spanning trees..."
+            for i in xrange(numsubs):
+                mnw = nws[:,:,i].squeeze()
+                mnw = np.triu(mnw,1)                              
+                nws_forest[:,:,i] = octave.backbone_wu(mnw + mnw.T,2)
+            mean_tree,mtree_percval = get_meannw(nws_forest,percval)
+            return {'nws_forest': nws_forest, 'mean_tree': mean_tree, 'mtree_percval': mtree_percval}
         else:
 
-            while den_perc > thresh_dens:
+            # The edge density `d` of an undirected network is given by
+            #           (1) `d = 2*K/(N**2 - N)`, 
+            # where `K` denotes the number of edges in the network. Thus, `K` can be approximated by
+            #           (2) `N*avdg/2`,
+            # with `avdg` denoting the average nodal degree in the graph (divide by two
+            # to not count links twice (we have undirected links i <-> j, not i -> j and j <- i).
+            # Thus, substituting (2) for `K` in (1) and re-arranging terms yields
+            # `avdg = d*(N**2 - N)/N`. Thus, for a user-provided density value, we can compute
+            # the associated average degree of the wanted target network as
+            avdg = np.round(userdens/100*(N**2 - N)/N)
+            print "\nReducing network densities to "+str(userdens)+"% by inversely populating minimum spanning trees..."
 
-                th  += dt
+            # Use this average degree value to cut down input networks to desired density
+            for i in xrange(numsubs):
+                mnw      = nws[:,:,i].squeeze()
+                mnw      = np.triu(mnw,1)                              
+                raw_dper = int(np.round(1e2*raw_den[i]))
+                if raw_dper <= userdens:
+                    print "Density of raw network #"+str(i)+" is "+str(raw_dper)+"%"+\
+                        " which is already lower than thresholding density of "+str(userdens)+"%"
+                    print "Returning original unthresholded network"
+                    th_nws[:,:,i] = nws[:,:,i].copy()
+                    den_values[i] = raw_den[i]
+                    nws_forest[:,:,i] = octave.backbone_wu(mnw + mnw.T.squeeze(),2)
+                else:
+                    nws_forest[:,:,i],th_nws[:,:,i] = octave.backbone_wu(mnw + mnw.T,avdg)
+                    den_values[i] = density_und(th_nws[:,:,i])
+            mean_tree,mtree_percval = get_meannw(nws_forest,percval)
+
+            # Populate results dictionary with method-specific quantities
+            res_dict = {'nws_forest': nws_forest, 'mean_tree': mean_tree, 'mtree_percval': mtree_percval}
+
+    # Here the good ol' relative weight thresholding
+    else:
+
+        # Allocate space for thresholds
+        tau_levels = np.zeros((numsubs,))
+
+        # Create vector of thresholds to iterate over
+        dt      = 1e-3
+        threshs = np.arange(0,1+2*dt,dt)
+
+        # Cycle through subjects and threshold the connection matrices until a node disconnects
+        for i in xrange(numsubs):
+            tau = -1
+            mnw = nws[:,:,i]
+            den = density_und(mnw)
+
+            # Start with 1%-weight threshold and increase 
+            for th in threshs:
+
+                # Save old iterates
+                den_old = den
+                tau_old = tau
+                mnw_old = mnw
+
+                # Threshold based on percentage of max. weight: throw out all weights < than 1%-max. weight, 2%, ...
+                # Thin out connection matrix step by step (that's why we only have to load nws[:,:,i] once
                 tau = th*maxw
                 mnw = mnw*(mnw >= tau).astype(float)
-                
-                den      = density_und(mnw)
-                den_perc = np.round(1e2*den)
 
-                if den_perc < thresh_dens:
-                    th *= beta
+                # Compute density of thinned graph (weight info is discarded)
+                den = density_und(mnw)
 
-            th_nws[:,:,i] = mnw
-            tau_levels[i] = tau
-            den_values[i] = den
+                # Compute nodal degrees of network 
+                deg = degrees_und(mnw)
+
+                # As soon as one node gets disconnected (i.e. deg[i]=0) stop thresholding and save previous dens
+                if deg.min() == 0:
+                    th_nws[:,:,i] = mnw_old
+                    tau_levels[i] = tau_old
+                    den_values[i] = den_old
+                    break
+
+        # Compute minimal density before fragmentation across all subjects
+        densities = np.round(1e2*den_values)
+        print "\nMinimal admissible densities of per-subject networks are as follows: "
+        for i in xrange(densities.size): print "Subject #"+str(i+1)+": "+str(int(densities[i]))+"%"
+        min_den = int(np.round(1e2*den_values.max()))
+        print "\nThus, minimal density before fragmentation across all subjects is "+str(min_den)+"%"
+
+        # Assign thresholding density level
+        if userdens is None:
+            thresh_dens = min_den
+        else:
+            if userdens < min_den and force_den == False:
+                print "\nUser provided density of "+str(int(userdens))+\
+                    "% lower than minimal admissible density of "+str(min_den)+"%. "
+                print "Using minimal admissible density instead. "
+                thresh_dens = min_den
+            elif userdens < min_den and force_den == True:
+                print "\nWARNING: Provided density of "+str(int(userdens))+\
+                    "% leads to disconnected networks - proceed with caution..."
+                thresh_dens = int(userdens)
+            else: 
+                thresh_dens = int(userdens)
+
+        # Inform the user about what's gonna happen 
+        print "\nUsing density of "+str(int(thresh_dens))+"%. Starting thresholding procedure...\n"
+
+        # Backtracking parameter
+        beta = 0.3
+
+        # Cycle through subjects
+        for i in xrange(numsubs):
+
+            den_perc = 100
+            th       = -dt
+            mnw      = nws[:,:,i]
+            raw_dper = int(np.round(1e2*raw_den[i]))
+
+            if raw_dper <= thresh_dens:
+
+                print "Density of raw network #"+str(i)+" is "+str(raw_dper)+"%"+\
+                    " which is already lower than thresholding density of "+str(thresh_dens)+"%"
+                print "Returning original unthresholded network"
+                th_nws[:,:,i] = mnw
+                tau_levels[i] = 0
+                den_values[i] = raw_den[i]
+
+            else:
+
+                while den_perc > thresh_dens:
+
+                    th  += dt
+                    tau = th*maxw
+                    mnw = mnw*(mnw >= tau).astype(float)
+
+                    den      = density_und(mnw)
+                    den_perc = np.round(1e2*den)
+
+                    if den_perc < thresh_dens:
+                        th *= beta
+
+                th_nws[:,:,i] = mnw
+                tau_levels[i] = tau
+                den_values[i] = den
+
+        # Populate results dictionary with method-specific quantities
+        res_dict = {'tau_levels': tau_levels}
 
     # Compute group average network
     th_mnw,mnw_percval = get_meannw(th_nws,percval)
 
+    # Fill up results dictionary
+    res_dict['th_nws'] = th_nws
+    res_dict['den_values'] = den_values
+    res_dict['th_mnw'] = th_mnw
+    res_dict['mnw_percval'] = mnw_percval
+    
     # Be polite and dismiss the user 
-    print "Done...\n"
-    return {'th_nws':th_nws, 'tau_levels': tau_levels, 'den_values': den_values,\
-            'th_mnw': th_mnw, 'mnw_percval': mnw_percval}
+    print "\nDone...\n"
+    return res_dict
 
 ##########################################################################################
 def normalize(arr,vmin=0,vmax=1):
@@ -978,8 +1124,8 @@ def normalize(arr,vmin=0,vmax=1):
         raise TypeError('Input `arr` has to be a NumPy ndarray!')
     if (tmp): 
         raise ValueError('Input `arr` has to be a NumPy ndarray of size > 1!')
-    if not plt.is_numlike(arr):
-        raise TypeError("Input array hast to be numeric!")
+    if not plt.is_numlike(arr) or not np.isreal(arr).all():
+        raise TypeError("Input array hast to be real-valued!")
     if np.isfinite(arr).min() == False: 
         raise ValueError("Input `arr` must be real-valued without Inf's or NaN's!")
 
@@ -1082,7 +1228,7 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
     Parameters
     ----------
     A : NumPy 2darray
-        Square `N`-by-`N` connectivity matrix of the network
+        Square `N`-by-`N` connection matrix of the network
     coords: dictionary 
         Nodal coordinates of the graph. Format is
                 `{0: (x, y, z),`
@@ -1160,8 +1306,8 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
     for val in coords.values():
         if not isinstance(val,(list,np.ndarray)):
             raise TypeError('All elements of the coords dictionary have to be lists/arrays!')
-        if not plt.is_numlike(val):
-            raise TypeError("Coordinates have to be numeric!")
+        if not plt.is_numlike(val) or not np.isreal(arr).all():
+            raise TypeError("Coordinates have to be real-valued!")
         if np.isfinite(val).min() == False:
             raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
         if len(val) != 3:
@@ -1175,8 +1321,8 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
             raise TypeError('colorvec has to be a NumPy array!')
         if (tmp): 
             raise ValueError('colorvec has to have length N!')
-        if not plt.is_numlike(colorvec):
-            raise TypeError("colorvec has to be numeric!")
+        if not plt.is_numlike(colorvec) or not np.isreal(colorvec).all():
+            raise TypeError("colorvec has to be real-valued!")
         if np.isfinite(colorvec).min() == False:
             raise ValueError("colorvec must be real-valued without NaNs or Infs!")
         if colorvec.min() < 0 or colorvec.max() > 1:
@@ -1192,8 +1338,8 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
             raise TypeError('sizevec has to be a NumPy array!')
         if (tmp): 
             raise ValueError('sizevec has to have length N!')
-        if not plt.is_numlike(sizevec):
-            raise TypeError("sizevec has to be numeric!")
+        if not plt.is_numlike(sizevec) or not np.isreal(sizevec).all():
+            raise TypeError("sizevec has to be real-valued!")
         if np.isfinite(sizevec).min() == False:
             raise ValueError("sizevec must be real-valued without NaNs or Infs!")
         if sizevec.min() < 0:
@@ -1219,16 +1365,16 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
         raise TypeError("Visualization thresholds have to be provided as list/NumPy 1darray!")
     threshs = np.array(threshs)
     n = threshs.size
-    if not plt.is_numlike(threshs):
-        raise TypeError("threshs has to be numeric!")
+    if not plt.is_numlike(threshs) or not np.isreal(threshs).all():
+        raise TypeError("threshs has to be real-valued!")
     if np.isfinite(threshs).min() == False:
             raise ValueError("threshs must be real-valued without NaNs or Infs!")
     if not isinstance(lwdths,(list,np.ndarray)):
         raise TypeError("Linewidths have to be provided as list/NumPy 1darray!")
     lwdths = np.array(lwdths)
     m = lwdths.size
-    if not plt.is_numlike(lwdths):
-        raise TypeError("lwdths must be numeric!")
+    if not plt.is_numlike(lwdths) or not np.isreal(lwdths).all():
+        raise TypeError("lwdths must be real-valued!")
     if np.isfinite(lwdths).min() == False:
         raise ValueError("lwdths must be real-valued without NaNs or Infs!")
     if m != n: 
@@ -1304,7 +1450,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
     Parameters
     ----------
     A : NumPy 2darray
-        Square `N`-by-`N` connectivity matrix of the network
+        Square `N`-by-`N` connection matrix of the network
     coords: dictionary 
         Nodal coordinates of the graph. Format is
                 `{0: (x, y, z),`
@@ -1341,7 +1487,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
         If `nodes3d=False` then the Matplotlib `scatter` function is used to plot nodes as flat 
         2d disks (faster).
     viewtype : str
-        Camera position. Viewtype can be one of the following
+        Camera position, `viewtype` can be one of the following
                 `axial (= axial_t)`       : Axial view from top down
 
                 `axial_t`                 : Axial view from top down
@@ -1388,8 +1534,8 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
     for val in coords.values():
         if not isinstance(val,(list,np.ndarray)):
             raise TypeError('All elements of the coords dictionary have to be lists/arrays!')
-        if not plt.is_numlike(val):
-            raise TypeError("Coordinates have to be numeric!")
+        if not plt.is_numlike(val) or not np.isreal(val).all():
+            raise TypeError("Coordinates have to be real-valued!")
         if np.isfinite(val).min() == False:
             raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
         if len(val) != 3:
@@ -1403,8 +1549,8 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
             raise TypeError('colorvec has to be a NumPy array!')
         if (tmp): 
             raise ValueError('colorvec has to have length N!')
-        if not plt.is_numlike(colorvec):
-            raise TypeError("colorvec has to be numeric!")
+        if not plt.is_numlike(colorvec) or not np.isreal(colorvec).all():
+            raise TypeError("colorvec has to be real-valued!")
         if np.isfinite(colorvec).min() == False:
             raise ValueError("colorvec must be real-valued without NaNs or Infs!")
         if colorvec.min() < 0 or colorvec.max() > 1:
@@ -1420,8 +1566,8 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
             raise TypeError('sizevec has to be a NumPy array!')
         if (tmp): 
             raise ValueError('sizevec has to have length N!')
-        if not plt.is_numlike(sizevec):
-            raise TypeError("sizevec has to be numeric!")
+        if not plt.is_numlike(sizevec) or not np.isreal(sizevec).all():
+            raise TypeError("sizevec has to be real-valued!")
         if np.isfinite(sizevec).min() == False:
             raise ValueError("sizevec must be real-valued without NaNs or Infs!")
         if sizevec.min() < 0:
@@ -1454,7 +1600,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
         arrcheck(linewidths,'matrix','linewidths')
         (ln,lm) = linewidths.shape
         if linewidths.shape != A.shape:
-            raise ValueError("Linewidths must be provided as square array of the same dimension as the connectivity matrix!")
+            raise ValueError("Linewidths must be provided as square array of the same dimension as the connection matrix!")
     else:
         linewidths = A
 
@@ -1539,21 +1685,24 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
 ##########################################################################################
 def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
     """
-    Generate random networks given an input network
+    Generate random networks given a(n) (un)signed (un)weighted (un)directed input network
 
     Parameters
     ----------
     nw : NumPy 2darray
-        Undirected weighted connection matrix
+        Connection matrix of input network
     M : integer > 1
         Number of random networks to generate
     method : string
         String specifying which method to use to randomize 
         the input network. Currently supported options are 
-        `'auto'` (default), `'null_model_und_sign'`, `'randmio_und'`, and `'randmio_und_connected'`. 
-        If `'auto'` is chosen then `'randmio_und'` is used
-        to compute the random networks unless the input graph is very dense
-        (then `'null_model_und_sign'` is used to shuffle edge weights). 
+        `'auto'` (default), `'null_model_und_sign'`, `'randmio_und'`, `'randmio_und_connected'`, 
+        `'null_model_dir_sign'`, `'randmio_dir'`, `'randmio_dir_connected'`, 
+        `'randmio_und_signed'`, `'randmio_dir_signed'`, 
+        If `method = 'auto'` then a randomization strategy is chosen based 
+        the the properties of the input network (directedness, edge-density, sign of 
+        edge weights). In case of very dense networks (density > 75%) the `null_model`
+        routines are used to at least shuffle the input network's edge weights. 
     rwr : integer
         Number of approximate rewirings per edge (default 5). 
     rwr_max : integer
@@ -1564,12 +1713,12 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
     rnws : NumPy 3darray
         Random networks based on input graph `nw`. Format is
                 `rnws.shape = (N,N,M)`
-        s.t.
+        such that
                 `rnws[:,:,m] = m-th N x N` random network
 
     Notes
     -----
-    This function calls routines from the Brain Connectivity Toolbox (BCT) for MATLAB via Octave. 
+    This routine calls functions from the Brain Connectivity Toolbox (BCT) for MATLAB via Octave. 
     Thus, it requires Octave to be installed with the BCT in its search path. Further, 
     `oct2py` is needed to launch an Octave instance from within Python. 
 
@@ -1577,13 +1726,23 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
     --------
     randmio_und_connected : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
                             `here <https://sites.google.com/site/bctnet/>`_
+    randmio_dir_connected : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                            `here <https://sites.google.com/site/bctnet/>`_
     randmio_und : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
                   `here <https://sites.google.com/site/bctnet/>`_
+    randmio_dir : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                  `here <https://sites.google.com/site/bctnet/>`_
+    randmio_und_signed : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                         `here <https://sites.google.com/site/bctnet/>`_
+    randmio_dir_signed : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                         `here <https://sites.google.com/site/bctnet/>`_
     null_model_und_sign : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
+                          `here <https://sites.google.com/site/bctnet/>`_
+    null_model_dir_sign : in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available 
                           `here <https://sites.google.com/site/bctnet/>`_
     """
 
-    # Try to import octave from oct2py
+    # Try to import `octave` from `oct2py`
     try: 
         from oct2py import octave
     except: 
@@ -1599,7 +1758,9 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
     scalarcheck(M,'M',kind='int',bounds=[1,np.inf])
 
     # See if the string method is one of the supported randomization algorithms
-    supported = ["auto","randmio_und_connected","randmio_und","null_model_und_sign"]
+    supported = ["auto","randmio_und_connected","randmio_und","null_model_und_sign",\
+                 "randmio_dir_connected","randmio_dir","null_model_dir_sign",\
+                 "randmio_und_signed","randmio_dir_signed"]
     if supported.count(method) == 0:
         sp_str = str(supported)
         sp_str = sp_str.replace('[','')
@@ -1616,7 +1777,7 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
         import progressbar as pb
         showbar = True
     except: 
-        print "WARNING: progressbar module not found - consider installing it using pip install progressbar"
+        print "WARNING: progressbar module not found - consider installing it using `pip install progressbar`"
         showbar = False
 
     # Allocate space for random networks
@@ -1624,15 +1785,37 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
     rnw  = np.empty((N,N))
     rw   = rwr
 
-    # Check if input network is fully connected
+    # Unless the user explicitly specified a randomization strategy, choose one based on the
+    # input network's properties
     if method == "auto":
-        if density_und(nw) > .75:
-            msg = "Network has very high density. "+\
-                  "Using `null_model_und_sign` instead of `randmio_und` to at least shuffle edge weights..."
-            print msg
-            method = "null_model_und_sign"
-        else:
-            method = "randmio_und"
+        min_nw = nw.min()
+        sgds = ["unsigned","signed"][min_nw<0]
+        if issym(nw):                                   # undirected graphs
+            drct = "undirected"
+            dns = density_und(nw)
+            if dns > 0.75:
+                randomizer = octave.null_model_und_sign
+            else:
+                if min_nw < 0:
+                    randomizer = octave.randmio_und_signed
+                else:
+                    randomizer = octave.randmio_und
+        else:                                           # directed graphs
+            drct = "directed"
+            dns = octave.density_dir(nw)
+            if dns > 0.75:           
+                randomizer = octave.null_model_dir_sign
+            else:
+                if min_nw < 0:
+                    randomizer = octave.randmio_dir_signed
+                else:
+                    randomizer = octave.randmio_dir
+        print "Input network is "+drct+" and "+sgds+" with an edge-density of "+str(np.round(1e2*dns))+"%. "+\
+            "Using `"+randomizer.__name__+"` for randomization..."
+
+    # Depending on whether the chosen randomizer returns effective re-wiring numbers, a slightly different
+    # while loop structure is necessary
+    use_nm = randomizer.__name__.find('null_model') >= 0
 
     # If available, initialize progressbar
     if (showbar): 
@@ -1641,37 +1824,26 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
 
     # Populate tensor
     if (showbar): pbar.start()
-    if method == "randmio_und":
+    if use_nm:
         for m in xrange(M):
             rwr = rw
-            eff = 0
-            while rwr <= rwr_max and eff == 0:
-                rnw,eff = octave.randmio_und(nw,rwr)
+            ok = False
+            while rwr <= rwr_max and ok == False:
+                rnw = randomizer(nw,rwr,1)
+                ok = not np.allclose(rnw,nw)
                 rwr += 1
-            if eff == 0:
-                print "WARNING: network "+str(m)+" has not been randomized!"
-            rnws[:,:,m] = rnw.copy()
-            if (showbar): pbar.update(m)
-    elif method == "randmio_und_connected":
-        for m in xrange(M):
-            rwr = rw
-            eff = 0
-            while rwr <= rwr_max and eff == 0:
-                rnw,eff = octave.randmio_und_connected(nw,rwr)
-                rwr += 1
-            if eff == 0:
+            if not ok:
                 print "WARNING: network "+str(m)+" has not been randomized!"
             rnws[:,:,m] = rnw.copy()
             if (showbar): pbar.update(m)
     else:
         for m in xrange(M):
             rwr = rw
-            ok = False
-            while rwr <= rwr_max and ok == False:
-                rnw = octave.null_model_und_sign(nw,rwr,1)[0]
-                ok = not np.allclose(rnw,nw)
+            eff = 0
+            while rwr <= rwr_max and eff == 0:
+                rnw,eff = randomizer(nw,rwr)
                 rwr += 1
-            if not ok:
+            if eff == 0:
                 print "WARNING: network "+str(m)+" has not been randomized!"
             rnws[:,:,m] = rnw.copy()
             if (showbar): pbar.update(m)
@@ -1682,7 +1854,7 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
 ##########################################################################################
 def hdfburp(f):
     """
-    Pump out everything stored in a HDF5 file. 
+    Pump out everything stored in a HDF5 container
 
     Parameters
     ----------
@@ -1874,7 +2046,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
 
     The heavy lifting in this function is mainly done by code parts taken from 
     the `pyunicorn` package, developed by Jonathan F. Donges  
-    and Jobst Heitzig. It is currently available 
+    and Jobst Heitzig [1]_. It is currently available 
     `here <http://www.pik-potsdam.de/~donges/pyunicorn/index.html>`_
     The code has been modified so that weave and pure Python codes are now 
     part of the same function. Further, the original code computes the raw mutual information 
@@ -1889,6 +2061,32 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
     --------
     >>> tsdata = np.random.rand(150,2) # 2 time-series of length 150
     >>> NMI = mutual_info(tsdata)
+
+    References
+    ----------
+    .. [1] Copyright (C) 2008-2015, Jonathan F. Donges (Potsdam-Institute for Climate
+           Impact Research), pyunicorn authors. All rights reserved.
+           Redistribution and use in source and binary forms, with or without
+           modification, are permitted provided that the following conditions are met:
+               * Redistributions of source code must retain the above copyright notice, this
+                 list of conditions and the following disclaimer.
+               * Redistributions in binary form must reproduce the above copyright notice,
+                 this list of conditions and the following disclaimer in the documentation
+                 and/or other materials provided with the distribution.
+               * Neither the name of pyunicorn authors and the Potsdam-Institute for
+                 Climate Impact Research nor the names of its contributors may be used to
+                 endorse or promote products derived from this software without specific
+                 prior written permission.
+           THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+           ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+           WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+           DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+           FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+           DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+           SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+           CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+           OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+           OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     """
 
     # Sanity checks
@@ -1900,8 +2098,8 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
         raise ValueError('Input must be a timepoint-by-index NumPy 2d array')
     if (min(shtsdata)==1):
         raise ValueError('At least two time-series/two time-points are required to compute (N)MI!')
-    if not plt.is_numlike(tsdata):
-        raise TypeError("Input must be numeric!")
+    if not plt.is_numlike(tsdata) or not np.isreal(tsdata).all():
+        raise TypeError("Input must be real-valued!")
     if np.isfinite(tsdata).min() == False:
         raise ValueError('Input must be a real valued NumPy 2d array without Infs or NaNs!')
 
@@ -2251,7 +2449,7 @@ def myglob(flpath,spattern):
         
     See also
     --------
-    glob
+    glob : Unix-style path-name and pattern expansion in Python
     """
 
     # Make sure provided path is a string and does not contain weird unicode characters
@@ -2622,8 +2820,8 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         for branch, nodes in dct.items():
             if branches[branch].size != dct[branch].size:
                 raise ValueError("Provided branches and "+name+" don't match up!")
-            if not plt.is_numlike(dct[branch]):
-                raise ValueError("Input  "+name+" must be numeric!")
+            if not plt.is_numlike(dct[branch]) or not np.isreal(dct[branch]).all():
+                raise ValueError("Input  "+name+" must be real-valued!")
             if np.isfinite(dct[branch]).min() == False:
                 raise ValueError("Input  "+name+" must not contain NaNs or Infs!")
 
@@ -2655,8 +2853,8 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
     except:
         raise TypeError('Branches must be provided as dictionary of node arrays/lists!!')
     for branch, nodes in branches.items():
-        if not plt.is_numlike(branches[branch]):
-            raise ValueError("Node indices in branches must be numeric!")
+        if not plt.is_numlike(branches[branch]) or not np.isreal(branches[branch]).all():
+            raise ValueError("Node indices in branches must be real-valued!")
         if np.isfinite(branches[branch]).min() == False:
             raise ValueError("Node indices in branches must not contain NaNs or Infs!")
     branch_arr = np.array(branches.keys())
@@ -2709,7 +2907,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         if lightsource is not None:
             lightsource = np.array(lightsource)
             if plt.is_numlike(lightsource):
-                if np.isfinite(lightsource).min() == False:
+                if np.isfinite(lightsource).min() == False or not np.isreal(lightsource).all():
                     raise ValueError("Light-source angles have to be real-valued!")
                 if lightsource.size != 2:
                     raise ValueError("Light-source has to be provided as azimuth/altitude degrees!")
@@ -2726,7 +2924,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
     if viewpoint is not None:
         viewpoint = np.array(viewpoint)
         if plt.is_numlike(viewpoint):
-            if np.isfinite(viewpoint).min() == False:
+            if np.isfinite(viewpoint).min() == False or not np.isreal(viewpoint).all():
                 raise ValueError("View-point angles have to be real-valued!")
             if viewpoint.size != 2:
                 raise ValueError("View-point has to be provided as azimuth/altitude degrees!")
@@ -2751,8 +2949,8 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         center = np.array(center)
     except:
         raise TypeError('Unsupported type for input `center`: '+type(dict).__name__)
-    if not plt.is_numlike(center):
-        raise ValueError("Center coordinates must be real numbers!")
+    if not plt.is_numlike(center) or not np.isreal(center).all():
+        raise ValueError("Center coordinates must be real-valued!")
     if np.isfinite(center).min() == False:
         raise ValueError("Center coordinates must not contain Infs or NaNs!")
     if np.all(center) == 0:
@@ -2772,8 +2970,8 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         except:
             raise TypeError("The provided branch dimensions have to be a dictionary with the same keys as `branches`!")
         for branch in branches.keys():
-            if not plt.is_numlike(branch_extent[branch]):
-                raise ValueError("Branch dimensions must be numeric!")
+            if not plt.is_numlike(branch_extent[branch]) or not np.isreal(branch_extent[branch]).all():
+                raise ValueError("Branch dimensions must be real-valued!")
             if np.isfinite(branch_extent[branch]).min() == False:
                 raise ValueError("Branch dimensions must not contain NaNs or Infs!")
             if branch_extent[branch].size != 2:
@@ -2828,8 +3026,8 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         for branch in branches.keys():
             if full3d:
                 angle[branch] = np.array(angle[branch])
-                if not plt.is_numlike(angle[branch]):
-                    raise TypeError("3D branch angles must be numeric, two value per branch!")
+                if not plt.is_numlike(angle[branch]) or not np.isreal(angle[branch]).all():
+                    raise TypeError("3D branch angles must be real-valued, two value per branch!")
                 if len(angle[branch]) != 2:
                     raise ValueError("3D branch angles must be provided as two values per branch!")
                 if np.min(np.isfinite(angle[branch])) == False:
@@ -2843,8 +3041,8 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
                 elev = np.pi/2 - (elev > 0)*elev + (elev < 0)*np.abs(elev)
                 angle[branch] = np.array([azim,elev])
             else:
-                if not np.isscalar(angle[branch]) or not plt.is_numlike(angle[branch]):
-                    raise TypeError("Branch angles must be numeric, one value per branch!")
+                if not np.isscalar(angle[branch]) or not plt.is_numlike(angle[branch]) or not np.isreal(angle[branch]).all():
+                    raise TypeError("Branch angles must be real-valued, one value per branch!")
                 if np.isfinite(angle[branch]) == False:
                     raise ValueError("Branch angles must not be NaN or Inf!")
                 if angle[branch] < 0 or angle[branch] > 360:
@@ -2903,8 +3101,8 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
             raise TypeError('Unsupported type for node/edge value ranges: '+type(dict).__name__)
         if vrange.size != 2:
             raise ValueError("Node/Edge value range has to be two-dimensional!")
-        if not plt.is_numlike(vrange):
-            raise ValueError("Node/Edge value range must be real!")
+        if not plt.is_numlike(vrange) or not np.isreal(vrange).all():
+            raise ValueError("Node/Edge value range must be real-valued!")
         if np.isfinite(vrange).min() == False:
             raise ValueError("Node/Edge value range must not contain Infs or NaNs!")
         if vrange[0] >= vrange[1] or vrange.min() < 0 or vrange.max() > 1:
@@ -2953,8 +3151,8 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         except:
             raise TypeError("The provided branch line-widths have to be a dictionary with the same keys as `branches`!")
         for branch in branches.keys():
-            if not np.isscalar(branch_lw[branch]) or not plt.is_numlike(branch_lw[branch]):
-                raise ValueError("Branch line-widths must be numeric, one value per branch!")
+            if not np.isscalar(branch_lw[branch]) or not plt.is_numlike(branch_lw[branch]) or not np.isreal(branch_extent[branch]).all():
+                raise ValueError("Branch line-widths must be real-valued, one value per branch!")
             if np.isfinite(branch_lw[branch]) == False:
                 raise ValueError("Branch line-widths must not be NaN or Inf!")
             if branch_lw[branch] < 0:
@@ -2976,8 +3174,8 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         except:
             raise TypeError("The provided branch alpha values have to be a dictionary with the same keys as `branches`!")
         for branch in branches.keys():
-            if not np.isscalar(branch_alpha[branch]) or not plt.is_numlike(branch_alpha[branch]):
-                raise ValueError("Branch alpha values must be numeric, one value per branch!")
+            if not np.isscalar(branch_alpha[branch]) or not plt.is_numlike(branch_alpha[branch]) or not np.isreal(branch_extent[branch]).all():
+                raise ValueError("Branch alpha values must be real-valued, one value per branch!")
             if np.isfinite(branch_alpha[branch]) == False:
                 raise ValueError("Branch alpha values must not be NaN or Inf!")
             if branch_alpha[branch] < 0 or branch_alpha[branch] > 1:
@@ -3286,8 +3484,8 @@ def arrcheck(arr,kind,varname,bounds=None):
             raise ValueError('Input `'+varname+'` must be a N-by-N-by-k NumPy array')
         if (min(sha[0],sha[1])==1) or (sha[0]!=sha[1]):
             raise ValueError('Input `'+varname+'` must be a N-by-N-by-k NumPy array!')
-        if not plt.is_numlike(arr):
-            raise TypeError('Input `'+varname+'` must be a numeric N-by-N-by-k NumPy array!')
+        if not plt.is_numlike(arr) or not np.isreal(arr).all():
+            raise TypeError('Input `'+varname+'` must be a real-valued N-by-N-by-k NumPy array!')
         if np.isfinite(arr).min() == False:
             raise ValueError('Input `'+varname+'` must be a real valued NumPy array without Infs or NaNs!')
     elif kind == 'matrix':
@@ -3295,8 +3493,8 @@ def arrcheck(arr,kind,varname,bounds=None):
             raise ValueError('Input `'+varname+'` must be a N-by-N NumPy array')
         if (min(sha)==1) or (sha[0]!=sha[1]):
             raise ValueError('Input `'+varname+'` must be a N-by-N NumPy array!')
-        if not plt.is_numlike(arr):
-            raise TypeError('Input `'+varname+'` must be a numeric N-by-N NumPy array!')
+        if not plt.is_numlike(arr) or not np.isreal(arr).all():
+            raise TypeError('Input `'+varname+'` must be a real-valued N-by-N NumPy array!')
         if np.isfinite(arr).min() == False:
             raise ValueError('Input `'+varname+'` must be a real valued NumPy array without Infs or NaNs!')
     else:
@@ -3312,8 +3510,8 @@ def scalarcheck(val,varname,kind=None,bounds=None):
     Local helper function performing sanity checks on scalars
     """
 
-    if not np.isscalar(val) or not plt.is_numlike(val):
-        raise TypeError("Input `"+varname+"` must be scalar!")
+    if not np.isscalar(val) or not plt.is_numlike(val) or not np.isreal(val).all():
+        raise TypeError("Input `"+varname+"` must be a real scalar!")
     if not np.isfinite(val):
         raise TypeError("Input `"+varname+"` must be finite!")
 
