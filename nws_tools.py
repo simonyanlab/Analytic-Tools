@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-06-20 16:46:17>
+# Last modified: <2016-06-27 16:12:30>
 
 from __future__ import division
 import numpy as np
@@ -724,11 +724,11 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
         is used as target density in the relative thresholding strategy. However, 
         if `userdens` is below the minimum density before networks fragment, 
         it will not be used unless `force_den = True`. 
-        If `span_tree = True` and `userdens` is `None`, then minimum spanning 
+        If `span_tree = True` and `userdens` is `None`, then maximum spanning 
         trees will be returned for all input networks. If `userdens` is provided, 
         the spanning trees will be populated with the strongest connections 
         found in the original networks up to the desired edge density. 
-        For both relative thresholding and minimum spanning tree density reduction, 
+        For both relative thresholding and maximum spanning tree density reduction, 
         `userdens` should be either `None` or an integer between 0 and 100. 
         See Notes below for more details. 
     percval : float
@@ -767,7 +767,7 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
             `th_nws`, i.e., `tau_levels[i]` is the threshold that generated 
             network `th_nws[:,:,i]` (only returned if `span_tree = False`). 
         nws_forest : NumPy 3darray
-            Minimum spanning trees calculated for all input networks 
+            Maximum spanning trees calculated for all input networks 
             (only returned if `span_tree = True`). 
         mean_tree : NumPy 2darray
             Mean spanning tree averaged across all spanning trees stored in 
@@ -778,7 +778,7 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
 
     Notes
     -----
-    This routine uses either a relative thresholding strategy or a minimum spanning tree 
+    This routine uses either a relative thresholding strategy or a maximum spanning tree 
     approach to decrease the density of a given set of input networks. 
 
     During relative thresholding (`span_tree = False`) edges are discarded based on their value relative to the 
@@ -794,25 +794,25 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
     unless `force_den = True` which causes the code to employ the user-provided density level 
     for thresholding, disconnecting nodes from the networks in the process. 
 
-    The minimum spanning tree approach (`span_tree = True`) can be interpreted as the inverse of relative 
+    The maximum spanning tree approach (`span_tree = True`) can be interpreted as the inverse of relative 
     thresholding. Instead of chipping away weak edges in the input networks until a target density 
     is met (or nodes disconnect), a minimal backbone of the network is calculated and then 
     populated with the strongest connections found in the original network until a desired 
-    edge density level is reached. The backbone of the network is calculated by computing the graph's minimum
+    edge density level is reached. The backbone of the network is calculated by computing the graph's maximum
     spanning tree, that connects all nodes with the minimum number of maximum-weight edges. 
     Note, that unless each edge has a distinct unique weight value a graph has numerous different 
-    minimum spanning trees. Thus, the spanning trees computed by this routine are usually *not* unique, 
+    maximum spanning trees. Thus, the spanning trees computed by this routine are usually *not* unique, 
     and consequently the thresholded networks may not be unique either (particularly for low 
     density levels, for which the computed populated networks are very similar to the underlying spanning trees). 
     Thus, in contrast to the more common relative thresholding strategy, this bottom-up approach 
     allows to reduce a given network's density to an almost arbitrary level 
-    (>= density of the minimum spanning tree) without disconnecting nodes. However, unlike relative 
+    (>= density of the maximum spanning tree) without disconnecting nodes. However, unlike relative 
     thresholding, the computed sparse networks are not necessarily unique and strongly depend 
-    on the intial minimum spanning tree. Note that if `userdens` is `None`, only minimum spanning 
+    on the intial maximum spanning tree. Note that if `userdens` is `None`, only maximum spanning 
     trees will be computed. 
 
     The code below relies on the routine `get_meannw` in this module to compute the group-averaged
-    network. Futher, minimum spanning trees are calculated using `backbone_wu.m` from the 
+    network. Futher, maximum spanning trees are calculated using `backbone_wu.m` from the 
     Brain Connectivity Toolbox (BCT) for MATLAB via Octave. Thus, it requires Octave to be installed 
     with the BCT in its search path. Further, `oct2py` is needed to launch an Octave instance 
     from within Python. 
@@ -842,7 +842,7 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
             from oct2py import octave
         except: 
             errmsg = "Could not import octave from oct2py! "+\
-                     "To compute the minimum spanning tree octave must be installed and in the search path. "+\
+                     "To compute the maximum spanning tree octave must be installed and in the search path. "+\
                      "Furthermore, the Brain Connectivity Toolbox (BCT) for MATLAB must be installed "+\
                      "in the octave search path. "
             raise ImportError(errmsg)
@@ -905,7 +905,7 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
     den_values = np.zeros((numsubs,))
     th_mnw     = np.zeros((N,N))
 
-    # Minimum spanning tree shenanigans
+    # Maximum spanning tree shenanigans
     if span_tree:
 
         # Allocate space for the spanning trees
@@ -913,7 +913,7 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
 
         # If no target density was provided, just compute trees and get out of here
         if userdens is None:
-            print "\nCalculating minimum spanning trees..."
+            print "\nCalculating maximum spanning trees..."
             for i in xrange(numsubs):
                 mnw = nws[:,:,i].squeeze()
                 mnw = np.triu(mnw,1)                              
@@ -932,7 +932,7 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
             # `avdg = d*(N**2 - N)/N`. Thus, for a user-provided density value, we can compute
             # the associated average degree of the wanted target network as
             avdg = np.round(userdens/100*(N**2 - N)/N)
-            print "\nReducing network densities to "+str(userdens)+"% by inversely populating minimum spanning trees..."
+            print "\nReducing network densities to "+str(userdens)+"% by inversely populating maximum spanning trees..."
 
             # Use this average degree value to cut down input networks to desired density
             for i in xrange(numsubs):
