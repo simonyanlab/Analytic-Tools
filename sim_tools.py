@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2016-02-26 16:04:52>
+# Last modified: <2016-07-21 15:19:10>
 
 from __future__ import division
 import numpy as np
@@ -29,7 +29,7 @@ except:
     sys.exit()
 
 ##########################################################################################
-def run_model(V0, Z0, DA0, task, outfile, \
+def run_model(V0, Z0, DA0, GA0, task, outfile, \
               seed=None, paramfile='parameters.py', symsyn=True, verbose=True, ram_use=0.2,\
               **kwargs):
     """
@@ -96,9 +96,10 @@ def run_model(V0, Z0, DA0, task, outfile, \
     segments on disk while running. By default the code will allocate around 20% of available 
     memory to cache simulation results. Hence, more memory leads to fewer disk-writes during 
     run-time and thus faster performance. 
-    The structure of the generated output container is as follows: all state variables and the dopaminergic 
-    gain `Beta` are stored at the top-level of the file. Additionally, the employed coupling 
-    matrix `C` and dopamine connection matrix `D` are also saved in the top level group. All used parameters
+    The structure of the generated output container is as follows: all state variables as well as 
+    neurotransmitter gains (`Beta` and `Gamma`)  are stored at the top-level of the file. Additionally, 
+    the employed coupling matrix `C`, the dopamine pathway matrix `D` as well as the GABA 
+    projection matrix `G` are also saved in the top level group. All used parameters
     are saved in the subgroup `params`. 
 
     Examples
@@ -142,24 +143,24 @@ def run_model(V0, Z0, DA0, task, outfile, \
     """
 
     # Sanity checks for initial conditions
-    n = np.zeros((3,)); i = 0
-    for vec in [V0, Z0, DA0]:
+    n = np.zeros((4,)); i = 0
+    for vec in [V0, Z0, DA0, GA0]:
         try: 
             vs = vec.shape
         except: 
-            msg = 'The initial conditions for V, Z, and DA have to be NumPy 1darrays, not '\
+            msg = 'The initial conditions for V, Z, DA and GABA have to be NumPy 1darrays, not '\
                   +type(vec).__name__+'!'
             raise TypeError(msg)
         if (len(vs) >= 2 and min(vs) > 1) or (len(vs) == 1 and min(vs) < 2):
-            raise ValueError('The initial conditions for V, Z, and DA have to be NumPy 1darrays!')
+            raise ValueError('The initial conditions for V, Z, DA and GABA have to be NumPy 1darrays!')
         if np.isnan(vec).max()==True or np.isinf(vec).max()==True or np.isreal(vec).min()==False:
-            msg = 'The initial conditions for V, Z, and DA have '+\
+            msg = 'The initial conditions for V, Z, DA and GABA have '+\
                   'to be real valued NumPy 1darrays without Infs or NaNs!'
             raise ValueError(msg)
         n[i] = vec.size
         i += 1
     if np.unique(n).size > 1:
-        raise ValueError('The initial conditions for V, Z, and DA have to have the same length!')
+        raise ValueError('The initial conditions for V, Z, DA and GABA have to have the same length!')
         
     # Check task string
     if str(task) != task:
@@ -253,6 +254,10 @@ def run_model(V0, Z0, DA0, task, outfile, \
             D = kwargs['D']
         else:
             D = f['D'].value
+        if kwargs.has_key('G'):
+            G = kwargs['G']
+        else:
+            G = f['G'].value
         names = f['names'].value
         p_dict['names'] = names
         if f.keys().count('labels'): 
@@ -262,16 +267,16 @@ def run_model(V0, Z0, DA0, task, outfile, \
         raise ValueError("HDF5 file "+param_py.matrices+" does not have the required fields!")
 
     # Do a quick checkup of the matrices
-    for mat in [C,D]:
+    for mat in [C,D,G]:
         try:
             shm = mat.shape
-        except: raise TypeError("Coupling/dopamine matrix has to be a NumPy 2darray!")
+        except: raise TypeError("Coupling/dopamine/GABA matrix has to be a NumPy 2darray!")
         if len(shm) != 2:
-            raise ValueError("Coupling/dopamine matrix has to be a NumPy 2darray!")
+            raise ValueError("Coupling/dopamine/GABA matrix has to be a NumPy 2darray!")
         if shm[0] != shm[1]:
-            raise ValueError("Coupling/dopamine matrix has to be square!")
+            raise ValueError("Coupling/dopamine/GABA matrix has to be square!")
         if np.isnan(mat).max()==True or np.isinf(mat).max()==True or np.isreal(mat).min()==False:
-            msg = 'Coupling/dopamine matrix must be a real valued NumPy 2darray without Infs or NaNs!'
+            msg = 'Coupling/dopamine/GABA matrix must be a real valued NumPy 2darray without Infs or NaNs!'
             raise ValueError(msg)
 
     # Put ones on the diagonal of the coupling matrix to ensure compatibility with the code
@@ -279,10 +284,10 @@ def run_model(V0, Z0, DA0, task, outfile, \
 
     # Get dimension of matrix and check correspondence
     N = C.shape[0]
-    if N != D.shape[0]:
-        raise ValueError("Dopamine and coupling matrices don't have the same dimension!")
+    if N != D.shape[0] or N != G.shape[0]:
+        raise ValueError("Dopamine/GABA and coupling matrices don't have the same dimension!")
     if len(names) != N: 
-        raise ValueError("Matrix is "+str(N)+"-by-"+str(N)+" but `names` have length "+str(len(names))+"!")
+        raise ValueError("Matrix is "+str(N)+"-by-"+str(N)+" but `names` has length "+str(len(names))+"!")
     for nm in names:
         if str(nm) != nm:
             raise ValueError("Names have to be provided as Python list/NumPy array of strings!")
@@ -294,6 +299,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     # Now copy matrices also to `p_dict` (maybe changed by fill_diagonal above, or not part of `kwargs`)
     p_dict['C'] = C
     p_dict['D'] = D
+    p_dict['G'] = G
 
     # Get synaptic couplings (and set seed of random number generator)
     np.random.seed(seed)
@@ -438,11 +444,15 @@ def run_model(V0, Z0, DA0, task, outfile, \
     # Create datasets for numeric variables
     f.create_dataset('C',data=C,dtype=datype)
     f.create_dataset('D',data=D,dtype=datype)
+    f.create_dataset('G',data=G,dtype=datype)
     f.create_dataset('V',shape=(N,n_elems),chunks=chunks,dtype=datype)
     f.create_dataset('Z',shape=(N,n_elems),chunks=chunks,dtype=datype)
     f.create_dataset('DA',shape=(N,n_elems),chunks=chunks,dtype=datype)
+    f.create_dataset('GABA',shape=(N,n_elems),chunks=chunks,dtype=datype)
     f.create_dataset('QV',shape=(N,n_elems),chunks=chunks,dtype=datype)
+    f.create_dataset('QZ',shape=(N,n_elems),chunks=chunks,dtype=datype)
     f.create_dataset('Beta',shape=(N,n_elems),chunks=chunks,dtype=datype)
+    f.create_dataset('Gamma',shape=(N,n_elems),chunks=chunks,dtype=datype)
     f.create_dataset('t',data=np.linspace(tstart,tend,n_elems),dtype=datype)
 
     # Save parameters (but exclude stuff imported in the parameter file)
@@ -459,7 +469,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     params = par(p_dict)
 
     # Concatenate initial conditions for the "calibration" run 
-    VZD0 = np.hstack((np.hstack((V0.squeeze(),Z0.squeeze())),DA0.squeeze()))
+    VZDG0 = np.hstack([V0.squeeze(),Z0.squeeze(),DA0.squeeze(),GA0.squeeze()])
 
     # Set up parameters for an initial `len_init` (in ms) long resting state simulation to "calibrate" the model
     len_init = 100
@@ -482,18 +492,24 @@ def run_model(V0, Z0, DA0, task, outfile, \
     tmpfile.create_dataset('V',shape=(N,csize),dtype=datype)
     tmpfile.create_dataset('Z',shape=(N,csize),dtype=datype)
     tmpfile.create_dataset('DA',shape=(N,csize),dtype=datype)
+    tmpfile.create_dataset('GABA',shape=(N,csize),dtype=datype)
     tmpfile.create_dataset('QV',shape=(N,csize),dtype=datype)
+    tmpfile.create_dataset('QZ',shape=(N,csize),dtype=datype)
     tmpfile.create_dataset('Beta',shape=(N,csize),dtype=datype)
+    tmpfile.create_dataset('Gamma',shape=(N,csize),dtype=datype)
     tmpfile.flush()
 
+    # ipdb.set_trace()
+
     # Run 100ms of resting state to get model to a "steady state" for the initial conditions
-    solve_model(VZD0,tinit,parinit,np.array([tsize]),np.array([csize]),seed,0,str(tmpfile.filename))
+    solve_model(VZDG0,tinit,parinit,np.array([tsize]),np.array([csize]),seed,0,str(tmpfile.filename))
 
     # Use final values of `V`, `Z` and `DA` as initial conditions for the "real" simulation
-    V0   = tmpfile['V'][:,-1]
-    Z0   = tmpfile['Z'][:,-1]
-    DA0  = tmpfile['DA'][:,-1]
-    VZD0 = np.hstack((np.hstack((V0.squeeze(),Z0.squeeze())),DA0.squeeze()))
+    V0    = tmpfile['V'][:,-1]
+    Z0    = tmpfile['Z'][:,-1]
+    DA0   = tmpfile['DA'][:,-1]
+    GA0   = tmpfile['GABA'][:,-1]
+    VZDG0 = np.hstack([V0.squeeze(),Z0.squeeze(),DA0.squeeze(),GA0.squeeze()])
 
     # Close and delete the temporary container
     tmpfile.close()
@@ -518,7 +534,7 @@ def run_model(V0, Z0, DA0, task, outfile, \
     if verbose: print "\n"+table.draw()+"\n"
 
     # Finally... Run the actual simulation
-    solve_model(VZD0,tsteps,params,blocksize,chunksize,seed,int(verbose),outfile)
+    solve_model(VZDG0,tsteps,params,blocksize,chunksize,seed,int(verbose),outfile)
 
     # Done!
     if verbose: print "\nDone\n"
@@ -643,25 +659,30 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         else:
             p_rate = s_rate
 
-        # Get quantities for plotting
-        t    = f['t'][::p_rate]
-        V    = f['V'][idx,::p_rate].T
-        QV   = f['QV'][idx,::p_rate].T
-        Beta = f['Beta'][idx,::p_rate].T
-        DA   = f['DA'][idx,::p_rate].T
-        tmin = t.min() - t[1]
-        tmax = t.max() + t[1]
+        # Extract quantities from container
+        t     = f['t'][::p_rate]
+        V     = f['V'][idx,::p_rate].T
+        Z     = f['Z'][idx,::p_rate].T
+        QV    = f['QV'][idx,::p_rate].T
+        QZ    = f['QZ'][idx,::p_rate].T
+        Beta  = f['Beta'][idx,::p_rate].T
+        Gamma = f['Gamma'][idx,::p_rate].T
+        DA    = np.dot(f['D'].value,f['DA'].value)[idx,::p_rate].T
+        GABA  = np.dot(f['G'].value,f['GABA'].value)[idx,::p_rate].T
+        tmin  = t.min() - t[1]
+        tmax  = t.max() + t[1]
 
-        # Workaround for the time being
-        if t.size != V.shape[0]:
-            t = np.linspace(t[0],t[-1],V.shape[0])
+        # # Workaround for the time being
+        # if t.size != V.shape[0]:
+        #     t = np.linspace(t[0],t[-1],V.shape[0])
 
         # Prepare window and plot stuff
         fig = plt.figure(figsize=(10,7.5))
-        if figname != None: fig.canvas.set_window_title(figname)
+        if figname != None:
+            fig.canvas.set_window_title(figname)
         plt.suptitle("Raw Model Output from "+fname,fontsize=18)
 
-        sp = plt.subplot(4,1,1)
+        sp = plt.subplot(4,2,1)
         plt.plot(t,V)
         if doleg:
             plt.legend(names)
@@ -673,7 +694,17 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         plt.title("V",fontsize=16)
         plt.draw()
 
-        sp = plt.subplot(4,1,2)
+        sp = plt.subplot(4,2,2)
+        plt.plot(t,Z)
+        plt.ylabel('mV',fontsize=16)
+        [ymin,ymax] = sp.get_ylim()
+        plt.yticks([ymin,0,ymax],fontsize=10)
+        sp.set_xlim(left=tmin,right=tmax)
+        plt.xticks([],fontsize=8)
+        plt.title("Z",fontsize=16)
+        plt.draw()
+        
+        sp = plt.subplot(4,2,3)
         plt.plot(t,QV)
         plt.ylabel('Firing',fontsize=16)
         [ymin,ymax] = sp.get_ylim()
@@ -683,9 +714,19 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         plt.title("QV",fontsize=16)
         plt.draw()
 
-        sp = plt.subplot(4,1,3)
+        sp = plt.subplot(4,2,4)
+        plt.plot(t,QZ)
+        plt.ylabel('Firing',fontsize=16)
+        [ymin,ymax] = sp.get_ylim()
+        plt.yticks([0,ymax],fontsize=10)
+        sp.set_xlim(left=tmin,right=tmax)
+        plt.xticks([],fontsize=8)
+        plt.title("QZ",fontsize=16)
+        plt.draw()
+        
+        sp = plt.subplot(4,2,5)
         plt.plot(t,Beta)
-        plt.ylabel('Gain Factor',fontsize=16)
+        plt.ylabel('DA Gain',fontsize=16)
         [ymin,ymax] = sp.get_ylim()
         plt.yticks([ymin,ymax],fontsize=10)
         sp.set_xlim(left=tmin,right=tmax)
@@ -693,7 +734,17 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         plt.title(r"$\beta$",fontsize=16)
         plt.draw()
 
-        sp = plt.subplot(4,1,4)
+        sp = plt.subplot(4,2,6)
+        plt.plot(t,Gamma)
+        plt.ylabel('GABA Gain',fontsize=16)
+        [ymin,ymax] = sp.get_ylim()
+        plt.yticks([ymin,ymax],fontsize=10)
+        sp.set_xlim(left=tmin,right=tmax)
+        plt.xticks([],fontsize=8)
+        plt.title(r"$\gamma$",fontsize=16)
+        plt.draw()
+        
+        sp = plt.subplot(4,2,7)
         plt.plot(t,DA)
         plt.ylabel('mM',fontsize=16)
         [ymin,ymax] = sp.get_ylim()
@@ -704,6 +755,17 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         plt.title("DA",fontsize=16)
         plt.draw()
 
+        sp = plt.subplot(4,2,8)
+        plt.plot(t,GABA)
+        plt.ylabel('mM',fontsize=16)
+        [ymin,ymax] = sp.get_ylim()
+        plt.yticks([ymin,ymax],fontsize=10)
+        sp.set_xlim(left=tmin,right=tmax)
+        plt.xticks(fontsize=10)
+        plt.xlabel("ms")
+        plt.title("GABA",fontsize=16)
+        plt.draw()
+        
     # Plot raw model output
     if (bold):
         

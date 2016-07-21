@@ -20,56 +20,56 @@ cimport cython
 DTYPE = np.double 
 ctypedef np.double_t DTYPE_t
 
-# Because think different...
-IF UNAME_SYSNAME == "Darwin":
-
-    # External declaration of BLAS dot/symmetric matrix-vector product (for doubles) routines
-    cdef extern from "Accelerate/Accelerate.h":
-        double ddot "cblas_ddot"(int N, double *X, int incX, double *Y, int incY)
-
-        cdef enum CBLAS_ORDER:
-                CblasRowMajor=101 
-                CblasColMajor=102
-        cdef enum CBLAS_UPLO: 
-                CblasUpper=121 
-                CblasLower=122
-        cdef enum CBLAS_TRANSPOSE: 
-                CblasNoTrans=111
-                CblasTrans=112 
-                CblasConjTrans=113
-
-        void dsymv "cblas_dsymv"(CBLAS_ORDER Order, CBLAS_UPLO uplo, int n, double alpha,
-               double *A, int lda, double *x, int incx, double beta,
-               double *y, int incy)
-
-        void dgemv "cblas_dgemv"(CBLAS_ORDER Order, CBLAS_TRANSPOSE TransA, int M, int N, double alpha, 
-                         double *A, int lda, double *X, int incX, double beta,
-                         double *Y, int incY)
-
-ELSE:
-
-    # External declaration of BLAS dot/symmetric matrix-vector product (for doubles) routines
-    cdef extern from "cblas.h":
-        double ddot "cblas_ddot"(int N, double *X, int incX, double *Y, int incY)
-
-        cdef enum CBLAS_ORDER:
-                CblasRowMajor=101 
-                CblasColMajor=102
-        cdef enum CBLAS_UPLO: 
-                CblasUpper=121 
-                CblasLower=122
-        cdef enum CBLAS_TRANSPOSE: 
-                CblasNoTrans=111
-                CblasTrans=112 
-                CblasConjTrans=113
-
-        void dsymv "cblas_dsymv"(CBLAS_ORDER Order, CBLAS_UPLO uplo, int n, double alpha,
-               double *A, int lda, double *x, int incx, double beta,
-               double *y, int incy)
-
-        void dgemv "cblas_dgemv"(CBLAS_ORDER Order, CBLAS_TRANSPOSE TransA, int M, int N, double alpha, 
-                         double *A, int lda, double *X, int incX, double beta,
-                         double *Y, int incY)
+# # Because think different...
+# IF UNAME_SYSNAME == "Darwin":
+# 
+#     # External declaration of BLAS dot/symmetric matrix-vector product (for doubles) routines
+#     cdef extern from "Accelerate/Accelerate.h":
+#         double ddot "cblas_ddot"(int N, double *X, int incX, double *Y, int incY)
+# 
+#         cdef enum CBLAS_ORDER:
+#                 CblasRowMajor=101 
+#                 CblasColMajor=102
+#         cdef enum CBLAS_UPLO: 
+#                 CblasUpper=121 
+#                 CblasLower=122
+#         cdef enum CBLAS_TRANSPOSE: 
+#                 CblasNoTrans=111
+#                 CblasTrans=112 
+#                 CblasConjTrans=113
+# 
+#         void dsymv "cblas_dsymv"(CBLAS_ORDER Order, CBLAS_UPLO uplo, int n, double alpha,
+#                double *A, int lda, double *x, int incx, double beta,
+#                double *y, int incy)
+# 
+#         void dgemv "cblas_dgemv"(CBLAS_ORDER Order, CBLAS_TRANSPOSE TransA, int M, int N, double alpha, 
+#                          double *A, int lda, double *X, int incX, double beta,
+#                          double *Y, int incY)
+# 
+# ELSE:
+# 
+#     # External declaration of BLAS dot/symmetric matrix-vector product (for doubles) routines
+#     cdef extern from "cblas.h":
+#         double ddot "cblas_ddot"(int N, double *X, int incX, double *Y, int incY)
+# 
+#         cdef enum CBLAS_ORDER:
+#                 CblasRowMajor=101 
+#                 CblasColMajor=102
+#         cdef enum CBLAS_UPLO: 
+#                 CblasUpper=121 
+#                 CblasLower=122
+#         cdef enum CBLAS_TRANSPOSE: 
+#                 CblasNoTrans=111
+#                 CblasTrans=112 
+#                 CblasConjTrans=113
+# 
+#         void dsymv "cblas_dsymv"(CBLAS_ORDER Order, CBLAS_UPLO uplo, int n, double alpha,
+#                double *A, int lda, double *x, int incx, double beta,
+#                double *y, int incy)
+# 
+#         void dgemv "cblas_dgemv"(CBLAS_ORDER Order, CBLAS_TRANSPOSE TransA, int M, int N, double alpha, 
+#                          double *A, int lda, double *X, int incX, double beta,
+#                          double *Y, int incY)
 
 # Turn of bounds-checking for entire function
 @cython.boundscheck(False) 
@@ -107,11 +107,15 @@ cdef class par:
     cdef public DTYPE_t delta
     cdef public DTYPE_t v_m
     cdef public DTYPE_t k_m
+    cdef public DTYPE_t v_m2
+    cdef public DTYPE_t k_m2
     cdef public DTYPE_t tonic
     cdef public DTYPE_t rmin
     cdef public DTYPE_t a
     cdef public DTYPE_t b_hi
     cdef public DTYPE_t b_lo
+    cdef public DTYPE_t g_hi
+    cdef public DTYPE_t g_lo
     cdef public DTYPE_t dt
     cdef public DTYPE_t s_step
     cdef public DTYPE_t speechon
@@ -121,8 +125,10 @@ cdef class par:
     # Declare class fields: arrays
     cdef public np.ndarray C
     cdef public np.ndarray D
+    cdef public np.ndarray G
     cdef public np.ndarray V
     cdef public np.ndarray DA
+    cdef public np.ndarray GABA
     cdef public np.ndarray Z
     cdef public np.ndarray QV
     cdef public np.ndarray QZ
@@ -131,7 +137,12 @@ cdef class par:
     cdef public np.ndarray mCa
     cdef public np.ndarray mNa
     cdef public np.ndarray beta
+    cdef public np.ndarray gamma
+    cdef public np.ndarray rDAGA
+    cdef public np.ndarray rGADA
     cdef public np.ndarray cplng
+    cdef public np.ndarray DDAvc
+    cdef public np.ndarray GGAvc
     cdef public np.ndarray r
     cdef public np.ndarray aei
     cdef public np.ndarray aie
@@ -143,13 +154,13 @@ cdef class par:
     # Class constructor
     def __cinit__(self, dict p_dict):
 
-        # Check if `C` is symmetric and in row-major order (NumPy default)
-        if np.isfortran(p_dict['C']): 
-            raise TypeError("Coupling matrix has to be in row-major order (NumPy default)!")
-        if np.isfortran(p_dict['D']): 
-            raise TypeError("Dopamine matrix has to be in row-major order (NumPy default)!")
-        if (np.linalg.norm(p_dict['C'] - p_dict['C'].T,ord='fro') > 1e-9*np.linalg.norm(p_dict['C'],ord='fro')):
-            raise ValueError("Coupling matrix has to be symmetric!")
+        # # Check if `C` is symmetric and in row-major order (NumPy default)
+        # if np.isfortran(p_dict['C']): 
+        #     raise TypeError("Coupling matrix has to be in row-major order (NumPy default)!")
+        # if np.isfortran(p_dict['D']): 
+        #     raise TypeError("Dopamine matrix has to be in row-major order (NumPy default)!")
+        # if (np.linalg.norm(p_dict['C'] - p_dict['C'].T,ord='fro') > 1e-9*np.linalg.norm(p_dict['C'],ord='fro')):
+        #     raise ValueError("Coupling matrix has to be symmetric!")
 
         # Initialize scalars
         self.N     = p_dict['C'].shape[0]
@@ -181,10 +192,14 @@ cdef class par:
         self.delta = p_dict['delta']
         self.v_m   = p_dict['v_m']
         self.k_m   = p_dict['k_m']
+        self.v_m2  = p_dict['v_m2']
+        self.k_m2  = p_dict['k_m2']
         self.rmin  = p_dict['rmin']
         self.a     = p_dict['a']
         self.b_hi  = p_dict['b_hi']
         self.b_lo  = p_dict['b_lo']
+        self.g_hi  = p_dict['g_hi']
+        self.g_lo  = p_dict['g_lo']
 
         # Scalar parameters not really for the model but for the code
         self.dt        = p_dict['dt']
@@ -195,8 +210,9 @@ cdef class par:
 
         # Allocate arrays
         self.V     = np.zeros([self.N,], dtype=DTYPE)
-        self.DA    = np.zeros([self.N,], dtype=DTYPE)
         self.Z     = np.zeros([self.N,], dtype=DTYPE)
+        self.DA    = np.zeros([self.N,], dtype=DTYPE)
+        self.GABA  = np.zeros([self.N,], dtype=DTYPE)
         self.QV    = np.zeros([self.N,], dtype=DTYPE)
         self.QZ    = np.zeros([self.N,], dtype=DTYPE)
         self.W     = np.zeros([self.N,], dtype=DTYPE)
@@ -204,16 +220,22 @@ cdef class par:
         self.mCa   = np.zeros([self.N,], dtype=DTYPE)
         self.mNa   = np.zeros([self.N,], dtype=DTYPE)
         self.beta  = np.ones([self.N,], dtype=DTYPE)
+        self.gamma = np.zeros([self.N,], dtype=DTYPE)
         self.cplng = np.zeros([self.N,], dtype=DTYPE)
+        self.DDAvc = np.zeros([self.N,], dtype=DTYPE)
+        self.GGAvc = np.zeros([self.N,], dtype=DTYPE)
         self.r     = np.zeros([self.N,], dtype=DTYPE)
         self.C     = p_dict['C']
         self.D     = p_dict['D']
+        self.G     = p_dict['G']
         self.aei   = p_dict['aei']
         self.aie   = p_dict['aie']
         self.ani   = p_dict['ani']
         self.ane   = p_dict['ane']
         self.rmax  = p_dict['rmax']
         self.TCa   = p_dict['TCa']
+        self.rDAGA = p_dict['rDAGA']
+        self.rGADA = p_dict['rGADA']
 
 # Vectorized tanh computation
 cdef DTYPE_t vectanh(np.ndarray[DTYPE_t, ndim = 1] invec, np.ndarray[DTYPE_t, ndim = 1] outvec, int n):
@@ -236,12 +258,15 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     # Declare local variables
     cdef int i
     cdef int n = p.N
-    cdef DTYPE_t tsec, denom, isspeech, rel_len
+    cdef DTYPE_t tsec, isspeech, rel_len
 
-    # The input has the format `X = [V0,...,V997,Z0,...,Z997]`
-    p.V  = X[0:p.N]
-    p.Z  = X[p.N:2*p.N]
-    p.DA = X[2*p.N:3*p.N]
+    # The input has the format `X = [V0,...,V997,Z0,...,Z997,DA0,...,DA997,GABA0,...,GABA997]`
+    p.V    = X[0:p.N]
+    p.Z    = X[p.N:2*p.N]
+    p.DA   = X[2*p.N:3*p.N]
+    p.GABA = X[3*p.N:4*p.N]
+
+    # print "p.GABA.size",p.GABA.size
 
     # Cell firing rates
     vectanh((p.V - p.VT)/p.deV,tmp,n)
@@ -254,15 +279,20 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     tsec     = tsec - int(tsec/p.len_cycle)*p.len_cycle
     isspeech = DTYPE(tsec >= p.speechon and tsec <= p.speechoff)
 
-    # Prepare to compute `y = alpha*A*x + beta*y`, result stored in `y`. 
-    # Here: alpha = (1-p.a)*(p.b_hi-p.b_lo), beta = p.b_lo and y = p.beta (that's why we set p.beta=1 below)
-    p.beta[:] = 1.0
+    # # Prepare to compute `y = alpha*A*x + beta*y`, result stored in `y`. 
+    # # Here: alpha = (1-p.a)*(p.b_hi-p.b_lo), beta = p.b_lo and y = p.beta (that's why we set p.beta=1 below)
+    # p.beta[:] = 1.0
 
-    # Compute dopamine gain: `p.beta = p.D.dot(p.DA)*(1 - p.a)*(p.b_hi - p.b_lo) + p.b_lo` using CBLAS
-    dgemv(CblasRowMajor,CblasNoTrans,p.D.shape[0],p.D.shape[1],(1-p.a)*(p.b_hi-p.b_lo),\
-          <DTYPE_t*>(p.D.data),p.D.shape[0],<DTYPE_t*>(p.DA.data),p.DA.strides[0]//sizeof(DTYPE_t), p.b_lo,\
-          <DTYPE_t*>(p.beta.data), p.beta.strides[0]//sizeof(DTYPE_t))
+    # # Compute dopamine gain: `p.beta = p.D.dot(p.DA)*(1 - p.a)*(p.b_hi - p.b_lo) + p.b_lo` using CBLAS
+    # dgemv(CblasRowMajor,CblasNoTrans,p.D.shape[0],p.D.shape[1],(1-p.a)*(p.b_hi-p.b_lo),\
+    #       <DTYPE_t*>(p.D.data),p.D.shape[0],<DTYPE_t*>(p.DA.data),p.DA.strides[0]//sizeof(DTYPE_t), p.b_lo,\
+    #       <DTYPE_t*>(p.beta.data), p.beta.strides[0]//sizeof(DTYPE_t))
+    p.DDAvc = np.dot(p.D,p.DA)
+    p.beta  = p.DDAvc*(1 - p.a)*(p.b_hi - p.b_lo) + p.b_lo
 
+    p.GGAvc = np.dot(p.G,p.GABA)
+    p.gamma = p.GGAvc*(p.g_hi - p.g_lo) + p.g_lo
+    
     # Neural activation functions
     vectanh((p.V - p.TCa)/p.deCa,tmp,n)
     p.mCa = 0.5*(1 + tmp)
@@ -272,30 +302,33 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     # Fraction of open potassium channels
     vectanh(p.beta*(p.V - p.TK)/p.deK,tmp,n)
     p.mK = 0.5*(1 + tmp)
-    p.W  = (p.W0 - p.mK*p.phi)*exp(-t/p.tau) + p.mK*p.phi
-    # rel_len = 1.0
-    # p.W  = (p.W0 - p.mK*p.phi)*exp(-(t - int(t/rel_len)*rel_len)/p.tau) + p.mK*p.phi
+    rel_len = 1.0
+    p.W  = (p.W0 - p.mK*p.phi)*exp(-(t - int(t/rel_len)*rel_len)/p.tau) + p.mK*p.phi
 
-    # Compute excitatory coupling based on connection matrix (`cplng = C.dot(QV)`)
-    dsymv(CblasRowMajor,CblasUpper,p.C.shape[1],1.0,<DTYPE_t*>(p.C.data),p.C.shape[0],<DTYPE_t*>(p.QV.data),\
-          p.QV.strides[0]//sizeof(DTYPE_t),0.0,<DTYPE_t*>(p.cplng.data),p.cplng.strides[0]//sizeof(DTYPE_t))
+    # # Compute excitatory coupling based on connection matrix (`cplng = C.dot(QV)`)
+    # dsymv(CblasRowMajor,CblasUpper,p.C.shape[1],1.0,<DTYPE_t*>(p.C.data),p.C.shape[0],<DTYPE_t*>(p.QV.data),\
+    #       p.QV.strides[0]//sizeof(DTYPE_t),0.0,<DTYPE_t*>(p.cplng.data),p.cplng.strides[0]//sizeof(DTYPE_t))
+    p.cplng = np.dot(p.C,p.QV)
 
-    # Deterministic part for `V` (make sure `denom = 1` for rest, other we have a divide by zero on our hands...)
-    denom    = p.b_hi - p.b_lo + (1. - DTYPE(p.b_lo != p.b_hi))
-    tmp      = (p.beta - p.b_lo)/denom + 1
+    # Deterministic part of `V` (make sure denominators in `tmp` and `p.aie` are one for rest,
+    # otherwise we have a divide by zero on our hands...)
+    tmp      = (p.beta - p.b_lo)/(p.b_hi - p.b_lo + (1. - DTYPE(p.b_lo != p.b_hi))) + 1
     A[0:p.N] = - (p.gCa + p.cplng*p.rNMDA*p.aee*tmp)*p.mCa*(p.V - p.VCa) \
                - p.gK*p.W*(p.V - p.VK) - p.gL*(p.V - p.VL) \
                - (p.gNa*p.mNa + p.cplng*p.aee*tmp)*(p.V - p.VNa) \
-               + p.aie*p.Z*p.QZ
+               + p.aie*((p.g_lo - p.gamma)/(3*(p.g_hi - p.g_lo + (1. - DTYPE(p.g_lo != p.g_hi)))) + 1)*p.Z*p.QZ
 
     # Deterministic part for `Z`
     A[p.N:2*p.N] = p.b*p.aei*p.V*p.QV
 
     # Dopamine model
     p.r            = (p.rmax - p.rmin)*isspeech + p.rmin
-    A[2*p.N:3*p.N] = p.r*p.QV - (p.v_m*p.DA)*((p.DA + p.k_m)**(-1))
-
-    # Stochastic (diffusion) parts for `V` and `Z` (note that diffusion for `DA` is 0)
+    A[2*p.N:3*p.N] = p.r*p.QV - (p.v_m*p.DA)*((p.DA + p.k_m)**(-1)) - p.rGADA*p.GGAvc
+    
+    # GABA model
+    A[3*p.N:4*p.N] = p.rDAGA*p.QZ*p.DDAvc - (p.v_m2*p.GABA)*((p.GABA + p.k_m2)**(-1))
+    
+    # Stochastic (diffusion) parts for `V` and `Z` (note that diffusion for `DA` and `GABA` is 0)
     B[0:p.N]     = p.ane*p.delta
     B[p.N:2*p.N] = p.b*p.ani*p.delta
         
@@ -339,7 +372,9 @@ cpdef solve_model(np.ndarray[DTYPE_t, ndim = 1] x0, \
     cdef np.ndarray Btmp    = np.zeros([x0size,], dtype=DTYPE)
     cdef np.ndarray Y       = np.zeros([x0size,blocksize[0]], dtype=DTYPE)
     cdef np.ndarray QV      = np.zeros([myp.N,blocksize[0]], dtype=DTYPE)
+    cdef np.ndarray QZ      = np.zeros([myp.N,blocksize[0]], dtype=DTYPE)
     cdef np.ndarray Beta    = np.zeros([myp.N,blocksize[0]], dtype=DTYPE)
+    cdef np.ndarray Gamma   = np.zeros([myp.N,blocksize[0]], dtype=DTYPE)
 
     # Open HDF5 container that will hold the output
     fout = h5py.File(outfile)
@@ -380,10 +415,12 @@ cpdef solve_model(np.ndarray[DTYPE_t, ndim = 1] x0, \
 
             # Get drift/diffusion from func and save stuff in temporary arrays
             model_eqns(Y[:,k], tsteps[n], myp, A, B, tmp)
-            QV[:,k]   = myp.QV 
-            Beta[:,k] = myp.beta
-            Atmp      = Y[:,k] + A*dt
-            Btmp      = B*sqrtdt
+            QV[:,k]    = myp.QV 
+            QZ[:,k]    = myp.QZ 
+            Beta[:,k]  = myp.beta
+            Gamma[:,k] = myp.gamma
+            Atmp       = Y[:,k] + A*dt
+            Btmp       = B*sqrtdt
 
             # Second evaluations to update coefficients for solver
             model_eqns(Atmp + Btmp, tsteps[n+1], myp, Aplus,tmpAB,tmp)
@@ -401,11 +438,14 @@ cpdef solve_model(np.ndarray[DTYPE_t, ndim = 1] x0, \
                 pb_i += 1
 
         # Write computed blocks to file
-        fout['V'][:,chunk:chunk+csize]    = Y[0:myp.N,0:bsize:myp.s_step]
-        fout['Z'][:,chunk:chunk+csize]    = Y[myp.N:2*myp.N,0:bsize:myp.s_step]
-        fout['DA'][:,chunk:chunk+csize]   = Y[2*myp.N:3*myp.N,0:bsize:myp.s_step]
-        fout['QV'][:,chunk:chunk+csize]   = QV[:,0:bsize:myp.s_step]
-        fout['Beta'][:,chunk:chunk+csize] = Beta[:,0:bsize:myp.s_step]
+        fout['V'][:,chunk:chunk+csize]     = Y[0:myp.N,0:bsize:myp.s_step]
+        fout['Z'][:,chunk:chunk+csize]     = Y[myp.N:2*myp.N,0:bsize:myp.s_step]
+        fout['DA'][:,chunk:chunk+csize]    = Y[2*myp.N:3*myp.N,0:bsize:myp.s_step]
+        fout['GABA'][:,chunk:chunk+csize]  = Y[3*myp.N:4*myp.N,0:bsize:myp.s_step]
+        fout['QV'][:,chunk:chunk+csize]    = QV[:,0:bsize:myp.s_step]
+        fout['QZ'][:,chunk:chunk+csize]    = QZ[:,0:bsize:myp.s_step]
+        fout['Beta'][:,chunk:chunk+csize]  = Beta[:,0:bsize:myp.s_step]
+        fout['Gamma'][:,chunk:chunk+csize] = Gamma[:,0:bsize:myp.s_step]
 
         # Update index counters
         j     += bsize
