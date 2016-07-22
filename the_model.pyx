@@ -20,56 +20,56 @@ cimport cython
 DTYPE = np.double 
 ctypedef np.double_t DTYPE_t
 
-# # Because think different...
-# IF UNAME_SYSNAME == "Darwin":
-# 
-#     # External declaration of BLAS dot/symmetric matrix-vector product (for doubles) routines
-#     cdef extern from "Accelerate/Accelerate.h":
-#         double ddot "cblas_ddot"(int N, double *X, int incX, double *Y, int incY)
-# 
-#         cdef enum CBLAS_ORDER:
-#                 CblasRowMajor=101 
-#                 CblasColMajor=102
-#         cdef enum CBLAS_UPLO: 
-#                 CblasUpper=121 
-#                 CblasLower=122
-#         cdef enum CBLAS_TRANSPOSE: 
-#                 CblasNoTrans=111
-#                 CblasTrans=112 
-#                 CblasConjTrans=113
-# 
-#         void dsymv "cblas_dsymv"(CBLAS_ORDER Order, CBLAS_UPLO uplo, int n, double alpha,
-#                double *A, int lda, double *x, int incx, double beta,
-#                double *y, int incy)
-# 
-#         void dgemv "cblas_dgemv"(CBLAS_ORDER Order, CBLAS_TRANSPOSE TransA, int M, int N, double alpha, 
-#                          double *A, int lda, double *X, int incX, double beta,
-#                          double *Y, int incY)
-# 
-# ELSE:
-# 
-#     # External declaration of BLAS dot/symmetric matrix-vector product (for doubles) routines
-#     cdef extern from "cblas.h":
-#         double ddot "cblas_ddot"(int N, double *X, int incX, double *Y, int incY)
-# 
-#         cdef enum CBLAS_ORDER:
-#                 CblasRowMajor=101 
-#                 CblasColMajor=102
-#         cdef enum CBLAS_UPLO: 
-#                 CblasUpper=121 
-#                 CblasLower=122
-#         cdef enum CBLAS_TRANSPOSE: 
-#                 CblasNoTrans=111
-#                 CblasTrans=112 
-#                 CblasConjTrans=113
-# 
-#         void dsymv "cblas_dsymv"(CBLAS_ORDER Order, CBLAS_UPLO uplo, int n, double alpha,
-#                double *A, int lda, double *x, int incx, double beta,
-#                double *y, int incy)
-# 
-#         void dgemv "cblas_dgemv"(CBLAS_ORDER Order, CBLAS_TRANSPOSE TransA, int M, int N, double alpha, 
-#                          double *A, int lda, double *X, int incX, double beta,
-#                          double *Y, int incY)
+# Because think different...
+IF UNAME_SYSNAME == "Darwin":
+
+    # External declaration of BLAS dot/symmetric matrix-vector product (for doubles) routines
+    cdef extern from "Accelerate/Accelerate.h":
+        double ddot "cblas_ddot"(int N, double *X, int incX, double *Y, int incY)
+
+        cdef enum CBLAS_ORDER:
+                CblasRowMajor=101 
+                CblasColMajor=102
+        cdef enum CBLAS_UPLO: 
+                CblasUpper=121 
+                CblasLower=122
+        cdef enum CBLAS_TRANSPOSE: 
+                CblasNoTrans=111
+                CblasTrans=112 
+                CblasConjTrans=113
+
+        void dsymv "cblas_dsymv"(CBLAS_ORDER Order, CBLAS_UPLO uplo, int n, double alpha,
+               double *A, int lda, double *x, int incx, double beta,
+               double *y, int incy)
+
+        void dgemv "cblas_dgemv"(CBLAS_ORDER Order, CBLAS_TRANSPOSE TransA, int M, int N, double alpha, 
+                         double *A, int lda, double *X, int incX, double beta,
+                         double *Y, int incY)
+
+ELSE:
+
+    # External declaration of BLAS dot/symmetric matrix-vector product (for doubles) routines
+    cdef extern from "cblas.h":
+        double ddot "cblas_ddot"(int N, double *X, int incX, double *Y, int incY)
+
+        cdef enum CBLAS_ORDER:
+                CblasRowMajor=101 
+                CblasColMajor=102
+        cdef enum CBLAS_UPLO: 
+                CblasUpper=121 
+                CblasLower=122
+        cdef enum CBLAS_TRANSPOSE: 
+                CblasNoTrans=111
+                CblasTrans=112 
+                CblasConjTrans=113
+
+        void dsymv "cblas_dsymv"(CBLAS_ORDER Order, CBLAS_UPLO uplo, int n, double alpha,
+               double *A, int lda, double *x, int incx, double beta,
+               double *y, int incy)
+
+        void dgemv "cblas_dgemv"(CBLAS_ORDER Order, CBLAS_TRANSPOSE TransA, int M, int N, double alpha, 
+                         double *A, int lda, double *X, int incX, double beta,
+                         double *Y, int incY)
 
 # Turn of bounds-checking for entire function
 @cython.boundscheck(False) 
@@ -154,13 +154,13 @@ cdef class par:
     # Class constructor
     def __cinit__(self, dict p_dict):
 
-        # # Check if `C` is symmetric and in row-major order (NumPy default)
-        # if np.isfortran(p_dict['C']): 
-        #     raise TypeError("Coupling matrix has to be in row-major order (NumPy default)!")
-        # if np.isfortran(p_dict['D']): 
-        #     raise TypeError("Dopamine matrix has to be in row-major order (NumPy default)!")
-        # if (np.linalg.norm(p_dict['C'] - p_dict['C'].T,ord='fro') > 1e-9*np.linalg.norm(p_dict['C'],ord='fro')):
-        #     raise ValueError("Coupling matrix has to be symmetric!")
+        # Check if `C` is symmetric and in row-major order (NumPy default)
+        if np.isfortran(p_dict['C']): 
+            raise TypeError("Coupling matrix has to be in row-major order (NumPy default)!")
+        if np.isfortran(p_dict['D']): 
+            raise TypeError("Dopamine matrix has to be in row-major order (NumPy default)!")
+        if (np.linalg.norm(p_dict['C'] - p_dict['C'].T,ord='fro') > 1e-9*np.linalg.norm(p_dict['C'],ord='fro')):
+            raise ValueError("Coupling matrix has to be symmetric!")
 
         # Initialize scalars
         self.N     = p_dict['C'].shape[0]
@@ -266,8 +266,6 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     p.DA   = X[2*p.N:3*p.N]
     p.GABA = X[3*p.N:4*p.N]
 
-    # print "p.GABA.size",p.GABA.size
-
     # Cell firing rates
     vectanh((p.V - p.VT)/p.deV,tmp,n)
     p.QV = 0.5*p.QVmax*(1 + tmp)
@@ -279,18 +277,23 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     tsec     = tsec - int(tsec/p.len_cycle)*p.len_cycle
     isspeech = DTYPE(tsec >= p.speechon and tsec <= p.speechoff)
 
-    # # Prepare to compute `y = alpha*A*x + beta*y`, result stored in `y`. 
-    # # Here: alpha = (1-p.a)*(p.b_hi-p.b_lo), beta = p.b_lo and y = p.beta (that's why we set p.beta=1 below)
-    # p.beta[:] = 1.0
+    # Prepare to compute `y = alpha*A*x + beta*y`, result stored in `y` using CBLAS. 
+    # Here: alpha = 1.0, beta = 0.0 and y = p.DDAvc (that's why we set `p.DDAvc = 0.0` below)
+    p.DDAvc[:] = 0.0
+    
+    # Compute dopamine projections `p.DDAvc = np.dot(p.D,p.DA)` using CBLAS
+    dgemv(CblasRowMajor,CblasNoTrans,p.D.shape[0],p.D.shape[1],1.0,\
+          <DTYPE_t*>(p.D.data),p.D.shape[0],<DTYPE_t*>(p.DA.data),p.DA.strides[0]//sizeof(DTYPE_t), 0.0,\
+          <DTYPE_t*>(p.DDAvc.data), p.DDAvc.strides[0]//sizeof(DTYPE_t))
+    
+    # Now the same for `p.GGAvc = np.dot(p.G,p.GABA)`
+    p.GGAvc[:] = 0.0
+    dgemv(CblasRowMajor,CblasNoTrans,p.G.shape[0],p.G.shape[1],1.0,\
+          <DTYPE_t*>(p.G.data),p.G.shape[0],<DTYPE_t*>(p.GABA.data),p.GABA.strides[0]//sizeof(DTYPE_t), 0.0,\
+          <DTYPE_t*>(p.GGAvc.data), p.GGAvc.strides[0]//sizeof(DTYPE_t))
 
-    # # Compute dopamine gain: `p.beta = p.D.dot(p.DA)*(1 - p.a)*(p.b_hi - p.b_lo) + p.b_lo` using CBLAS
-    # dgemv(CblasRowMajor,CblasNoTrans,p.D.shape[0],p.D.shape[1],(1-p.a)*(p.b_hi-p.b_lo),\
-    #       <DTYPE_t*>(p.D.data),p.D.shape[0],<DTYPE_t*>(p.DA.data),p.DA.strides[0]//sizeof(DTYPE_t), p.b_lo,\
-    #       <DTYPE_t*>(p.beta.data), p.beta.strides[0]//sizeof(DTYPE_t))
-    p.DDAvc = np.dot(p.D,p.DA)
+    # Now calculate the neurotransmission gains using simple component-wise products
     p.beta  = p.DDAvc*(1 - p.a)*(p.b_hi - p.b_lo) + p.b_lo
-
-    p.GGAvc = np.dot(p.G,p.GABA)
     p.gamma = p.GGAvc*(p.g_hi - p.g_lo) + p.g_lo
     
     # Neural activation functions
@@ -305,10 +308,9 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     rel_len = 1.0
     p.W  = (p.W0 - p.mK*p.phi)*exp(-(t - int(t/rel_len)*rel_len)/p.tau) + p.mK*p.phi
 
-    # # Compute excitatory coupling based on connection matrix (`cplng = C.dot(QV)`)
-    # dsymv(CblasRowMajor,CblasUpper,p.C.shape[1],1.0,<DTYPE_t*>(p.C.data),p.C.shape[0],<DTYPE_t*>(p.QV.data),\
-    #       p.QV.strides[0]//sizeof(DTYPE_t),0.0,<DTYPE_t*>(p.cplng.data),p.cplng.strides[0]//sizeof(DTYPE_t))
-    p.cplng = np.dot(p.C,p.QV)
+    # Compute excitatory coupling based on connection matrix (`p.cplng = p.C.dot(p.QV)`)
+    dsymv(CblasRowMajor,CblasUpper,p.C.shape[1],1.0,<DTYPE_t*>(p.C.data),p.C.shape[0],<DTYPE_t*>(p.QV.data),\
+          p.QV.strides[0]//sizeof(DTYPE_t),0.0,<DTYPE_t*>(p.cplng.data),p.cplng.strides[0]//sizeof(DTYPE_t))
 
     # Deterministic part of `V` (make sure denominators in `tmp` and `p.aie` are one for rest,
     # otherwise we have a divide by zero on our hands...)

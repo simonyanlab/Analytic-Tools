@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2016-07-21 15:19:10>
+# Last modified: <2016-07-22 14:28:22>
 
 from __future__ import division
 import numpy as np
@@ -143,34 +143,23 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
     """
 
     # Sanity checks for initial conditions
-    n = np.zeros((4,)); i = 0
-    for vec in [V0, Z0, DA0, GA0]:
-        try: 
-            vs = vec.shape
-        except: 
-            msg = 'The initial conditions for V, Z, DA and GABA have to be NumPy 1darrays, not '\
-                  +type(vec).__name__+'!'
-            raise TypeError(msg)
-        if (len(vs) >= 2 and min(vs) > 1) or (len(vs) == 1 and min(vs) < 2):
-            raise ValueError('The initial conditions for V, Z, DA and GABA have to be NumPy 1darrays!')
-        if np.isnan(vec).max()==True or np.isinf(vec).max()==True or np.isreal(vec).min()==False:
-            msg = 'The initial conditions for V, Z, DA and GABA have '+\
-                  'to be real valued NumPy 1darrays without Infs or NaNs!'
-            raise ValueError(msg)
+    n = np.zeros((4,))
+    vnames = ['V0','Z0','DA0','GA0']
+    for i, vec in enumerate([V0, Z0, DA0, GA0]):
+        arrcheck(vec,'vector',vnames[i])
         n[i] = vec.size
-        i += 1
     if np.unique(n).size > 1:
         raise ValueError('The initial conditions for V, Z, DA and GABA have to have the same length!')
         
-    # Check task string
-    if str(task) != task:
+    # Check the `task` string
+    if not isinstance(task,(str,unicode)):
         raise TypeError('Task has to be specified as string, not '+type(task).__name__+'!')
     task = str(task)
     if task != 'rest' and task != 'speech':
-        raise ValueError("Task has to be either 'rest' or 'speech'!")
+        raise ValueError("The value of `task` has to be either 'rest' or 'speech'!")
 
-    # The path to the output file should be a string (no unicode craziness) and existing
-    if str(outfile) != outfile:
+    # The path to the output file should be a valid
+    if not isinstance(outfile,(str,unicode)):
         raise TypeError('Output filename has to be a string!')
     outfile = str(outfile)
     if outfile.find("~") == 0:
@@ -180,17 +169,14 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
         raise ValueError('Invalid path for output file: '+outfile+'!')
 
     # Set or get random number generator seed
-    if seed != None:
-        try:
-            bad = (np.round(seed) != seed)
-        except: raise TypeError("Random number seed has to be an integer!")
-        if bad: raise ValueError("Random number seed has to be an integer!")
-        seed = int(seed)
+    if seed is not None:
+        scalarcheck(seed,'seed',kind='int')
     else:
         seed = np.random.get_state()[1][0]
+    seed = int(seed)
 
-    # Make sure paramfile doesn't contain unicode and is a valid path
-    if str(paramfile) != paramfile:
+    # Make sure `paramfile` is a valid path
+    if not isinstance(paramfile,(str,unicode)):
         raise TypeError('Parameter file has to be specified using a string!')
     paramfile = str(paramfile)
     if paramfile.find("~") == 0:
@@ -198,34 +184,24 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
     if not os.path.isfile(paramfile):
         raise ValueError('Parameter file: '+paramfile+' does not exist!')
 
-    # Make sure symsyn and verbose are either True or False
-    msg = "The switch `symsyn` has to be Boolean!"
-    try:
-        bad = (symsyn != True and symsyn != False)
-    except: raise TypeError(msg)
-    if bad: raise TypeError(msg)
-    msg = "The switch `verbose` has to be Boolean!"
-    try:
-        bad = (verbose != True and verbose != False)
-    except: raise TypeError(msg)
-    if bad: raise TypeError(msg)
+    # Make sure `symsyn` and `verbose` are Boolean
+    if not isinstance(symsyn,bool):
+        raise TypeError("The switch `symsyn` has to be Boolean!")
+    if not isinstance(verbose,bool):
+        raise TypeError("The switch `verbose` has to be Boolean!")
 
-    # Finally, check ram_use
-    try:
-        bad = (ram_use <= 0) or (ram_use >= 1)
-    except: 
-        raise TypeError('The parameter ram_use has to be a float, not '+type(ram_use).__name__+'!')
-    if bad: raise ValueError('The parameter ram_use has to satisfy 0 < ram_use < 1!')
+    # Finally, check `ram_use`
+    scalarcheck(ram_use,'ram_use',bounds=[0,1])
 
-    # Append '.h5' extension to outfile if necessary
+    # Append '.h5' extension to `outfile` if necessary
     if outfile[-3:] != '.h5':
         outfile = outfile + '.h5'
 
-    # Check if paramfile has an extension, if yes, rip it off
+    # Check if `paramfile` has an extension, if yes, rip it off
     if paramfile[-3:] == '.py':
         paramfile = paramfile[0:-3]
 
-    # Divide paramfile into file-name and path
+    # Divide `paramfile` into file-name and path
     slash = paramfile.rfind(os.sep)
     if slash  < 0:
         pth   = '.'
@@ -244,7 +220,8 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
     # Try to load the coupling matrix
     try:
         f = h5py.File(param_py.matrices,'r')
-    except: raise ValueError("Could not open HDF5 file holding the coupling matrix")
+    except:
+        raise ValueError("Could not open HDF5 file `"+param_py.matrices+"` holding the coupling matrix")
     try:
         if kwargs.has_key('C'):
             C = kwargs['C']
@@ -264,20 +241,12 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
             p_dict['labels'] = f['labels'].value
         f.close()
     except: 
-        raise ValueError("HDF5 file "+param_py.matrices+" does not have the required fields!")
+        raise ValueError("HDF5 file `"+param_py.matrices+"` does not have the required fields!")
 
     # Do a quick checkup of the matrices
-    for mat in [C,D,G]:
-        try:
-            shm = mat.shape
-        except: raise TypeError("Coupling/dopamine/GABA matrix has to be a NumPy 2darray!")
-        if len(shm) != 2:
-            raise ValueError("Coupling/dopamine/GABA matrix has to be a NumPy 2darray!")
-        if shm[0] != shm[1]:
-            raise ValueError("Coupling/dopamine/GABA matrix has to be square!")
-        if np.isnan(mat).max()==True or np.isinf(mat).max()==True or np.isreal(mat).min()==False:
-            msg = 'Coupling/dopamine/GABA matrix must be a real valued NumPy 2darray without Infs or NaNs!'
-            raise ValueError(msg)
+    vnames = ['C','D','G']
+    for mk, mat in enumerate([C,D,G]):
+        arrcheck(mat,'matrix',vnames[mk])
 
     # Put ones on the diagonal of the coupling matrix to ensure compatibility with the code
     np.fill_diagonal(C,1.0)
@@ -289,14 +258,14 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
     if len(names) != N: 
         raise ValueError("Matrix is "+str(N)+"-by-"+str(N)+" but `names` has length "+str(len(names))+"!")
     for nm in names:
-        if str(nm) != nm:
+        if not isinstance(nm,(str,unicode)):
             raise ValueError("Names have to be provided as Python list/NumPy array of strings!")
 
     # If user provided some additional parameters as keyword arguments, copy them to `p_dict`
     for key, value in kwargs.items():
         p_dict[key] = value
 
-    # Now copy matrices also to `p_dict` (maybe changed by fill_diagonal above, or not part of `kwargs`)
+    # Now copy matrices also to `p_dict` (maybe changed by `fill_diagonal` above, or not part of `kwargs`)
     p_dict['C'] = C
     p_dict['D'] = D
     p_dict['G'] = G
@@ -345,7 +314,7 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
     p_dict['ane']  = ane
     p_dict['seed'] = seed
 
-    # If a resting state simulation is done, make sure dopamine doesn't kick in, i.e., enforce rmax = rmin
+    # If a resting state simulation is done, make sure dopamine doesn't kick in, i.e., enforce `rmax == rmin`
     if task == 'rest':
         rmax = np.ones((N,))*p_dict['rmin']
     else:
@@ -391,7 +360,7 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
               " Using dt = "+str(ds)+"ms instead. "
         dt = ds
 
-    # Compute sampling rate (w.r.t dt)
+    # Compute sampling rate (w.r.t `dt`)
     s_step = int(np.round(ds/dt))
 
     # Save step-size and sampling rate in dictionary for later reference
@@ -499,8 +468,6 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
     tmpfile.create_dataset('Gamma',shape=(N,csize),dtype=datype)
     tmpfile.flush()
 
-    # ipdb.set_trace()
-
     # Run 100ms of resting state to get model to a "steady state" for the initial conditions
     solve_model(VZDG0,tinit,parinit,np.array([tsize]),np.array([csize]),seed,0,str(tmpfile.filename))
 
@@ -578,47 +545,35 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
     make_bold : convert raw simulation output to a BOLD signal  
     """
 
-    # Make sure fname doesn't contain unicode and is a valid file
-    if str(fname) != fname:
-        raise TypeError("Name of HDF5 file has to be a string!")
-    fname = str(fname)
-    if fname.find("~") == 0:
-        fname = os.path.expanduser('~') + fname[1:]
-    if not os.path.isfile(fname):
-        raise ValueError('File: '+fname+' does not exist!')
+    # Make sure `fname` is a valid file-path
+    f = checkhdf(fname,peek=True)
 
-    # Make sure raw and bold are either True or False
-    msg = "The switch `raw` has to be Boolean!"
-    try:
-        bad = (raw != True and raw != False)
-    except: raise TypeError(msg)
-    if bad: raise TypeError(msg)
-    msg = "The switch `bold` has to be Boolean!"
-    try:
-        bad = (bold != True and bold != False)
-    except: raise TypeError(msg)
-    if bad: raise TypeError(msg)
+    # Make sure `raw` and `bold` are either `True` or `False`
+    if not isinstance(raw,bool):
+        raise TypeError("The flag `raw` has to be Boolean!")
+    if not isinstance(bold,bool):
+        raise TypeError("The flag `bold` has to be Boolean!")
 
-    # Try to open given HDF5 container
-    try:
-        f = h5py.File(fname,'r')
-    except: raise ValueError("Cannot open "+fname+"!")
+    # Try to access given HDF5 container
     try:
         rois_infile = f['params']['names'].value.tolist()
         f.close()
-    except: raise ValueError("HDF5 file "+fname+" does not have the required fields!")
+    except:
+        raise ValueError("HDF5 file "+fname+" does not have the required fields!")
 
-    # Check if list of names to plot was provided. If yes, make sure they make sense
-    if str(names) != names:
+    # Check if list of ROI-names to plot was provided. If yes, make sure they make sense
+    if not isinstance(names,(str,unicode)):
         doleg = True
         try:
             names = list(names)
-        except: raise TypeError("Regions to plot have to be provided as Python list or NumPy 1darray!")
+        except:
+            raise TypeError("Regions to plot have to be provided as Python list or NumPy 1darray!")
         idx = []
         for name in names:
             try:
                 idx.append(rois_infile.index(name))
-            except: raise ValueError("Region "+name+"not found in file!")
+            except:
+                raise ValueError("Region "+name+"not found in file!")
     else:
         if names == "all":
             idx   = range(len(rois_infile))
@@ -626,12 +581,13 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         else:
             try:
                 idx = rois_infile.index(names)
-            except: raise ValueError("Region "+names+"not found in file!")
+            except:
+                raise ValueError("Region "+names+"not found in file!")
             doleg = True
 
-    # Check if figname is actually printable
+    # Check if `figname` is actually printable
     if figname != None:
-        if str(figname) != figname:
+        if not isinstance(figname,(str,unicode)):
             raise TypeError("Figure name has to be a string!"+type(figname).__name__+"!")
         figname = str(figname)
 
@@ -671,10 +627,6 @@ def plot_sim(fname,names="all",raw=True,bold=False,figname=None):
         GABA  = np.dot(f['G'].value,f['GABA'].value)[idx,::p_rate].T
         tmin  = t.min() - t[1]
         tmax  = t.max() + t[1]
-
-        # # Workaround for the time being
-        # if t.size != V.shape[0]:
-        #     t = np.linspace(t[0],t[-1],V.shape[0])
 
         # Prepare window and plot stuff
         fig = plt.figure(figsize=(10,7.5))
@@ -863,24 +815,34 @@ def make_D(target,source,names,values=None):
     """
 
     # Sanity checks
-    for tsn in [target,source,names]:
+    vnames = ["target","source","names"]
+    for tk, tsn in enumerate([target,source,names]):
         try:
             tsn = list(tsn)
         except: 
             msg = "Inputs target, source and names have to be NumPy 1darrays or Python lists, not "+\
                   type(tsn).__name__
             TypeError(msg)
+        for el in tsn:
+            if not isinstance(el,(str,unicode)):
+                raise ValueError("All elements of `"+vnames[tk]+"` have to be strings!")
 
     if len(source) != len(target):
         raise ValueError("Length of source and target lists/arrays does not match up!")
+    for tk, tsn in enumerate([target,source]):
+        for el in tsn:
+            if el not in names:
+                raise ValueError("Element `"+el+"` not found in `"+vnames[tk]+"`!")
 
     if values != None:
+        values = np.array(values)
+        arrcheck(values,'vector','values')
         if len(values) != len(target):
-            raise ValueError("Length of values list/array does not match up!")
+            raise ValueError("Length of `values` list/array does not match up!")
     else:
         values = np.ones((len(target),))
 
-    # Convert (if we're having a NumPy array) names to a Python list
+    # Convert (if we're having a NumPy array) `names` to a Python list
     names = list(names)
 
     # Get dimension we're dealing with here
@@ -938,29 +900,24 @@ def make_bold(fname, stim_onset=None):
            Dopaminergic Neurotransmission during Complex Voluntary Behaviors. PLoS Computational Biology, 
            10(11), 2014. 
     """
-    # Make sure fname doesn't contain unicode and is a valid path
-    if str(fname) != fname:
-        raise TypeError('Filename has to be specified using a string!')
-    fname = str(fname)
-    if fname.find("~") == 0:
-        fname = os.path.expanduser('~') + fname[1:]
-    if not os.path.isfile(fname):
-        raise ValueError('File: '+fname+' does not exist!')
-
-    # Try to open given HDF5 container
-    try:
-        f = h5py.File(fname)
-    except: raise ValueError("Cannot open "+fname+"!")
+    # Make sure container exists and is valid
+    f = checkhdf(fname,peek=True)
     try:
         V = f['V'].value
     except: 
         f.close()
         raise ValueError("HDF5 file "+fname+" does not have the required fields!")
 
-    # Make sure stim_onset makes sense
+    # Compute cycle length based on the sampling rate used to generate the file
+    N         = f['params']['names'].size
+    s_rate    = f['params']['s_rate'].value
+    n_cycles  = f['params']['n_cycles'].value
+    len_cycle = f['params']['len_cycle'].value
+    cycle_idx = int(np.round(s_rate*len_cycle))
+
+    # Make sure `stim_onset` makes sense
     if stim_onset != None:
-        try: np.round(stim_onset)
-        except: raise TypeError("The stimulus onset time has to be a real scalar!")
+        scalarcheck(stim_onset,'stim_onset',bounds=[0,len_cycle])
 
     # Get task from file to start sub-sampling procedure
     task = f['params']['task'].value
@@ -968,13 +925,13 @@ def make_bold(fname, stim_onset=None):
     # Compute cycle length based on the sampling rate used to generate the file
     N         = f['params']['names'].size
     n_cycles  = f['params']['n_cycles'].value
-    s_rate    = f['params']['s_rate'].value
     len_cycle = f['params']['len_cycle'].value
     cycle_idx = int(np.round(s_rate*len_cycle))
 
     # Compute step size and (if not provided by the user) compute stimulus onset time
     dt = 1/s_rate
-    if stim_onset == None: stim_onset = f['params']['stimulus'].value
+    if stim_onset == None:
+        stim_onset = f['params']['stimulus'].value
     
     # Use Glover's Hemodynamic response function as convolution kernel (with default length 32)
     hrft       = utils.lambdify_t(hrf.glover(utils.T))
@@ -1042,27 +999,14 @@ def show_params(fname):
     None
     """
 
-    # Make sure fname doesn't contain unicode and is a valid path
-    if str(fname) != fname:
-        raise TypeError("Name of HDF5 file has to be a string!")
-    fname = str(fname)
-    if fname.find("~") == 0:
-        fname = os.path.expanduser('~') + fname[1:]
-    if not os.path.isfile(fname):
-        raise ValueError('File: '+fname+' does not exist!')
-
-    # Try to open given HDF5 container
-    try:
-        f = h5py.File(fname,'r')
-    except: raise ValueError("Cannot open "+fname+"!")
+    # Make sure container exists and is valid
+    f = checkhdf(fname,peek=True)
     try:
         par_grp = f['params']
         f.close()
-    except: raise ValueError("HDF5 file "+fname+" does not have the required fields!")
+    except:
+        raise ValueError("HDF5 file "+fname+" does not have the required fields!")
 
-    # After all the error checking, reopen the file
-    f = h5py.File(fname,'r')
-    
     # Create a list for Texttable
     tlist = []
     for key in f['params'].keys():
@@ -1119,11 +1063,15 @@ def regexfind(arr,expr):
     # Sanity checks
     try:
         arr = np.array(arr)
-    except: raise TypeError("Input must be a NumPy array/Python list, not "+type(arr).__name__+"!")
-    sha = arr.shape
-    if len(sha) > 2 or (len(sha) == 2 and min(sha) != 1):
+    except:
+        raise TypeError("Input must be a NumPy array/Python list, not "+type(arr).__name__+"!")
+    sha = arr.squeeze().shape
+    if len(sha) != 1:
         raise ValueError("Input must be a NumPy 1darray or Python list!")
-    if str(expr) != expr:
+    for el in arr:
+        if not isinstance(el,(str,unicode)):
+            raise ValueError("Every element in the input array has to be a string!")
+    if not isinstance(expr,(str,unicode)):
         raise TypeError("Input expression has to be a string, not "+type(expr).__name__+"!")
 
     # Now do something: start by compiling the input expression
@@ -1159,7 +1107,7 @@ def moveit(fname):
     """
 
     # Check if input makes sense
-    if str(fname) != fname:
+    if not isinstance(fname,(str,unicode)):
         raise TypeError("File-/Directory-name has to be a string!")
     fname = str(fname)
     if fname.find("~") == 0:
@@ -1197,3 +1145,85 @@ def moveit(fname):
         print "WARNING: Directory "+fname+" already exists, renaming it to: "+newname+"!"
         shutil.move(fname,newname)
     
+##########################################################################################
+def arrcheck(arr,kind,varname,bounds=None):
+    """
+    Local helper function performing sanity checks on arrays (1d/2d/3d)
+    """
+    
+    try:
+        sha = arr.squeeze().shape
+    except:
+        raise TypeError('Input '+varname+' must be a NumPy array, not '+type(arr).__name__+'!')
+
+    if kind == 'tensor':
+        if len(sha) != 3:
+            raise ValueError('Input `'+varname+'` must be a `N`-by-`N`-by-`k` NumPy array')
+        if (min(sha[0],sha[1])==1) or (sha[0]!=sha[1]):
+            raise ValueError('Input `'+varname+'` must be a `N`-by-`N`-by-`k` NumPy array!')
+        dim_msg = '`N`-by-`N`-by-`k`'
+    elif kind == 'matrix':
+        if len(sha) != 2:
+            raise ValueError('Input `'+varname+'` must be a `N`-by-`N` NumPy array')
+        if (min(sha)==1) or (sha[0]!=sha[1]):
+            raise ValueError('Input `'+varname+'` must be a `N`-by-`N` NumPy array!')
+        dim_msg = '`N`-by-`N`'
+    elif kind == 'vector':
+        if len(sha) != 1:
+            raise ValueError('Input `'+varname+'` must be a NumPy 1darray')
+        if min(sha)==1:
+            raise ValueError('Input `'+varname+'` must be a NumPy 1darray of length `N`!')
+        dim_msg = ''
+    else:
+        print "Error checking could not be performed - something's wrong here..."
+    if not plt.is_numlike(arr) or not np.isreal(arr).all():
+        raise TypeError('Input `'+varname+'` must be a real-valued '+dim_msg+' NumPy array!')
+    if np.isfinite(arr).min() == False:
+        raise ValueError('Input `'+varname+'` must be a real valued NumPy array without Infs or NaNs!')
+        
+    if bounds is not None:
+        if arr.min() < bounds[0] or arr.max() > bounds[1]:
+            raise ValueError("Values of input array `"+varname+"` must be between "+str(bounds[0])+\
+                             " and "+str(bounds[1])+"!")
+
+##########################################################################################
+def scalarcheck(val,varname,kind=None,bounds=None):
+    """
+    Local helper function performing sanity checks on scalars
+    """
+
+    if not np.isscalar(val) or not plt.is_numlike(val) or not np.isreal(val).all():
+        raise TypeError("Input `"+varname+"` must be a real scalar!")
+    if not np.isfinite(val):
+        raise TypeError("Input `"+varname+"` must be finite!")
+
+    if kind == 'int':
+        if (round(val) != val):
+            raise ValueError("Input `"+varname+"` must be an integer!")
+
+    if bounds is not None:
+        if val < bounds[0] or val > bounds[1]:
+            raise ValueError("Input scalar `"+varname+"` must be between "+str(bounds[0])+" and "+str(bounds[1])+"!")
+
+##########################################################################################
+def checkhdf(fname,peek=False):
+    """
+    Local helper function performing sanity checks on file-names
+    """
+
+    # Make sure `fname` is a valid file-path
+    if not isinstance(fname,(str,unicode)):
+        raise TypeError("Name of HDF5 file has to be a string!")
+    fname = str(fname)
+    if fname.find("~") == 0:
+        fname = os.path.expanduser('~') + fname[1:]
+    if not os.path.isfile(fname):
+        raise ValueError('File: '+fname+' does not exist!')
+
+    # Additionally, try opening the container if wanted
+    if peek:
+        try:
+            f = h5py.File(fname,'r')
+        except:
+            raise ValueError("Cannot open "+fname+"!")
+        return f

@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2016-07-21 10:41:31>
+# Last modified: <2016-07-22 11:02:22>
 
 from __future__ import division
 
@@ -32,13 +32,14 @@ from __future__ import division
 # 
 # The routine run_model will extract 'labels' too (if present) and save it together with 'names' in the 
 # generated output container
-matrices = 'path/to/container.h5'
+matrices = '../../Data/Coupling/SC_LMC+PUT.h5'
+# matrices = 'path/to/container.h5'
 
 # Sampling frequency for saving model output (in Hz)
 s_rate = 20
 
 # Number of speech cycles to simulate
-n_cycles = 150
+n_cycles = 1
 
 # Details of the speech cycle: stimulus length, production and image acquisition times (all in seconds)
 stimulus    = 3.6
@@ -58,13 +59,21 @@ ane   = "2.*np.random.normal(loc=1.,scale=0.45,size=(N,))"
 rmin = 0.0005
 Rmax = 0.01 
 rmax = str(Rmax)+"*np.ones((N,))"
+v_m  = 0.004
+k_m  = 0.125
+a    = 0.25
+b_hi = 50. 
+b_lo = 1.  
+
+# Calcium channel parameters
+TCa  = -0.01
+TCa  = str(TCa)+"*np.ones((N,))"
+deCa = 0.15
+gCa  = 1.1
+VCa  = 1.
 
 # More model parameters, for details refer to Fuertinger et al: A Neural Population Model Incorporating 
-# Dopaminergic Neurotransmission during Complex Voluntary Behaviors, PLoS Computational Biology, in press
-TCa   = -0.01
-deCa  = 0.15
-gCa   = 1.1
-VCa   = 1.
+# Dopaminergic Neurotransmission during Complex Voluntary Behaviors, PLoS Computational Biology, 10(11), 2014. 
 TK    = 0.0
 deK   = 0.3
 gK    = 2.0
@@ -87,9 +96,3 @@ QZmax = 1.
 W0    = 0.
 b     = 0.1
 delta = 0.2
-v_m   = 0.004
-k_m   = 0.125
-rmin  = 0.0005
-a     = 0.25
-b_hi  = 50. 
-b_lo  = 1.  

@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-06-27 16:12:30>
+# Last modified: <2016-07-22 13:49:55>
 
 from __future__ import division
 import numpy as np
@@ -183,7 +183,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     mutual_info : Compute (normalized) mutual information coefficients
     """
 
-    # Make sure txtpath doesn't contain nonsense and points to an existing location
+    # Make sure `txtpath` doesn't contain nonsense and points to an existing location
     if not isinstance(txtpath,(str,unicode)):
         raise TypeError('Input has to be a string specifying the path to the txt-file directory!')
     txtpath = str(txtpath)
@@ -192,20 +192,22 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     if not os.path.isdir(txtpath):
         raise ValueError('Invalid directory: '+txtpath+'!')
 
-    # Check corrtype
+    # Check `corrtype`
     if not isinstance(corrtype,(str,unicode)):
         raise TypeError('Correlation type input must be a string, not '+type(corrtype).__name__+'!')
     if corrtype != 'mi' and corrtype != 'pearson':
         raise ValueError("Currently, only Pearson and (N)MI supported!")
 
-    # Check sublist
+    # Check `sublist`
     if not isinstance(sublist,(list,np.ndarray)):
         raise TypeError('Subject codes have to be provided as Python list/NumPy 1darray, not '+type(sublist).__name__+'!')
+    if len(np.array(sublist).squeeze().shape) != 1:
+        raise ValueError("Subject codes have to be provided as 1-d list/array!")
 
-    # Get length of sublist (to see if a subject list was provided)
+    # Get length of `sublist` (to see if a subject list was provided)
     numsubs = len(sublist)
 
-    # Get list of all txt-files in txtpath and order them lexicographically
+    # Get list of all txt-files in `txtpath` and order them lexicographically
     if txtpath[-1] == ' '  or txtpath[-1] == os.sep: txtpath = txtpath[:-1]
     txtfiles = natsort.natsorted(myglob(txtpath,"s*.[Tt][Xx][Tt]"), key=lambda y: y.lower())
     if len(txtfiles) < 2: raise ValueError('Found fewer than 2 text files in '+txtpath+'!')
@@ -231,7 +233,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
                 subject   = fl[s_in_name:s_in_name+udrline]
                 sublist.append(subject)
 
-        # Update numsubs
+        # Update `numsubs`
         numsubs = len(sublist)
 
         # Prepare output message
@@ -273,7 +275,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
                                      "but actual length is "+str(ts_vec.size))
                 roi += 1
 
-        # Safeguard: stop if subject is missing, i.e., roi = 0 still (weirder things have happened...)
+        # Safeguard: stop if subject is missing, i.e., `roi == 0` still (weirder things have happened...)
         if roi == 0: 
             raise ValueError("Subject "+sublist[k]+" is missing!")
 
@@ -382,7 +384,7 @@ def corrcheck(*args,**kwargs):
     myin = len(args)
     if myin == 0: raise ValueError('At least one input required!')
 
-    # Assign global name for all figures if provided by additional keyword argument 'title'
+    # Assign global name for all figures if provided by additional keyword argument `title`
     figtitle = kwargs.get('title',None); nofigname = False
     if figtitle is None: 
         nofigname = True
@@ -586,7 +588,7 @@ def get_meannw(nws,percval=0.0):
     mean_binary = np.zeros((N,N))
     mean_wghted = np.zeros((N,N))
 
-    # Compute mean network and keep increasing percval until we get a connected mean network
+    # Compute mean network and keep increasing `percval` until we get a connected mean network
     docalc = True
     while docalc:
 
@@ -599,7 +601,7 @@ def get_meannw(nws,percval=0.0):
             mean_binary = mean_binary + (nws[:,:,i]!=0).astype(float)
             mean_wghted = mean_wghted + nws[:,:,i]
 
-        # Kick out connections not present in at least percval% of subjects (in binary and weighted NWs)
+        # Kick out connections not present in at least `percval%` of subjects (in binary and weighted NWs)
         mean_binary = (mean_binary/numsubs >= percval).astype(float)
         mean_wghted = mean_wghted/numsubs * mean_binary
 
@@ -979,7 +981,7 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
                 mnw_old = mnw
 
                 # Threshold based on percentage of max. weight: throw out all weights < than 1%-max. weight, 2%, ...
-                # Thin out connection matrix step by step (that's why we only have to load nws[:,:,i] once
+                # Thin out connection matrix step by step (that's why we only have to load `nws[:,:,i]` once
                 tau = th*maxw
                 mnw = mnw*(mnw >= tau).astype(float)
 
@@ -989,7 +991,7 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
                 # Compute nodal degrees of network 
                 deg = degrees_und(mnw)
 
-                # As soon as one node gets disconnected (i.e. deg[i]=0) stop thresholding and save previous dens
+                # As soon as one node gets disconnected (i.e. `deg[i] == 0`) stop thresholding and save previous dens
                 if deg.min() == 0:
                     th_nws[:,:,i] = mnw_old
                     tau_levels[i] = tau_old
@@ -1118,8 +1120,9 @@ def normalize(arr,vmin=0,vmax=1):
     None 
     """
 
-    # Ensure that arr is a NumPy-ndarray
-    try: tmp = arr.size == 1
+    # Ensure that `arr` is a NumPy-ndarray
+    try:
+        tmp = arr.size == 1
     except TypeError: 
         raise TypeError('Input `arr` has to be a NumPy ndarray!')
     if (tmp): 
@@ -1196,7 +1199,7 @@ def csv2dict(csvfile):
     None 
     """
 
-    # Make sure csvfile doesn't contain unicode and is a valid file
+    # Make sure `csvfile` makes sense
     if not isinstance(csvfile,(str,unicode)):
         raise TypeError("Name of csv-file has to be a string!")
     if csvfile.find("~") == 0:
@@ -1204,7 +1207,7 @@ def csv2dict(csvfile):
     if not os.path.isfile(csvfile):
         raise ValueError('File: '+csvfile+' does not exist!')
     
-    # Open csvfile
+    # Open `csvfile`
     fh = open(csvfile,'rU')
     fh.seek(0)
     
@@ -1305,46 +1308,26 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
         raise ValueError('The coordinate dictionary has to have N keys!')
     for val in coords.values():
         if not isinstance(val,(list,np.ndarray)):
-            raise TypeError('All elements of the coords dictionary have to be lists/arrays!')
-        if not plt.is_numlike(val) or not np.isreal(arr).all():
-            raise TypeError("Coordinates have to be real-valued!")
-        if np.isfinite(val).min() == False:
-            raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
+            raise TypeError('All elements of the `coords` dictionary have to be lists/arrays!')
+        arrcheck(np.array(val),'vector','coordinates')
         if len(val) != 3:
             raise ValueError('All elements of the coords dictionary have to be 3-dimensional!')
 
-    # Check colorvec if provided, otherwise assign default value
+    # Check `colorvec` if provided, otherwise assign default value
     if colorvec is not None:
-        try: 
-            tmp = colorvec.size != N
-        except: 
-            raise TypeError('colorvec has to be a NumPy array!')
-        if (tmp): 
-            raise ValueError('colorvec has to have length N!')
-        if not plt.is_numlike(colorvec) or not np.isreal(colorvec).all():
-            raise TypeError("colorvec has to be real-valued!")
-        if np.isfinite(colorvec).min() == False:
-            raise ValueError("colorvec must be real-valued without NaNs or Infs!")
-        if colorvec.min() < 0 or colorvec.max() > 1:
-            raise ValueError('colorvec values must be between 0 and 1!')
+        arrcheck(colorvec,'vector','colorvec',bounds=[0,1])
+        if colorvec.size != N:
+            raise ValueError('`colorvec` has to have length `N`!')
     else: 
         colorvec = np.ones((N,))
 
-    # Same for sizevec
+    # Same for `sizevec`
     if sizevec is not None:
-        try: 
-            tmp = sizevec.size != N
-        except: 
-            raise TypeError('sizevec has to be a NumPy array!')
-        if (tmp): 
-            raise ValueError('sizevec has to have length N!')
-        if not plt.is_numlike(sizevec) or not np.isreal(sizevec).all():
-            raise TypeError("sizevec has to be real-valued!")
-        if np.isfinite(sizevec).min() == False:
-            raise ValueError("sizevec must be real-valued without NaNs or Infs!")
-        if sizevec.min() < 0:
-            raise ValueError('sizevec values must be >= 0!')
-    else: sizevec = np.ones((N,))
+        arrcheck(sizevec,'vector','sizevec',bounds=[0,np.inf])
+        if sizevec.size != N:
+            raise ValueError('`sizevec` has to have length `N`!')
+    else:
+        sizevec = np.ones((N,))
 
     # Check labels (if any provided)
     if labels is not None:
@@ -1364,19 +1347,13 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
     if not isinstance(threshs,(list,np.ndarray)):
         raise TypeError("Visualization thresholds have to be provided as list/NumPy 1darray!")
     threshs = np.array(threshs)
+    arrcheck(threshs,'vector','threshs')
     n = threshs.size
-    if not plt.is_numlike(threshs) or not np.isreal(threshs).all():
-        raise TypeError("threshs has to be real-valued!")
-    if np.isfinite(threshs).min() == False:
-            raise ValueError("threshs must be real-valued without NaNs or Infs!")
     if not isinstance(lwdths,(list,np.ndarray)):
         raise TypeError("Linewidths have to be provided as list/NumPy 1darray!")
     lwdths = np.array(lwdths)
+    arrcheck(lwdths,'vector','lwdths')
     m = lwdths.size
-    if not plt.is_numlike(lwdths) or not np.isreal(lwdths).all():
-        raise TypeError("lwdths must be real-valued!")
-    if np.isfinite(lwdths).min() == False:
-        raise ValueError("lwdths must be real-valued without NaNs or Infs!")
     if m != n: 
         raise ValueError("Number of thresholds and linewidths does not match up!")
 
@@ -1534,45 +1511,24 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
     for val in coords.values():
         if not isinstance(val,(list,np.ndarray)):
             raise TypeError('All elements of the coords dictionary have to be lists/arrays!')
-        if not plt.is_numlike(val) or not np.isreal(val).all():
-            raise TypeError("Coordinates have to be real-valued!")
-        if np.isfinite(val).min() == False:
-            raise ValueError('Coordinates must be real-valued without NaNs or Infs!')
+        arrcheck(np.array(val),'vector','coordinates')
         if len(val) != 3:
             raise ValueError('All elements of the coords dictionary have to be 3-dimensional!')
 
-    # Check colorvec if provided, otherwise assign default value
+    # Check `colorvec` if provided, otherwise assign default value
     if colorvec is not None:
-        try: 
-            tmp = colorvec.size != N
-        except: 
-            raise TypeError('colorvec has to be a NumPy array!')
-        if (tmp): 
-            raise ValueError('colorvec has to have length N!')
-        if not plt.is_numlike(colorvec) or not np.isreal(colorvec).all():
-            raise TypeError("colorvec has to be real-valued!")
-        if np.isfinite(colorvec).min() == False:
-            raise ValueError("colorvec must be real-valued without NaNs or Infs!")
-        if colorvec.min() < 0 or colorvec.max() > 1:
-            raise ValueError('colorvec values must be between 0 and 1!')
+        arrcheck(colorvec,'vector','colorvec',bounds=[0,1])
+        if colorvec.size != N:
+            raise ValueError('`colorvec` has to have length `N`!')
     else: 
         colorvec = np.ones((N,))
 
-    # Same for sizevec
+    # Same for `sizevec`
     if sizevec is not None:
-        try: 
-            tmp = sizevec.size != N
-        except: 
-            raise TypeError('sizevec has to be a NumPy array!')
-        if (tmp): 
-            raise ValueError('sizevec has to have length N!')
-        if not plt.is_numlike(sizevec) or not np.isreal(sizevec).all():
-            raise TypeError("sizevec has to be real-valued!")
-        if np.isfinite(sizevec).min() == False:
-            raise ValueError("sizevec must be real-valued without NaNs or Infs!")
-        if sizevec.min() < 0:
-            raise ValueError('sizevec values must be >= 0!')
-    else: 
+        arrcheck(sizevec,'vector','sizevec',bounds=[0,np.inf])
+        if sizevec.size != N:
+            raise ValueError('`sizevec` has to have length `N`!')
+    else:
         sizevec = np.ones((N,))
 
     # Check labels (if any provided)
@@ -1595,7 +1551,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
     if type(edgecmap).__name__ != 'LinearSegmentedColormap':
         raise TypeError('Edge colormap has to be a Matplotlib colormap!')
 
-    # If no linewidths were provided, use the entries of A as to control edge thickness
+    # If no linewidths were provided, use the entries of `A` as to control edge thickness
     if linewidths is not None:
         arrcheck(linewidths,'matrix','linewidths')
         (ln,lm) = linewidths.shape
@@ -1604,11 +1560,11 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
     else:
         linewidths = A
 
-    # Make sure nodes3d is Boolean
+    # Make sure `nodes3d` is Boolean
     if not isinstance(nodes3d,bool):
         raise TypeError('The nodes3d flag has to be a Boolean variable!')
 
-    # Check if viewtype is anything strange
+    # Check if `viewtype` is anything strange
     if not isinstance(viewtype,(str,unicode)):
         raise TypeError("Viewtype must be 'axial(_{t/b})', 'sagittal(_{l/r})' or 'coronal(_{f/b})'")
 
@@ -1652,7 +1608,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
     for i in xrange(len(labels)):
         ax.text(x[i]+2,y[i]+2,z[i]+2,labels[i],color='k',fontsize=14)
 
-    # If viewtype was just specified as 'axial', 'coronal' or 'sagittal' use default (top, front, left) viewtypes
+    # If `viewtype` was specified as 'axial', 'coronal' or 'sagittal' use default (top, front, left) viewtypes
     if viewtype == 'axial':
         viewtype = 'axial_t'
     elif viewtype == 'sagittal' or viewtype == 'sagital':
@@ -1757,7 +1713,7 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
     N = nw.shape[0]
     scalarcheck(M,'M',kind='int',bounds=[1,np.inf])
 
-    # See if the string method is one of the supported randomization algorithms
+    # See if the string `method` is one of the supported randomization algorithms
     supported = ["auto","randmio_und_connected","randmio_und","null_model_und_sign",\
                  "randmio_dir_connected","randmio_dir","null_model_dir_sign",\
                  "randmio_und_signed","randmio_dir_signed"]
@@ -1936,7 +1892,7 @@ def hdfburp(f):
             if str(it[1]).find('HDF5 group') >= 0:
                 grplist.append(f[it[0]])
 
-            # If we found a variable, name it following the scheme: groupname_varname 
+            # If we found a variable, name it following the scheme: `groupname_varname`
             else:
                 varname = nameprefix + it[0]
                 mymap[varname] = it[1].value
@@ -2089,7 +2045,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
            OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     """
 
-    # Sanity checks
+    # Sanity checks (`tsdata` is probably not square, that's why we don't use `arrcheck` here)
     try:
         shtsdata = tsdata.shape
     except:
@@ -2113,7 +2069,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
     #  per grid point.
     (n_samples,N) = tsdata.shape
 
-    #  Normalize tsdata time series to zero mean and unit variance
+    #  Normalize `tsdata` time series to zero mean and unit variance
     if norm_ts:
         normalize_time_series(tsdata)
 
@@ -2123,25 +2079,25 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
     # Execute C++ code
     if (fast):
 
-        #  Create local transposed copy of tsdata
+        # Create local transposed copy of `tsdata`
         tsdata = np.fastCopyAndTranspose(tsdata)
                 
-        #  Get common range for all histograms
+        # Get common range for all histograms
         range_min = float(tsdata.min())
         range_max = float(tsdata.max())
         
-        #  Re-scale all time series to the interval [0,1], 
-        #  using the maximum range of the whole dataset.
+        # Re-scale all time series to the interval [0,1], 
+        # using the maximum range of the whole dataset.
         denom   = range_max - range_min + 1 - (range_max != range_min)
         scaling = float(1. / denom)
         
-        #  Create array to hold symbolic trajectories
+        # Create array to hold symbolic trajectories
         symbolic = np.empty(tsdata.shape, dtype="int32")
         
-        #  Initialize array to hold 1d-histograms of individual time series
+        # Initialize array to hold 1d-histograms of individual time series
         hist = np.zeros((N,n_bins), dtype="int32")
         
-        #  Initialize array to hold 2d-histogram for one pair of time series
+        # Initialize array to hold 2d-histogram for one pair of time series
         hist2d = np.zeros((n_bins,n_bins), dtype="int32")
                 
         # C++ code to compute NMI
@@ -2176,7 +2132,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
         for (i = 0; i < N; i++) {
             for (j = 0; j <= i; j++) {
 
-                //  The case i = j is not of interest here!
+                //  The case `i = j` is not of interest here!
                 if (i != j) {
                     //  Calculate 2d-histogram for one pair of time series 
                     //  (i,j).
@@ -2213,7 +2169,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
                     //  Symmetrize MI
                     mi(j,i) = mi(i,j);
 
-                    //  Reset hist2d to zero in all bins
+                    //  Reset `hist2d` to zero in all bins
                     for (l = 0; l < n_bins; l++) {
                         for (m = 0; m < n_bins; m++) {
                             hist2d(l,m) = 0;
@@ -2264,7 +2220,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
                 //  The case i = j is not of interest here!
                 if (i != j) {
                     //  Calculate 2d-histogram for one pair of time series 
-                    //  (i,j).
+                    //  `(i,j)`.
                     for (k = 0; k < n_samples; k++) {
                         symbol_i = symbolic(i,k);
                         symbol_j = symbolic(j,k);
@@ -2272,17 +2228,17 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
                     }
 
                     //  Calculate mutual information for one pair of time 
-                    //  series (i,j).
+                    //  series `(i,j)`.
                     // Hl = 0;
                     for (l = 0; l < n_bins; l++) {
                         hpl = hist(i,l) * norm;
                         if (hpl > 0.0) {
-                            // Hl += hpl * log(hpl);
-                            // Hm = 0;
+                            // `Hl += hpl * log(hpl);`
+                            // `Hm = 0;`
                             for (m = 0; m < n_bins; m++) {
                                 hpm = hist(j,m) * norm;
                                 if (hpm > 0.0) {
-                                    // Hm += hpm * log(hpm);
+                                    // `Hm += hpm * log(hpm);`
                                     plm = hist2d(l,m) * norm;
                                     if (plm > 0.0) {
                                         mi(i,j) += plm * log(plm/hpm/hpl);
@@ -2295,7 +2251,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
                     //  Symmetrize MI
                     mi(j,i) = mi(i,j);
 
-                    //  Reset hist2d to zero in all bins
+                    //  Reset `hist2d` to zero in all bins
                     for (l = 0; l < n_bins; l++) {
                         for (m = 0; m < n_bins; m++) {
                             hist2d(l,m) = 0;
@@ -2352,7 +2308,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
         H = - (p * log(p)).sum(axis = 1)
 
         #  Calculate only the lower half of the MI matrix, since MI is 
-        #  symmetric with respect to X and Y.
+        #  symmetric with respect to `X` and `Y`.
         for i in xrange(N):
 
             for j in xrange(i):
@@ -2414,7 +2370,7 @@ def issym(A,tol=1e-9):
     isclose : An absolute-value based comparison readily provided by NumPy. 
     """
 
-    # Check if Frobenius norm of A - A.T is sufficiently small (respecting round-off errors)
+    # Check if Frobenius norm of `A - A.T` is sufficiently small (respecting round-off errors)
     try:
         is_sym = (norm(A-A.T,ord='fro') <= tol*norm(A,ord='fro'))
     except:
@@ -2452,7 +2408,7 @@ def myglob(flpath,spattern):
     glob : Unix-style path-name and pattern expansion in Python
     """
 
-    # Make sure provided path is a string and does not contain weird unicode characters
+    # Make sure provided path is a string and makes sense
     if not isinstance(flpath,(str,unicode)):
         raise TypeError('Filepath has to be a string!')
     flpath = str(flpath)
@@ -2552,11 +2508,12 @@ def printdata(data,leadrow,leadcol,fname=None):
     for lvar in [leadcol,leadrow]:
         if not isinstance(lvar,(list,np.ndarray)):
             raise TypeError("The inputs `leadcol` and `leadrow` must by Python lists or Numpy 1d arrays!")
+        if len(np.array(lvar).squeeze().shape) != 1:
+            raise ValueError("The inputs `leadcol` and `leadrow` must 1-d lists/arrays!")
     m = len(leadcol)
     n = len(leadrow)
 
     # If a filename was provided make sure it's a string and check if the path exists
-    # (unicode chars in filenames are probably a bad idea...)
     if fname is not None:
         if not isinstance(fname,(str,unicode)):
             raise TypeError('Optional output filename has to be a string!')
@@ -2693,7 +2650,7 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
     if slash != len(imgpth)-1: 
         imgpth += os.sep
 
-    # Check if imgfmt is a valid string format specifier 
+    # Check if `imgfmt` is a valid string format specifier 
     # (don't use split below in case we have something like im.001.tiff)
     if not isinstance(imgfmt,(str,unicode)):
         raise TypeError('Format specifier for images has to be a string!')
@@ -2708,7 +2665,7 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
     num_imgs = len(imgs)
     if num_imgs < 2: raise ValueError('Directory '+imgpth+' contains fewer than 2 `'+imtype+'` files!')
 
-    # Check validity of outfile 
+    # Check validity of `outfile`
     if not isinstance(outfile,(str,unicode)):
         raise TypeError('Output filename has to be a string!')
     outfile = str(outfile)
@@ -2719,7 +2676,7 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
         raise ValueError('Invalid path to save movie: '+outfile+'!')
 
     # Check format specifier for the movie: the if loop separates filename from extension
-    # (use split here to prevent the user from creating abominations like my.movie.mp4)
+    # (use split here to prevent the user from creating abominations like `my.movie.mp4`)
     dot = outfile.rfind('.')
     if dot == 0: raise ValueError(outfile+' is not a valid filename!')          # e.g., outfile = '.name'
     if dot == len(outfile) - 1:                                                 # e.g., outfile = 'name.'
@@ -2741,14 +2698,14 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
         if len(exl) > 1: raise ValueError(ext+' is not a valid extension for a video file!')
         ext = exl[0]
 
-    # Make sure fps is a positive integer
+    # Make sure `fps` is a positive integer
     scalarcheck(fps,'fps',kind='int',bounds=[1,np.inf])
     
     # Check if output filesize makes sense (if provided)
     if filesize is not None:
         scalarcheck(filesize,'filesize',bounds=[0,np.inf])
 
-    # Check if preset is valid (if provided)
+    # Check if `preset` is valid (if provided)
     if not isinstance(preset,(str,unicode)):
         raise TypeError('Preset specifier for video encoding has to be a string!')
     supported = ['ultrafast','superfast','veryfast','faster','fast','medium','slow','slower','veryslow','placebo']
@@ -2813,17 +2770,14 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
     # Error checking for dictionaries with numeric values
     def check_dict(dct,name):
         try:
-            for branch, nodes in dct.items():
+            for branch in dct.keys():
                 dct[branch] = np.array(dct[branch])
         except:
             raise TypeError('The provided '+name+' have to be a dictionary with the same keys as `branches`!')
         for branch, nodes in dct.items():
-            if branches[branch].size != dct[branch].size:
+            arrcheck(nodes,'vector',name)
+            if branches[branch].size != nodes.size:
                 raise ValueError("Provided branches and "+name+" don't match up!")
-            if not plt.is_numlike(dct[branch]) or not np.isreal(dct[branch]).all():
-                raise ValueError("Input  "+name+" must be real-valued!")
-            if np.isfinite(dct[branch]).min() == False:
-                raise ValueError("Input  "+name+" must not contain NaNs or Infs!")
 
     # Amend `FancyArrowPatch` by 3D capabilities 
     # (taken from http://stackoverflow.com/questions/11140163/python-matplotlib-plotting-a-3d-cube-a-sphere-and-a-vector)
@@ -2848,15 +2802,12 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
     if not isinstance(branches,dict):
         raise TypeError('The input `branches` has to be dictionary-like, not '+type(branches).__name__)
     try:
-        for branch, nodes in branches.items():
+        for branch in branches.keys():
             branches[branch] = np.array(branches[branch]).squeeze()
     except:
         raise TypeError('Branches must be provided as dictionary of node arrays/lists!!')
-    for branch, nodes in branches.items():
-        if not plt.is_numlike(branches[branch]) or not np.isreal(branches[branch]).all():
-            raise ValueError("Node indices in branches must be real-valued!")
-        if np.isfinite(branches[branch]).min() == False:
-            raise ValueError("Node indices in branches must not contain NaNs or Infs!")
+    for nodes in branches.values():
+        arrcheck(nodes,'vector','node indices')
     branch_arr = np.array(branches.keys())
     num_branches = branch_arr.size
     if num_branches == 1:
@@ -2874,11 +2825,9 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         branches[br] = np.array(branches[br])
 
     # See if `connections` is a 2d array that matches the provided branch dictionary
-    arrcheck(connections,'matrix','connections')
+    arrcheck(connections,'matrix','connections',bounds=[0,1])
     if connections.shape[0] != num_nodes:
         raise ValueError('Number of nodes does not match connection matrix!')
-    if connections.min() < 0 or connections.max() > 1:
-        raise ValueError('Connections values must be between zero and one!')
 
     # Let's see if we're going to have fun in 3D
     if not isinstance(nodes3d,bool):
@@ -2906,15 +2855,11 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
                 lightsource = None
         if lightsource is not None:
             lightsource = np.array(lightsource)
-            if plt.is_numlike(lightsource):
-                if np.isfinite(lightsource).min() == False or not np.isreal(lightsource).all():
-                    raise ValueError("Light-source angles have to be real-valued!")
-                if lightsource.size != 2:
-                    raise ValueError("Light-source has to be provided as azimuth/altitude degrees!")
-                if lightsource.min() < 0 or lightsource[0] > 360 or lightsource[1] > 90:
-                    raise ValueError("Light-source azimuth/elevation have to be between 0-360 and 0-90 degrees, respectively!")
-            else:
-                raise TypeError("Light-source for illumination has to be either `True`/`False` or [`azdeg`,`altdeg`]!")
+            arrcheck(lightsource,'vector','lightsource')
+            if lightsource.min() < 0 or lightsource[0] > 360 or lightsource[1] > 90:
+                raise ValueError("Light-source azimuth/elevation has to be between 0-360 and 0-90 degrees, respectively!")
+            if lightsource.size != 2:
+                raise ValueError("Light-source has to be provided as azimuth/altitude degrees!")
 
     # See if a threshold for drawing edges was provided, if not, don't use one
     if ethresh is not None:
@@ -2924,8 +2869,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
     if viewpoint is not None:
         viewpoint = np.array(viewpoint)
         if plt.is_numlike(viewpoint):
-            if np.isfinite(viewpoint).min() == False or not np.isreal(viewpoint).all():
-                raise ValueError("View-point angles have to be real-valued!")
+            arrcheck(viewpoint,'vector','viewpoint')
             if viewpoint.size != 2:
                 raise ValueError("View-point has to be provided as azimuth/altitude degrees!")
         else:
@@ -2949,10 +2893,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         center = np.array(center)
     except:
         raise TypeError('Unsupported type for input `center`: '+type(dict).__name__)
-    if not plt.is_numlike(center) or not np.isreal(center).all():
-        raise ValueError("Center coordinates must be real-valued!")
-    if np.isfinite(center).min() == False:
-        raise ValueError("Center coordinates must not contain Infs or NaNs!")
+    arrcheck(center,'vector','center')
     if np.all(center) == 0:
         if full3d:
             center = np.zeros((3,))
@@ -2970,14 +2911,9 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         except:
             raise TypeError("The provided branch dimensions have to be a dictionary with the same keys as `branches`!")
         for branch in branches.keys():
-            if not plt.is_numlike(branch_extent[branch]) or not np.isreal(branch_extent[branch]).all():
-                raise ValueError("Branch dimensions must be real-valued!")
-            if np.isfinite(branch_extent[branch]).min() == False:
-                raise ValueError("Branch dimensions must not contain NaNs or Infs!")
+            arrcheck(branch_extent[branch],'vector','branch dimensions',[0,np.inf])
             if branch_extent[branch].size != 2:
                 raise ValueError("Only two values by branch supported for branch dimensions!")
-            if branch_extent[branch].min() < 0:
-                raise ValueError("Branch dimensions have to be strictly positive!")
             if branch_extent[branch][0] >= branch_extent[branch][1]:
                 raise ValueError("Branch dimensions have to be increasing (beginning -> end)!")
     else:
@@ -3026,12 +2962,9 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         for branch in branches.keys():
             if full3d:
                 angle[branch] = np.array(angle[branch])
-                if not plt.is_numlike(angle[branch]) or not np.isreal(angle[branch]).all():
-                    raise TypeError("3D branch angles must be real-valued, two value per branch!")
+                arrcheck(angle[branch],'vector','3D branch angles')
                 if len(angle[branch]) != 2:
                     raise ValueError("3D branch angles must be provided as two values per branch!")
-                if np.min(np.isfinite(angle[branch])) == False:
-                    raise ValueError("Branch angles must not be NaN or Inf!")
                 if angle[branch][0] < 0 or angle[branch][0] > 360:
                     raise ValueError("Azimuth must be between 0 and 360 degrees!")
                 if angle[branch][1] < -90 or angle[branch][1] > 90:
@@ -3099,14 +3032,11 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
             vrange = np.array(vrange)
         except:
             raise TypeError('Unsupported type for node/edge value ranges: '+type(dict).__name__)
+        arrcheck(vrange,'vector','node/edge value range',bounds=[0,1])
         if vrange.size != 2:
             raise ValueError("Node/Edge value range has to be two-dimensional!")
-        if not plt.is_numlike(vrange) or not np.isreal(vrange).all():
-            raise ValueError("Node/Edge value range must be real-valued!")
-        if np.isfinite(vrange).min() == False:
-            raise ValueError("Node/Edge value range must not contain Infs or NaNs!")
-        if vrange[0] >= vrange[1] or vrange.min() < 0 or vrange.max() > 1:
-            raise ValueError("Node/Edge value range must be non-negative and strictly increasing!")
+        if vrange[0] >= vrange[1]:
+            raise ValueError("Node/Edge value range must strictly increasing!")
 
     # See if nodal sizes have been provided, if not construct dictionary 
     if isinstance(node_sizes,dict):
@@ -3194,22 +3124,18 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         scalarcheck(edge_lw,'edge_lw',bounds=[0,np.inf])
         edge_lw = np.ones(connections.shape) * edge_lw
     else:
-        arrcheck(edge_lw,'matrix','edge_lw')
+        arrcheck(edge_lw,'matrix','edge_lw',bounds=[0,np.inf])
         if edge_lw.shape != connections.shape:
             raise ValueError("Edge line-widths have to be provided in the same format as connection array!")
-        if edge_lw.min() < 0:
-            raise ValueError('Edge line-widths values must be non-negative!')
 
     # Check if alpha values for edges have been provided, otherwise assign default values
     if np.isscalar(edge_alpha):
         scalarcheck(edge_alpha,'edge_alpha',bounds=[0,1])
         edge_alpha = np.ones(connections.shape) * edge_alpha
     else:
-        arrcheck(edge_alpha,'matrix','edge_alpha')
+        arrcheck(edge_alpha,'matrix','edge_alpha',bounds=[0,1])
         if np.any(edge_alpha.shape != connections.shape):
             raise ValueError("Edge alpha values have to be provided in the same format as connection array!")
-        if edge_alpha.min() < 0 or edge_alpha.max() > 1:
-            raise ValueError('Edge alpha values values must be non-negative!')
 
     # Check if an intial setting for the arch radian was provided, otherwise use the default
     if np.isscalar(radians):
@@ -3471,38 +3397,43 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
 ##########################################################################################
 def arrcheck(arr,kind,varname,bounds=None):
     """
-    Local helper function performing sanity checks on arrays (2d/3d)
+    Local helper function performing sanity checks on arrays (1d/2d/3d)
     """
-
+    
     try:
-        sha = arr.shape
+        sha = arr.squeeze().shape
     except:
         raise TypeError('Input '+varname+' must be a NumPy array, not '+type(arr).__name__+'!')
 
     if kind == 'tensor':
         if len(sha) != 3:
-            raise ValueError('Input `'+varname+'` must be a N-by-N-by-k NumPy array')
+            raise ValueError('Input `'+varname+'` must be a `N`-by-`N`-by-`k` NumPy array')
         if (min(sha[0],sha[1])==1) or (sha[0]!=sha[1]):
-            raise ValueError('Input `'+varname+'` must be a N-by-N-by-k NumPy array!')
-        if not plt.is_numlike(arr) or not np.isreal(arr).all():
-            raise TypeError('Input `'+varname+'` must be a real-valued N-by-N-by-k NumPy array!')
-        if np.isfinite(arr).min() == False:
-            raise ValueError('Input `'+varname+'` must be a real valued NumPy array without Infs or NaNs!')
+            raise ValueError('Input `'+varname+'` must be a `N`-by-`N`-by-`k` NumPy array!')
+        dim_msg = '`N`-by-`N`-by-`k`'
     elif kind == 'matrix':
         if len(sha) != 2:
-            raise ValueError('Input `'+varname+'` must be a N-by-N NumPy array')
+            raise ValueError('Input `'+varname+'` must be a `N`-by-`N` NumPy array')
         if (min(sha)==1) or (sha[0]!=sha[1]):
-            raise ValueError('Input `'+varname+'` must be a N-by-N NumPy array!')
-        if not plt.is_numlike(arr) or not np.isreal(arr).all():
-            raise TypeError('Input `'+varname+'` must be a real-valued N-by-N NumPy array!')
-        if np.isfinite(arr).min() == False:
-            raise ValueError('Input `'+varname+'` must be a real valued NumPy array without Infs or NaNs!')
+            raise ValueError('Input `'+varname+'` must be a `N`-by-`N` NumPy array!')
+        dim_msg = '`N`-by-`N`'
+    elif kind == 'vector':
+        if len(sha) != 1:
+            raise ValueError('Input `'+varname+'` must be a NumPy 1darray')
+        if min(sha)==1:
+            raise ValueError('Input `'+varname+'` must be a NumPy 1darray of length `N`!')
+        dim_msg = ''
     else:
         print "Error checking could not be performed - something's wrong here..."
-
+    if not plt.is_numlike(arr) or not np.isreal(arr).all():
+        raise TypeError('Input `'+varname+'` must be a real-valued '+dim_msg+' NumPy array!')
+    if np.isfinite(arr).min() == False:
+        raise ValueError('Input `'+varname+'` must be a real valued NumPy array without Infs or NaNs!')
+        
     if bounds is not None:
         if arr.min() < bounds[0] or arr.max() > bounds[1]:
-            raise ValueError("Values of input array `"+varname+"` must be between "+str(bounds[0])+" and "+str(bounds[1])+"!")
+            raise ValueError("Values of input array `"+varname+"` must be between "+str(bounds[0])+\
+                             " and "+str(bounds[1])+"!")
 
 ##########################################################################################
 def scalarcheck(val,varname,kind=None,bounds=None):
