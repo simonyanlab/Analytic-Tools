@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2016-07-22 14:28:22>
+# Last modified: <2016-07-22 15:41:47>
 
 from __future__ import division
 import numpy as np
@@ -45,6 +45,9 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
         to have length `N`.
     DA0 : NumPy 1darray
         Initial conditions for dopamine levels. If `N` regions are simulated then `DA0` has 
+        to have length `N`.
+    GA0 : NumPy 1darray
+        Initial conditions for GABA levels. If `N` regions are simulated then `GA0` has 
         to have length `N`.
     task : string
         Specify which task should be simulated. Currently, only 'rest' and 'speech' are supported. 
@@ -104,17 +107,17 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
 
     Examples
     --------
-    Let `V0`, `Z0`, and `DA0` (NumPy 1darrays of length `N`) be initial conditions of the
+    Let `V0`, `Z0`, `DA0` and `GA0` (NumPy 1darrays of length `N`) be initial conditions of the
     model. Assuming that a valid parameter file (called `parameters.py`) is located in the current 
     working directory, the following call will run a resting state simulation and save the output
     in the HDF5 container `sim_rest.h5`
 
-    >>> run_model(V0,Z0,DA0,'rest','sim_rest.h5')
+    >>> run_model(V0,Z0,DA0,GA0,'rest','sim_rest.h5')
 
     Assume another parameter file, say, `par_patho.py` hold parameter settings simulating a 
     certain pathology. Then the command
 
-    >>> run_model(V0,Z0,DA0,'rest','patho/sim_rest_patho.h5',paramfile='par_patho.py')
+    >>> run_model(V0,Z0,DA0,GA0,'rest','patho/sim_rest_patho.h5',paramfile='par_patho.py')
 
     runs a resting state simulation with the same initial conditions and saves the result in
     the container `sim_rest_patho.h5` in the sub-directory `patho` (which must already exist, otherwise
@@ -126,7 +129,7 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
     values). Thus, assume the values of `VK` and `VL` should be -0.4 and -0.9 respectively, i.e., 
     different than those found in (the otherwise fine) `par_patho.py`. Then the command
 
-    >>> run_model(V0,Z0,DA0,'rest','patho/sim_rest_patho.h5',paramfile='par_patho.py',VK=-0.4,VL=-0.9)
+    >>> run_model(V0,Z0,DA0,GA0,'rest','patho/sim_rest_patho.h5',paramfile='par_patho.py',VK=-0.4,VL=-0.9)
     
     runs the same resting state simulation as above but with `VK=-0.4` and `VL=-0.9`. This feature
     can also be used to efficiently embed `run_model` in a parameter identification framework.
@@ -777,7 +780,7 @@ def make_D(target,source,names,values=None):
 
     Notes
     -----
-    None
+    This routine can of course also be used to generate the GABA pathway matrix `G`. 
 
     Examples
     --------
