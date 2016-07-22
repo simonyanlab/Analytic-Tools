@@ -272,6 +272,7 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     # Fraction of open potassium channels
     vectanh(p.beta*(p.V - p.TK)/p.deK,tmp,n)
     rel_len = 1.0
+    p.mK = 0.5*(1 + tmp)
     p.W  = (p.W0 - p.mK*p.phi)*exp(-(t - int(t/rel_len)*rel_len)/p.tau) + p.mK*p.phi
 
     # Compute excitatory coupling based on connection matrix (`p.cplng = p.C.dot(p.QV)`)
