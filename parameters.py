@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2016-07-22 11:02:22>
+# Last modified: <2016-07-27 11:03:16>
 
 from __future__ import division
 
@@ -56,14 +56,22 @@ ani   = "0.4*np.ones((N,))"
 ane   = "2.*np.random.normal(loc=1.,scale=0.45,size=(N,))"
 
 # Dopamine parameters
-rmin = 0.0005
-Rmax = 0.01 
-rmax = str(Rmax)+"*np.ones((N,))"
-v_m  = 0.004
-k_m  = 0.125
-a    = 0.25
-b_hi = 50. 
-b_lo = 1.  
+rmin  = 0.0005
+Rmax  = 0.01 
+rmax  = str(Rmax)+"*np.ones((N,))"
+v_m   = 0.004
+k_m   = 0.125
+a     = 0.25
+b_hi  = 50. 
+b_lo  = 1.
+rDAGA = str(0.45)+"*np.ones((N,))"
+
+# GABA parameters
+v_m2   = 0.3
+k_m2   = 0.125
+g_peak = 40. 
+g_bias = 1.  
+rGADA  = str(0.001)+"*np.ones((N,))"
 
 # Calcium channel parameters
 TCa  = -0.01

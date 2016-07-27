@@ -114,8 +114,8 @@ cdef class par:
     cdef public DTYPE_t a
     cdef public DTYPE_t b_hi
     cdef public DTYPE_t b_lo
-    cdef public DTYPE_t g_hi
-    cdef public DTYPE_t g_lo
+    cdef public DTYPE_t g_peak
+    cdef public DTYPE_t g_bias
     cdef public DTYPE_t dt
     cdef public DTYPE_t s_step
     cdef public DTYPE_t speechon
@@ -163,43 +163,43 @@ cdef class par:
             raise ValueError("Coupling matrix has to be symmetric!")
 
         # Initialize scalars
-        self.N     = p_dict['C'].shape[0]
-        self.deCa  = p_dict['deCa']
-        self.gCa   = p_dict['gCa']
-        self.VCa   = p_dict['VCa']
-        self.TK    = p_dict['TK']
-        self.deK   = p_dict['deK']
-        self.gK    = p_dict['gK']
-        self.VK    = p_dict['VK']
-        self.TNa   = p_dict['TNa']
-        self.deNa  = p_dict['deNa']
-        self.gNa   = p_dict['gNa']
-        self.VNa   = p_dict['VNa']
-        self.VL    = p_dict['VL']
-        self.gL    = p_dict['gL']
-        self.VT    = p_dict['VT']
-        self.ZT    = p_dict['ZT']
-        self.deZ   = p_dict['deZ']
-        self.aee   = p_dict['aee']
-        self.phi   = p_dict['phi']
-        self.tau   = p_dict['tau']
-        self.rNMDA = p_dict['rNMDA']
-        self.deV   = p_dict['deV']
-        self.QVmax = p_dict['QVmax']
-        self.QZmax = p_dict['QZmax']
-        self.W0    = p_dict['W0']
-        self.b     = p_dict['b']
-        self.delta = p_dict['delta']
-        self.v_m   = p_dict['v_m']
-        self.k_m   = p_dict['k_m']
-        self.v_m2  = p_dict['v_m2']
-        self.k_m2  = p_dict['k_m2']
-        self.rmin  = p_dict['rmin']
-        self.a     = p_dict['a']
-        self.b_hi  = p_dict['b_hi']
-        self.b_lo  = p_dict['b_lo']
-        self.g_hi  = p_dict['g_hi']
-        self.g_lo  = p_dict['g_lo']
+        self.N      = p_dict['C'].shape[0]
+        self.deCa   = p_dict['deCa']
+        self.gCa    = p_dict['gCa']
+        self.VCa    = p_dict['VCa']
+        self.TK     = p_dict['TK']
+        self.deK    = p_dict['deK']
+        self.gK     = p_dict['gK']
+        self.VK     = p_dict['VK']
+        self.TNa    = p_dict['TNa']
+        self.deNa   = p_dict['deNa']
+        self.gNa    = p_dict['gNa']
+        self.VNa    = p_dict['VNa']
+        self.VL     = p_dict['VL']
+        self.gL     = p_dict['gL']
+        self.VT     = p_dict['VT']
+        self.ZT     = p_dict['ZT']
+        self.deZ    = p_dict['deZ']
+        self.aee    = p_dict['aee']
+        self.phi    = p_dict['phi']
+        self.tau    = p_dict['tau']
+        self.rNMDA  = p_dict['rNMDA']
+        self.deV    = p_dict['deV']
+        self.QVmax  = p_dict['QVmax']
+        self.QZmax  = p_dict['QZmax']
+        self.W0     = p_dict['W0']
+        self.b      = p_dict['b']
+        self.delta  = p_dict['delta']
+        self.v_m    = p_dict['v_m']
+        self.k_m    = p_dict['k_m']
+        self.v_m2   = p_dict['v_m2']
+        self.k_m2   = p_dict['k_m2']
+        self.rmin   = p_dict['rmin']
+        self.a      = p_dict['a']
+        self.b_hi   = p_dict['b_hi']
+        self.b_lo   = p_dict['b_lo']
+        self.g_peak = p_dict['g_peak']
+        self.g_bias = p_dict['g_bias']
 
         # Scalar parameters not really for the model but for the code
         self.dt        = p_dict['dt']
@@ -294,10 +294,10 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
 
     # Now calculate the neurotransmission gains using simple component-wise products
     p.beta  = p.DDAvc*(1 - p.a)*(p.b_hi - p.b_lo) + p.b_lo
-    p.gamma = p.GGAvc*(p.g_hi - p.g_lo) + p.g_lo
+    p.gamma = p.GGAvc*(p.g_bias - p.g_peak) + p.g_bias
     
     # Neural activation functions
-    vectanh((p.V - p.TCa)/p.deCa,tmp,n)
+    vectanh(p.gamma*(p.V - p.TCa)/p.deCa,tmp,n)
     p.mCa = 0.5*(1 + tmp)
     vectanh((p.V - p.TNa)/p.deNa,tmp,n)
     p.mNa = 0.5*(1 + tmp)
@@ -318,7 +318,7 @@ cdef void model_eqns(np.ndarray[DTYPE_t, ndim = 1] X, \
     A[0:p.N] = - (p.gCa + p.cplng*p.rNMDA*p.aee*tmp)*p.mCa*(p.V - p.VCa) \
                - p.gK*p.W*(p.V - p.VK) - p.gL*(p.V - p.VL) \
                - (p.gNa*p.mNa + p.cplng*p.aee*tmp)*(p.V - p.VNa) \
-               + p.aie*((p.g_lo - p.gamma)/(3*(p.g_hi - p.g_lo + (1. - DTYPE(p.g_lo != p.g_hi)))) + 1)*p.Z*p.QZ
+               + p.aie*((p.g_bias - p.gamma)/(3*(p.g_peak - p.g_bias + (1. - DTYPE(p.g_bias != p.g_peak)))) + 1)*p.Z*p.QZ
 
     # Deterministic part for `Z`
     A[p.N:2*p.N] = p.b*p.aei*p.V*p.QV
