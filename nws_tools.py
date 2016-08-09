@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-07-22 13:49:55>
+# Last modified: <2016-08-09 10:59:12>
 
 from __future__ import division
 import numpy as np
@@ -3401,9 +3401,9 @@ def arrcheck(arr,kind,varname,bounds=None):
     """
     
     try:
-        sha = arr.squeeze().shape
+        sha = arr.shape
     except:
-        raise TypeError('Input '+varname+' must be a NumPy array, not '+type(arr).__name__+'!')
+        raise TypeError('Input `'+varname+'` must be a NumPy array, not '+type(arr).__name__+'!')
 
     if kind == 'tensor':
         if len(sha) != 3:
@@ -3418,6 +3418,7 @@ def arrcheck(arr,kind,varname,bounds=None):
             raise ValueError('Input `'+varname+'` must be a `N`-by-`N` NumPy array!')
         dim_msg = '`N`-by-`N`'
     elif kind == 'vector':
+        sha = arr.squeeze().shape
         if len(sha) != 1:
             raise ValueError('Input `'+varname+'` must be a NumPy 1darray')
         if min(sha)==1:
