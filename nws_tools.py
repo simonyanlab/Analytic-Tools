@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-08-09 10:59:12>
+# Last modified: <2016-09-20 12:48:46>
 
 from __future__ import division
 import numpy as np
@@ -201,7 +201,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     # Check `sublist`
     if not isinstance(sublist,(list,np.ndarray)):
         raise TypeError('Subject codes have to be provided as Python list/NumPy 1darray, not '+type(sublist).__name__+'!')
-    if len(np.array(sublist).squeeze().shape) != 1:
+    if len(np.array(sublist).shape) != 1:
         raise ValueError("Subject codes have to be provided as 1-d list/array!")
 
     # Get length of `sublist` (to see if a subject list was provided)
@@ -260,7 +260,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     numsubs = len(sublist)
 
     # Scan files to find time-series length
-    tlens = np.zeros((numsubs,))
+    tlens = np.zeros((numsubs,),dtype=int)
     for k in xrange(numsubs):
         roi = 0
         for fl in txtfiles:
@@ -271,7 +271,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
                 if roi == 0: tlens[k] = ts_vec.size     # Subject's first TS sets our reference length
                 if ts_vec.size != tlens[k]:
                     raise ValueError("Error reading file: "+fl+\
-                                     " Expected a time-series of length "+str(int(tlens[k]))+", "+
+                                     " Expected a time-series of length "+str(tlens[k])+", "+
                                      "but actual length is "+str(ts_vec.size))
                 roi += 1
 
@@ -662,10 +662,13 @@ def rm_negatives(corrs):
     nws = (corrs > 0)*corrs
 
     # Check if we lost some nodes...
+    ndnum = str(corrs.shape[0])
     for i in xrange(K):
         deg = degrees_und(corrs[:,:,i])
         if deg.min() == 0:
-            print "WARNING: In network "+str(i)+" node(s) "+str(np.nonzero(deg==deg.min())[0])+" got disconnected!"
+            badidx = np.nonzero(deg==deg.min())[0]
+            print "WARNING: In network "+str(i)+" a total of "+str(badidx.size)+" out of "+ndnum+\
+                " node(s) got disconnected, namely vertices #"+str(badidx)
 
     return nws
 
