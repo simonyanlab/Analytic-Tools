@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2016-07-28 14:18:57>
+# Last modified: <2016-11-23 12:07:03>
 
 from __future__ import division
 import numpy as np
@@ -220,43 +220,45 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
         if key[0:2] != "__":
             p_dict[key] = value
 
-    # Try to load the coupling matrix
-    try:
-        f = h5py.File(param_py.matrices,'r')
-    except:
-        raise ValueError("Could not open HDF5 file `"+param_py.matrices+"` holding the coupling matrix")
-    try:
-        if kwargs.has_key('C'):
-            C = kwargs['C']
-        else:
-            C = f['C'].value
-        if kwargs.has_key('D'):
-            D = kwargs['D']
-        else:
-            D = f['D'].value
-        if kwargs.has_key('G'):
-            G = kwargs['G']
-        else:
-            G = f['G'].value
-        names = f['names'].value
-        p_dict['names'] = names
-        if f.keys().count('labels'): 
-            p_dict['labels'] = f['labels'].value
-        f.close()
-    except: 
-        raise ValueError("HDF5 file `"+param_py.matrices+"` does not have the required fields!")
-
-    # Do a quick checkup of the matrices
+    # Try to load coupling and neurotransmitter pathway matrices
+    mfile  = "None"
     vnames = ['C','D','G']
-    for mk, mat in enumerate([C,D,G]):
-        arrcheck(mat,'matrix',vnames[mk])
+    for mat_str in vnames:
+        if kwargs.has_key(mat_str):
+            p_dict[mat_str] = kwargs[mat_str]
+        else:
+            try:
+                p_dict[mat_str] = h5py.File(param_py.matrices,'r')[mat_str].value
+                mfile = p_dict['matrices']
+            except:
+                raise ValueError("Error reading `"+param_py.matrices+"`!")
+            arrcheck(p_dict[mat_str],'matrix',mat_str)
+
+    # Try to load ROI names
+    try:
+        names = h5py.File(param_py.matrices,'r')['names'].value
+        mfile = p_dict['matrices']
+    except:
+        try:
+            names = kwargs['names']
+        except:
+            raise ValueError("A NumPy 1darray or Python list of ROI names has to be either specified "+\
+                             "in a matrix container or provided as keyword argument!")
+        
+    # See if we have an (optional) list/array of ROI-shorthand labels
+    try:
+        p_dict['labels'] = h5py.File(param_py.matrices,'r')['labels'].value
+        mfile = p_dict['matrices']
+    except:
+        if kwargs.has_key('labels'):
+            p_dict['labels'] = kwargs['labels']
 
     # Put ones on the diagonal of the coupling matrix to ensure compatibility with the code
-    np.fill_diagonal(C,1.0)
+    np.fill_diagonal(p_dict['C'],1.0)
 
     # Get dimension of matrix and check correspondence
-    N = C.shape[0]
-    if N != D.shape[0] or N != G.shape[0]:
+    N = p_dict['C'].shape[0]
+    if N != p_dict['D'].shape[0] or N != p_dict['G'].shape[0]:
         raise ValueError("Dopamine/GABA and coupling matrices don't have the same dimension!")
     if len(names) != N: 
         raise ValueError("Matrix is "+str(N)+"-by-"+str(N)+" but `names` has length "+str(len(names))+"!")
@@ -267,11 +269,6 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
     # If user provided some additional parameters as keyword arguments, copy them to `p_dict`
     for key, value in kwargs.items():
         p_dict[key] = value
-
-    # Now copy matrices also to `p_dict` (maybe changed by `fill_diagonal` above, or not part of `kwargs`)
-    p_dict['C'] = C
-    p_dict['D'] = D
-    p_dict['G'] = G
 
     # Get synaptic couplings (and set seed of random number generator)
     np.random.seed(seed)
@@ -414,9 +411,9 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
     f = h5py.File(outfile)
 
     # Create datasets for numeric variables
-    f.create_dataset('C',data=C,dtype=datype)
-    f.create_dataset('D',data=D,dtype=datype)
-    f.create_dataset('G',data=G,dtype=datype)
+    f.create_dataset('C',data=p_dict['C'],dtype=datype)
+    f.create_dataset('D',data=p_dict['D'],dtype=datype)
+    f.create_dataset('G',data=p_dict['G'],dtype=datype)
     f.create_dataset('V',shape=(N,n_elems),chunks=chunks,dtype=datype)
     f.create_dataset('Z',shape=(N,n_elems),chunks=chunks,dtype=datype)
     f.create_dataset('DA',shape=(N,n_elems),chunks=chunks,dtype=datype)
@@ -499,7 +496,7 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
                     ["#cycles: ",str(p_dict['n_cycles'])],\
                     ["parameter file:",paramfile+".py"],\
                     ["keyword args:",pstr],\
-                    ["matrix file:",p_dict['matrices']],\
+                    ["matrix file:",mfile],\
                     ["output:",outfile]])
     if verbose: print "\n"+table.draw()+"\n"
 

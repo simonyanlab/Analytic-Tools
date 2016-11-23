@@ -2,27 +2,28 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2016-07-27 11:03:16>
+# Last modified: <2016-11-23 12:20:49>
 
 from __future__ import division
 
 # ===============================================================================================
 # IMPORTANT NOTE: All variable names in this file have a specific meaning and must not be changed 
-#        	  to maintain compatibility with sim_tools.py!
+#        	  to maintain compatibility with `sim_tools.py`!
 # ===============================================================================================
 
 # File-name (including path if not in working directory) of HDF5 container that holds coupling matrix
-# 'C' and dopamine connection matrix 'D'. The container must contain datasets 'C', 'D' (both `N`-by-`N` 
-# NumPy 2darrays) and 'names' (NumPy 1darry or Python list of region names, length `N`) in the root group, 
+# `C`, as well as dopamine and GABA pathway matrices `D` and `G`, respectively.
+# The container must contain datasets `C`, `D` (both `N`-by-`N` NumPy 2darrays) and `names`
+# (NumPy 1darry or Python list of region names, length `N`) in the root group, 
 # i.e., 
 # 
 # >>> h5py.File(matrices).keys() 
 # 
 # should give 
 # 
-# >>> [C', 'D', 'names']
+# >>> ['C', 'D', 'G', 'names']
 # 
-# Optionally, a list of regional abbreviations called 'labels' can be included in the root group too, e.g., if
+# Optionally, a list of regional abbreviations called `labels` can be included in the root group too, e.g., if
 # 
 # >>> names = ['L_Inferior_Frontal_Gyrus','R_Inferior_Frontal_Gyrus'] 
 # 
@@ -30,9 +31,11 @@ from __future__ import division
 # 
 # >>> labels = ['L_IFG','R_IFG']
 # 
-# The routine run_model will extract 'labels' too (if present) and save it together with 'names' in the 
+# The routine `run_model` will extract `labels` too (if present) and save it together with `names` in the 
 # generated output container
-matrices = '../../Data/Coupling/SC_LMC+PUT.h5'
+# NOTE: New as of 11/2016 - a matrix file is no longer mandatory. If wanted, all matrices and the `names` array
+# as well as the optional `labels` can be provided to `run_model` as keyword arguments only 
+matrices = '../../Data/Coupling/SC_GABA.h5'
 # matrices = 'path/to/container.h5'
 
 # Sampling frequency for saving model output (in Hz)
@@ -47,7 +50,7 @@ production  = 5
 acquisition = 2
 
 # Synaptic coupling strengths - strings are used here to avoid the explicit definition of `N` in this file,
-# i.e., the string expressions are evaluated inside run_model where the number of simulated regions `N` 
+# i.e., the string expressions are evaluated inside `run_model` where the number of simulated regions `N` 
 # is already known. This way, a parameter file can be used with different brain parcellations 
 aee   = 0.4
 aei   = "2.0*np.ones((N,))"
