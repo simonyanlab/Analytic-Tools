@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2016-07-22 11:02:22>
+# Last modified: <2016-11-23 14:57:18>
 
 from __future__ import division
 
@@ -12,17 +12,18 @@ from __future__ import division
 # ===============================================================================================
 
 # File-name (including path if not in working directory) of HDF5 container that holds coupling matrix
-# 'C' and dopamine connection matrix 'D'. The container must contain datasets 'C', 'D' (both `N`-by-`N` 
-# NumPy 2darrays) and 'names' (NumPy 1darry or Python list of region names, length `N`) in the root group, 
+# `C`, as well as the dopamine pathway matrix `D`, respectively.
+# The container must contain datasets `C`, `D` (both `N`-by-`N` NumPy 2darrays) and `names`
+# (NumPy 1darry or Python list of region names, length `N`) in the root group, 
 # i.e., 
 # 
 # >>> h5py.File(matrices).keys() 
 # 
 # should give 
 # 
-# >>> [C', 'D', 'names']
+# >>> ['C', 'D', 'names']
 # 
-# Optionally, a list of regional abbreviations called 'labels' can be included in the root group too, e.g., if
+# Optionally, a list of regional abbreviations called `labels` can be included in the root group too, e.g., if
 # 
 # >>> names = ['L_Inferior_Frontal_Gyrus','R_Inferior_Frontal_Gyrus'] 
 # 
@@ -30,8 +31,10 @@ from __future__ import division
 # 
 # >>> labels = ['L_IFG','R_IFG']
 # 
-# The routine run_model will extract 'labels' too (if present) and save it together with 'names' in the 
+# The routine `run_model` will extract `labels` too (if present) and save it together with `names` in the 
 # generated output container
+# NOTE: New as of 11/2016 - a matrix file is no longer mandatory. If wanted, all matrices and the `names` array
+# as well as the optional `labels` can be provided to `run_model` as keyword arguments only 
 matrices = '../../Data/Coupling/SC_LMC+PUT.h5'
 # matrices = 'path/to/container.h5'
 
