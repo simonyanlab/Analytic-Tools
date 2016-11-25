@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-09-20 12:48:46>
+# Last modified: <2016-11-25 15:01:29>
 
 from __future__ import division
 import numpy as np
@@ -281,7 +281,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
 
         # Safeguard: stop if subject hast more/fewer ROIs than expected
         elif roi != numregs:
-            raise ValueError("Found "+str(int(roi+1))+" time-series for subject "+sublist[k]+", expected "+str(int(numregs)))
+            raise ValueError("Found "+str(int(roi))+" time-series for subject "+sublist[k]+", expected "+str(int(numregs)))
 
     # Check the lengths of the detected time-series
     if tlens.min() <= 2: 
@@ -2063,6 +2063,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
         raise ValueError('Input must be a real valued NumPy 2d array without Infs or NaNs!')
 
     scalarcheck(n_bins,'n_bins',kind='int',bounds=[2,np.inf])
+    n_bins = int(n_bins)
 
     for bvar in [normalized,fast,norm_ts]:
         if not isinstance(bvar,bool):
