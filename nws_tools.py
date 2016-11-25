@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-08-09 10:59:12>
+# Last modified: <2016-11-25 14:23:30>
 
 from __future__ import division
 import numpy as np
@@ -255,7 +255,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
 
     # Get number of regions
     numregs = ''.join(txtfiles).count(subject)
-    
+
     # Get (actual) number of subjects
     numsubs = len(sublist)
 
@@ -267,8 +267,10 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
             if fl.count(sublist[k]):
                 try:
                     ts_vec = np.loadtxt(fl)
-                except: raise ValueError("Cannot read file "+fl)
-                if roi == 0: tlens[k] = ts_vec.size     # Subject's first TS sets our reference length
+                except:
+                    raise ValueError("Cannot read file "+fl)
+                if roi == 0:
+                    tlens[k] = ts_vec.size     # Subject's first TS sets our reference length
                 if ts_vec.size != tlens[k]:
                     raise ValueError("Error reading file: "+fl+\
                                      " Expected a time-series of length "+str(int(tlens[k]))+", "+
@@ -281,7 +283,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
 
         # Safeguard: stop if subject hast more/fewer ROIs than expected
         elif roi != numregs:
-            raise ValueError("Found "+str(int(roi+1))+" time-series for subject "+sublist[k]+", expected "+str(int(numregs)))
+            raise ValueError("Found "+str(int(roi))+" time-series for subject "+sublist[k]+", expected "+str(int(numregs)))
 
     # Check the lengths of the detected time-series
     if tlens.min() <= 2: 
@@ -2060,6 +2062,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
         raise ValueError('Input must be a real valued NumPy 2d array without Infs or NaNs!')
 
     scalarcheck(n_bins,'n_bins',kind='int',bounds=[2,np.inf])
+    n_bins = int(n_bins)
 
     for bvar in [normalized,fast,norm_ts]:
         if not isinstance(bvar,bool):

@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2016-11-23 12:07:03>
+# Last modified: <2016-11-25 11:55:26>
 
 from __future__ import division
 import numpy as np
@@ -1223,7 +1223,7 @@ def checkhdf(fname,peek=False):
     # Additionally, try opening the container if wanted
     if peek:
         try:
-            f = h5py.File(fname,'r')
+            f = h5py.File(fname)
         except:
             raise ValueError("Cannot open "+fname+"!")
         return f
