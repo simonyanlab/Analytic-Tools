@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2016-11-25 11:55:26>
+# Last modified: <2016-12-05 10:47:47>
 
 from __future__ import division
 import numpy as np
@@ -244,6 +244,7 @@ def run_model(V0, Z0, DA0, GA0, task, outfile, \
         except:
             raise ValueError("A NumPy 1darray or Python list of ROI names has to be either specified "+\
                              "in a matrix container or provided as keyword argument!")
+    p_dict['names'] = names
         
     # See if we have an (optional) list/array of ROI-shorthand labels
     try:
