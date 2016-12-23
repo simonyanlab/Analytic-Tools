@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: March 19 2014
-# Last modified: <2015-06-26 11:05:09>
+# Last modified: <2016-12-23 10:02:35>
 
 from __future__ import division
 import numpy as np
@@ -21,7 +21,7 @@ from scipy import ndimage
 from nws_tools import myglob
 
 ##########################################################################################
-def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,ftype='IIR'):
+def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,ftype='IIR',verbose=True):
     """
     Band-/Low-/High-pass filter a 1D/2D input signal
 
@@ -52,6 +52,8 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
     ftype : string
         Type of filter to be used (either `IIR` = infinite impulse response filter, or
         `FIR` = finite impulse response filter). 
+    verbose : bool
+        Boolean flag to decide whether status messages are printed or not. 
 
     Returns
     -------
@@ -177,7 +179,7 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
         raise ValueError('Signal must be a real valued NumPy array without Infs or NaNs!')
 
     # Both cutoffs undefined
-    if (locut == None) and (hicut == None):
+    if (locut is None) and (hicut is None):
         raise ValueError('Both cutoff frequencies are None!')
 
     # Sampling rate
@@ -185,39 +187,43 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
         bad = (srate <= 0)
     except: 
         raise TypeError('Sampling rate has to be a strictly positive number, not '+type(srate).__name__+'!')
-    if bad: raise ValueError('Sampling rate hast to be > 0!')
+    if bad:
+        raise ValueError('Sampling rate hast to be > 0!')
 
     # Compute Nyquist frequency and initialize passfreq
     nyq      = 0.5 * srate 
     passfreq = None
 
     # Lower cutoff frequency
-    if locut != None:
+    if locut is not None:
         try:
             bad = (locut < 0)
         except: 
             raise TypeError('Locut has to be None or lower cutoff frequency, not '+type(locut).__name__+'!')
-        if bad: raise ValueError('Locut frequency has to be >= 0!')
+        if bad:
+            raise ValueError('Locut frequency has to be >= 0!')
     else:
         passfreq = hicut/nyq
 
     # Higher cutoff frequency
-    if hicut != None:
+    if hicut is not None:
         try:
             bad = (hicut < 0)
         except: 
             raise TypeError('Hicut has to be None or higher cutoff frequency, not '+type(hicut).__name__+'!')
-        if bad: raise ValueError('Hicut frequency has to be >= 0!')
+        if bad:
+            raise ValueError('Hicut frequency has to be >= 0!')
     else:
         passfreq = locut/nyq
 
     # Offset frequency for filter
-    if offset != None:
+    if offset is not None:
         try:
             bad = (offset <= 0)
         except:
             raise TypeError('Frequency offset has to be a strictly positive number, not '+type(offset).__name__+'!')
-        if bad: raise ValueError('Frequency offset has to be > 0!')
+        if bad:
+            raise ValueError('Frequency offset has to be > 0!')
 
         # Adjust offset for Nyquist frequency
         offset /= nyq
@@ -228,13 +234,16 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
         offmult = 0.5
 
         # If no offset frequency was provided, assign default value (for low-/high-pass filters)
-        if passfreq != None: offset = offmult*passfreq
+        if passfreq is not None:
+            offset = offmult*passfreq
 
     # Filter type
     try:
         bad = (ftype != 'IIR') and (ftype != 'FIR')
-    except: raise TypeError('Filtertype has to be either FIR or IIR, not '+type(ftype).__name__+'!')
-    if bad: raise ValueError('Filtertype has to be either FIR or IIR!')
+    except:
+        raise TypeError('Filtertype has to be either FIR or IIR, not '+type(ftype).__name__+'!')
+    if bad:
+        raise ValueError('Filtertype has to be either FIR or IIR!')
 
     # Passband decibel value
     userpass = False
@@ -243,7 +252,8 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
             bad = (passdB <= 0)
         except:
             raise TypeError('Passband dB has to be a strictly positive number, not '+type(passdB).__name__+'!')
-        if bad: raise ValueError('Passband dB has to be > 0!')
+        if bad:
+            raise ValueError('Passband dB has to be > 0!')
         userpass = True
 
     # Stopband decibel value
@@ -252,7 +262,8 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
             bad = (stopdB <= 0)
         except:
             raise TypeError('Stopband dB has to be a strictly positive number, not '+type(stopdB).__name__+'!')
-        if bad: raise ValueError('Stopband dB has to be > 0!')
+        if bad:
+            raise ValueError('Stopband dB has to be > 0!')
         userpass = True
 
     # Since the Kaiser filter requires max/min ripple to be equal, make sure that condition is satisfied
@@ -269,27 +280,37 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
                 print msg
 
     # Determine if we do low-/high-/bandpass-filtering
-    if locut == None:
+    if locut is None:
         ftype    = 'highpass'
         stopfreq = passfreq - offset
-        if stopfreq > passfreq: raise ValueError('Highpass stopfrequency is higher than passfrequency!')
-        if passfreq >= 1: raise ValueError('Highpass frequency >= Nyquist frequency!')
-    elif hicut == None:
+        if stopfreq > passfreq:
+            raise ValueError('Highpass stopfrequency is higher than passfrequency!')
+        if passfreq >= 1:
+            raise ValueError('Highpass frequency >= Nyquist frequency!')
+    elif hicut is None:
         ftype    = 'lowpass'
         stopfreq = passfreq + offset
-        if stopfreq < passfreq: raise ValueError('Lowpass stopfrequency is lower than passfrequency!')
-        if stopfreq >= 1: raise ValueError('Lowpass stop frequency >= Nyquist frequency!')
+        if stopfreq < passfreq:
+            raise ValueError('Lowpass stopfrequency is lower than passfrequency!')
+        if stopfreq >= 1:
+            raise ValueError('Lowpass stop frequency >= Nyquist frequency!')
     else:
         ftype    = 'bandpass'
         passfreq = [locut/nyq,hicut/nyq]
-        if offset == None: offset = offmult*(passfreq[1] - passfreq[0])
+        if offset is None: offset = offmult*(passfreq[1] - passfreq[0])
         stopfreq = [passfreq[0] - offset, passfreq[1] + offset]
         if (stopfreq[0] > passfreq[0]) or (stopfreq[1] < passfreq[1]):
             raise ValueError('Stopband is inside the passband!')
-        if stopfreq[1] >= 1: raise ValueError('Highpass frequency = Nyquist frequency!')
+        if stopfreq[1] >= 1:
+            raise ValueError('Highpass frequency = Nyquist frequency!')
 
+    # Check `verbose` flag
+    if not isinstance(verbose,bool):
+        raise TypeError("The optional argument `verbose` has to be Boolean!")
+        
     # Show input frequencies
-    print "Input frequency/frequencies: "+str(locut)+"Hz, "+str(hicut)+"Hz"
+    if verbose:
+        print "Input frequency/frequencies: "+str(locut)+"Hz, "+str(hicut)+"Hz"
 
     # Compute optimal order of filter
     if ftype == 'IIR':
@@ -298,8 +319,9 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
         order, natfreq = buttord(passfreq, stopfreq, passdB, stopdB)
         
         # Show natural frequencies and optimal order of filter
-        print "Natural frequency/frequencies: "+str(natfreq*nyq)+"Hz"
-        print "Optimal order for Butterworth filter was found to be: "+str(order)
+        if verbose:
+            print "Natural frequency/frequencies: "+str(natfreq*nyq)+"Hz"
+            print "Optimal order for Butterworth filter was found to be: "+str(order)
 
         # Compute Butterworth filter coefficients
         b,a = butter(order,natfreq,btype=ftype)
@@ -313,7 +335,8 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
         order, beta = kaiserord(passdB,offset)
 
         # Show optimal order
-        print "Optimal order for Kaiser filter was found to be: "+str(order)
+        if verbose:
+            print "Optimal order for Kaiser filter was found to be: "+str(order)
 
         # Compute Kaiser filter coefficients
         b = firwin(order,passfreq,window=('kaiser',beta),pass_zero=False)
@@ -452,16 +475,16 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     if os.path.isfile(outfile): 
         raise ValueError("Target HDF5 container already exists!")
 
-    if electrodelist != None: 
+    if electrodelist is not None: 
         try: le = len(electrodelist)
-        except: raise TypeError('Input electrodlist must be a Python list!')
-        if le == 0: raise ValueError('Input electrodelist has length 0!')
+        except:
+            raise TypeError('Input electrodlist must be a Python list!')
+        if le == 0:
+            raise ValueError('Input electrodelist has length 0!')
 
-    # Make sure savemat and bold are either True or False
-    msg = "The switch `savemat` has to be Boolean!"
-    try:
-        bad = (savemat != True and savemat != False)
-    except: raise TypeError(msg)
+    # Make sure `savemat` is Boolean
+    if not isinstance(savemat,bool):
+        raise TypeError("The optional argument `savemant` has to be Boolean!")
 
     # If file extension was provided, remove it to avoid stupid case-sensitive nonsense
     dt = eegpath.rfind('.')
@@ -570,8 +593,10 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     # Get sampling rate
     hexopts = {int('C064',16):100,int('C068',16):200,int('C1F4',16):500,\
                int('C3E8',16):1000,int('C7D0',16):2000,int('D388',16):5000,int('E710',16):10000}
-    try: actSamplerate = hexopts[int(np.fromfile(fid,dtype='uint16',count=1))]
-    except KeyError: print "ERROR: Unknown Sampling Rate"; sys.exit()
+    try:
+        actSamplerate = hexopts[int(np.fromfile(fid,dtype='uint16',count=1))]
+    except KeyError:
+        print "ERROR: Unknown Sampling Rate"; sys.exit()
     sratestr = " Sampling rate: "+str(actSamplerate)+" Hz"
     print sratestr
 
@@ -627,10 +652,11 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
         GAIN[i]   = CAL/AD_val
 
     # Abort if channels show difference in gain
-    if np.unique(GAIN).size != 1: raise ValueError("Channels do not have the same gain!")
+    if np.unique(GAIN).size != 1:
+        raise ValueError("Channels do not have the same gain!")
 
     # If user provided list of electrodes to read check it now
-    if electrodelist != None:
+    if electrodelist is not None:
         idxlist = []
         for el in electrodelist:
             try:
@@ -639,7 +665,8 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
                 raise IndexError('Electrode '+el+' not found in file!')
             if goodElec[idx]:
                 idxlist.append(idx)
-            else: print "WARNING: Electrode "+el+" not in trusted electrode list! Skipping it..."
+            else:
+                print "WARNING: Electrode "+el+" not in trusted electrode list! Skipping it..."
 
         # In case the electrodlist was not ordered as the binary file, fix this 
         idxlist.sort()
@@ -697,7 +724,8 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
 
     # Here we go...
     print "\n Reading data in "+str(numblocks)+" block(s)...\n "
-    if (showbar): pbar.start()
+    if (showbar):
+        pbar.start()
 
     # Read/write data block by block
     j = 0
@@ -722,7 +750,8 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
             pbar.update(i)
 
     # If progressbar is available, end it now
-    if (showbar): pbar.finish()
+    if (showbar):
+        pbar.finish()
 
     # Write meta-data
     eeg.attrs.create('summary',data=recordedstr+"\n"+beginstr+"\n"+sratestr+"\n"+lengthstr)
@@ -803,11 +832,13 @@ def load_data(h5file,nodes=None):
 
     # Get indices of nodes to be read
     idx = []
-    if nodes != None:
+    if nodes is not None:
         if str(nodes[0]) == nodes[0]:
             for node in nodes:
-                try: idx.append(ec_list.index(node))
-                except KeyError: raise ValueError("Node "+node+" not found in file "+h5file+"!")
+                try:
+                    idx.append(ec_list.index(node))
+                except KeyError:
+                    raise ValueError("Node "+node+" not found in file "+h5file+"!")
         else:
             try:
                 if max(nodes) > len(ec_list)-1 or min(nodes) < 0:
@@ -891,7 +922,8 @@ def MA(signal, window_size, past=True):
     # Sanity checks
     try:
         shs = signal.shape
-    except: raise TypeError("Input `signal` must be a NumPy 1d/2darray, not "+type(signal).__name__+"!")
+    except:
+        raise TypeError("Input `signal` must be a NumPy 1d/2darray, not "+type(signal).__name__+"!")
     if len(shs) > 2:
         raise ValueError("Input `signal` must be a NumPy 1d/2darray!")
     if np.max(shs) < 2:
@@ -901,14 +933,14 @@ def MA(signal, window_size, past=True):
 
     try:
         bad = window_size <= 0
-    except: raise TypeError("Input window-size must be a positive scalar, not "+type(window_size).__name__+"!")
-    if bad: raise ValueError("Input window-size must be a positive scalar!")
+    except:
+        raise TypeError("Input window-size must be a positive scalar, not "+type(window_size).__name__+"!")
+    if bad:
+        raise ValueError("Input window-size must be a positive scalar!")
 
-    msg = "The siwtch `past` has to be Boolean, not "+type(past).__name__+"!"
-    try:
-        bad = (past != True and past != False)
-    except: raise TypeError(msg)
-    if bad: raise TypeError(msg)
+    # Check if `past` is Boolean
+    if not isinstance(past,bool):
+        raise TypeError("The optional argument `past` has to be Boolean!")
 
     # Use only preceding data points to calculate MA
     if past:
@@ -1029,7 +1061,8 @@ def time2ind(h5file,t_start,t_end):
     ind_stop  = te_offset.seconds*s_rate
 
     # Close file if user provided just string
-    if closefile: f.close()
+    if closefile:
+        f.close()
 
     # Return converted start/stop indices
     return ind_start, ind_stop
@@ -1041,15 +1074,18 @@ def check_hdf(h5file):
     if str(h5file) == h5file:
         try:
             f = h5py.File(h5file)
-        except: raise ValueError("Error opening file "+h5file)
+        except:
+            raise ValueError("Error opening file "+h5file)
         closefile = True
     elif type(h5file).__name__ == "File":
         try:
             h5file.filename 
-        except: raise TypeError('Input is not a valid HDF5 file!')
+        except:
+            raise TypeError('Input is not a valid HDF5 file!')
         f         = h5file
         closefile = False
-    else: raise TypeError('Input has to be a string specifying an HDF5 file or h5py.File instance!')
+    else:
+        raise TypeError('Input has to be a string specifying an HDF5 file or h5py.File instance!')
 
     # Check if data is stored as matrix or "tagged list"
     try:

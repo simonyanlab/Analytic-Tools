@@ -267,8 +267,10 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
             if fl.count(sublist[k]):
                 try:
                     ts_vec = np.loadtxt(fl)
-                except: raise ValueError("Cannot read file "+fl)
-                if roi == 0: tlens[k] = ts_vec.size     # Subject's first TS sets our reference length
+                except:
+                    raise ValueError("Cannot read file "+fl)
+                if roi == 0:
+                    tlens[k] = ts_vec.size     # Subject's first TS sets our reference length
                 if ts_vec.size != tlens[k]:
                     raise ValueError("Error reading file: "+fl+\
                                      " Expected a time-series of length "+str(tlens[k])+", "+
