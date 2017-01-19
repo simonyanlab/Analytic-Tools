@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2016-11-25 15:01:29>
+# Last modified: <2017-01-19 12:22:08>
 
 from __future__ import division
 import numpy as np
@@ -748,6 +748,12 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
         until all graphs hit the desired density level defined by the user 
         even if nodes get disconnected in the process. This argument has no 
         effect if `span_tree = True`. By default, `force_den = False`. 
+    span_tree : bool
+        If `span_tree` is `True` density reduction is performed by constructing maximum 
+        spanning trees. If `userdens` is `None`, only spanning trees for all input networks
+        will be returned. If `userdens` is provided, spanning trees will be populated 
+        with the strongest connections found in the original networks up to the 
+        desired edge density. Note that `foce_den` is ignored if `span_tree` is `True`. 
                
     Returns
     -------
