@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2017-01-19 12:22:08>
+# Last modified: <2017-02-02 12:06:21>
 
 from __future__ import division
 import numpy as np
@@ -174,7 +174,8 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     a subject cohort. However, all ROI-time-courses *within* the same subject must have 
     the same number of entries. 
     For instance, all ROI-time-courses in `s101` can have 140 entries, and time-series 
-    of `s102` might have 130 entries, but if `s101_2.txt` contains 140 data-points while only 
+    of `s102` might have 130 entries. The remaining 10 values "missing" for `s102` are 
+    filled with `NaN`'s in `bigmat`. However, if `s101_2.txt` contains 140 data-points while only 
     130 entries are found in `s101_3.txt`, the code will raise a `ValueError`. 
 
     See also
