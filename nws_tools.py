@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2017-02-22 09:46:47>
+# Last modified: <2017-02-22 12:09:05>
 
 from __future__ import division
 import numpy as np
@@ -3496,7 +3496,7 @@ def nw_zip(ntw):
 
     Uncompressing `vecs` yields `mats` again
 
-    >> (mats == nw_zip(vecs)).min()
+    >>> (mats == nw_zip(vecs)).min()
     True
     
     See also
@@ -3515,25 +3515,17 @@ def nw_zip(ntw):
         raise TypeError('Input network must be a real-valued NumPy array!')
     if np.isfinite(ntw).min() == False:
         raise ValueError('Input network must be a real valued NumPy array without Infs or NaNs!')
+    
+    # If we're dealing with a 1d-array, convert it to a `K`-by-1 array to hit two birds with one stone below
+    if len(stw) == 1:
+        ntw = ntw.reshape(ntw.size,1)
+        stw = ntw.shape
 
     # Now let's do what we're here for: everything below assumes `N` is the dimension of the
     # considered symmetric matrix and `K` denotes the number of elements in its upper triangular
-    # portion (excluding the main diagonal), i.e., `K = N * (N-1) / 2` 
-    if len(stw) == 1:
-
-        # Input is a vector, spit out a symmetric matrix. First step: compute the original dimension `N` of the
-        # symmetric matrix by solving the quadratic equation `N*(N-1)/2 = K`, where `K` is the length of
-        # the given input vector. We're only interested in the positive solution (to account for roundoff errors,
-        # use `np.round` here)
-        N = int(np.round(0.5 + np.sqrt(0.5 + 2*ntw.size)))
-        msk = np.triu(np.ones((N,N),dtype=bool),1)
-        nw = np.zeros((N,N))
-        nw[msk] = ntw
-        nw += nw.T
-        return nw
-
-    # The ambiguous case: input can be an array of vectors or a connectivity matrix
-    elif len(stw) == 2:
+    # portion (excluding the main diagonal), i.e., `K = N * (N-1) / 2`
+    # Start with the ambiguous case: input can be a single vector, an array of vectors or a connectivity matrix
+    if len(stw) == 2:
 
         # Input is square so it's a symmetric matrix. It's only ambiguous in case `N = 3` (then `K == N`),
         # but why would you go through all this trouble for a 3-by-3 matrix???
@@ -3548,10 +3540,18 @@ def nw_zip(ntw):
                 raise ValueError("Input matrix is not symmetric and thus cannot be compressed!")
 
         # Input is an array of `M` vectors of length `K` each holding the entries of a symmetric `N`-by-`N` matrix
+        # (note that `M = 1` is possible as well)
         else:
+            
+            # First step: compute the original dimension `N` of the symmetric matrix by solving the
+            # quadratic equation `N*(N-1)/2 = K`, where `K` is the length of the given input vector(s).
+            # We're only interested in the positive solution here. To account for roundoff errors,
+            # use `np.round`, but double-check the result
             K = stw[0]
             M = stw[1]
             N = int(np.round(0.5 + np.sqrt(0.5 + 2*K)))
+            if N*(N - 1)/2 != K:
+                raise ValueError("Provided values cannot be arranged in a triangular layout!")
             msk = np.triu(np.ones((N,N),dtype=bool),1)
             nw = np.zeros((N,N))
             nws = np.zeros((N,N,M))
@@ -3560,7 +3560,7 @@ def nw_zip(ntw):
                 nw[msk] = ntw[:,m]
                 nw += nw.T
                 nws[:,:,m] = nw.copy()
-            return nws
+            return nws.squeeze()        # If `M = 1` don't return a `N`-by-`N`-by-1 array
 
     # The input is a rank 3 tensor of dimension `(N,N,M)` holding `M` symmetric `N`-by-`N` matrices
     else:
