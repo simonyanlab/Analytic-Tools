@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2017-02-02 12:06:21>
+# Last modified: <2017-02-22 09:46:47>
 
 from __future__ import division
 import numpy as np
@@ -1671,10 +1671,11 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
         the the properties of the input network (directedness, edge-density, sign of 
         edge weights). In case of very dense networks (density > 75%) the `null_model`
         routines are used to at least shuffle the input network's edge weights. 
-    rwr : integer
+    rwr : postive integer
         Number of approximate rewirings per edge (default 5). 
-    rwr_max : integer
-        Maximal number of rewirings per edge to force randomization (default 10). 
+    rwr_max : positive integer
+        Maximal number of rewirings per edge to enforce randomization (default 10). 
+        Note that `rwr_max` has to be greater or equals than `rwr`. 
 
     Returns
     -------
@@ -1733,13 +1734,16 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
         sp_str = str(supported)
         sp_str = sp_str.replace('[','')
         sp_str = sp_str.replace(']','')
-        msg = 'Network cannot be randomized with '+str(method)+\
-              '. Available options are: '+sp_str
+        msg = 'Network cannot be randomized with `'+str(method)+\
+              '`. Available options are: '+sp_str
         raise ValueError(msg)
 
     # See if `rwr` makes sense
     scalarcheck(rwr,'rwr',kind='int',bounds=[1,np.inf])
 
+    # Now `rwr_max`
+    scalarcheck(rwr,'rwr_max',kind='int',bounds=[rwr,np.inf])
+    
     # Try to import progressbar module
     try: 
         import progressbar as pb
@@ -3406,6 +3410,175 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
     # Draw the beauty and get the hell out of here
     plt.draw()
     if full3d or nodes3d: plt.axis('equal')
+
+##########################################################################################
+def nw_zip(ntw):
+    """
+    Convert the upper triangular portion of a real symmetric matrix to a vector and vice versa
+    
+    Parameters
+    ----------
+    ntw : NumPy 1d/2d/3d array
+        Array representing either (a) a vector (1d array) or (b) a set of vectors (2d array) 
+        holding the upper triangular part of a symmetric matrix in column-wise order or
+        (c) a matrix (2d array) or (d) a rank 3 tensor comprising a cohort of symmetric 
+        matrices whose upper triangular entries will be extracted. 
+        If `ntw` is a 2d array, it may either represent a symmetric matrix for compression 
+        or an array of column vectors. Specifically, a `K` by `M` array will be reconstructed
+        to form a `N`-by-`N`-by`M` array of symmetric `N`-by-`N` matrices, where
+        `K = N * (N - 1) / 2`. Conversely, if the input is a 3d-array, its format is 
+        assumed to be `N`-by-`N`-by-`M`. See Notes below for details. 
+
+    Returns
+    -------
+    nws : NumPy 1d/2d/3d array
+        Depending on the input, the returned array is either a compressed representation of 
+        the symmetric input matrix/matrices or a full matrix/tensor reconstructed from 
+        the provided upper triangular values. 
+
+    Notes
+    -----
+    Note, that this routine does NOT consider diagonal elements, i.e., only off-diagonal 
+    entries will be stored/reconstructed. By design, entries are assumed to be ordered
+    column-wise. Note further, that a symmetric `N`-by-`N` matrix contains `K = N * (N - 1) / 2`
+    upper triangular elements. Thus, if `N = 3` then `K = 3` so that any symmetric 3-by-3 
+    array can either represent a symmetric matrix or a set of three 3-element vectors
+    representing upper triangular entries of three different symmetric matrices. In this case, 
+    the routine always assumes that the input represents a symmetric matrix and 
+    prints a warning message. 
+
+    Examples
+    --------
+    Consider the symmetric matrix `mat`
+
+    >>> mat 
+    array([[ 0.,  1.,  2.,  3.],
+           [ 1.,  0.,  4.,  5.],
+           [ 2.,  4.,  0.,  6.],
+           [ 3.,  5.,  6.,  0.]])
+
+    Using `nw_zip` to compress `mat` yields the array `vec`
+
+    >>> import nws_tools as nwt
+    >>> vec = nwt.nw_zip(mat)
+    >>> vec
+    array([ 1.,  2.,  3.,  4.,  5.,  6.])
+
+    Now reconstruct `mat` from `vec`
+
+    >>> nwt.nw_zip(vec)
+    array([[ 0.,  1.,  2.,  3.],
+           [ 1.,  0.,  4.,  5.],
+           [ 2.,  4.,  0.,  6.],
+           [ 3.,  5.,  6.,  0.]])
+    
+    Consider a second symmetric matrix `mat2`
+
+    >>> mat2
+    array([[  0.,   7.,   8.,   9.],
+           [  7.,   0.,  10.,  11.],
+           [  8.,  10.,   0.,  12.],
+           [  9.,  11.,  12.,   0.]])
+
+    Now, collect `mat` and `mat2` in a tensor and use `nw_zip` to compress it
+
+    >>> mats = np.zeros((4,4,2))
+    >>> mats[:,:,0] = mat
+    >>> mats[:,:,1] = mat2
+    >>> vecs = nw_zip(mats)
+    >>> vecs
+    array([[  1.,   7.],
+           [  2.,   8.],
+           [  3.,   9.],
+           [  4.,  10.],
+           [  5.,  11.],
+           [  6.,  12.]])
+
+    Uncompressing `vecs` yields `mats` again
+
+    >> (mats == nw_zip(vecs)).min()
+    True
+    
+    See also
+    -------- 
+    None
+    """
+
+    # Sanity checks (we can't use `arrcheck` here, because `ntw` can have varying funky dimensions...)
+    try:
+        stw = ntw.squeeze().shape
+    except:
+        raise TypeError('Input network must be a NumPy array, not '+type(ntw).__name__+'!')
+    if len(stw) > 3:
+        raise ValueError('Input network must not have more than 3 dimensions!')
+    if not plt.is_numlike(ntw) or not np.isreal(ntw).all():
+        raise TypeError('Input network must be a real-valued NumPy array!')
+    if np.isfinite(ntw).min() == False:
+        raise ValueError('Input network must be a real valued NumPy array without Infs or NaNs!')
+
+    # Now let's do what we're here for: everything below assumes `N` is the dimension of the
+    # considered symmetric matrix and `K` denotes the number of elements in its upper triangular
+    # portion (excluding the main diagonal), i.e., `K = N * (N-1) / 2` 
+    if len(stw) == 1:
+
+        # Input is a vector, spit out a symmetric matrix. First step: compute the original dimension `N` of the
+        # symmetric matrix by solving the quadratic equation `N*(N-1)/2 = K`, where `K` is the length of
+        # the given input vector. We're only interested in the positive solution (to account for roundoff errors,
+        # use `np.round` here)
+        N = int(np.round(0.5 + np.sqrt(0.5 + 2*ntw.size)))
+        msk = np.triu(np.ones((N,N),dtype=bool),1)
+        nw = np.zeros((N,N))
+        nw[msk] = ntw
+        nw += nw.T
+        return nw
+
+    # The ambiguous case: input can be an array of vectors or a connectivity matrix
+    elif len(stw) == 2:
+
+        # Input is square so it's a symmetric matrix. It's only ambiguous in case `N = 3` (then `K == N`),
+        # but why would you go through all this trouble for a 3-by-3 matrix???
+        if stw[0] == stw[1]:
+            if issym(ntw):
+                N = stw[0]
+                if N == 3:
+                    print "WARNING: Assuming input array is a symmetric 3-by-3 matrix..."
+                msk = np.triu(np.ones((N,N),dtype=bool),1)
+                return ntw[msk]
+            else:
+                raise ValueError("Input matrix is not symmetric and thus cannot be compressed!")
+
+        # Input is an array of `M` vectors of length `K` each holding the entries of a symmetric `N`-by-`N` matrix
+        else:
+            K = stw[0]
+            M = stw[1]
+            N = int(np.round(0.5 + np.sqrt(0.5 + 2*K)))
+            msk = np.triu(np.ones((N,N),dtype=bool),1)
+            nw = np.zeros((N,N))
+            nws = np.zeros((N,N,M))
+            for m in xrange(M):
+                nw[:] = 0
+                nw[msk] = ntw[:,m]
+                nw += nw.T
+                nws[:,:,m] = nw.copy()
+            return nws
+
+    # The input is a rank 3 tensor of dimension `(N,N,M)` holding `M` symmetric `N`-by-`N` matrices
+    else:
+
+        # No ambiguity here...
+        if stw[0] != stw[1]:
+            raise ValueError("First and second dimension of input tensor must be identical!")
+        N = stw[0]
+        M = stw[2]
+        msk = np.triu(np.ones((N,N),dtype=bool),1)
+        nws = np.zeros((msk.sum(),M))
+        for m in xrange(M):
+            nw = ntw[:,:,m]
+            if issym(nw):
+                nws[:,m] = nw[msk]
+            else:
+                raise ValueError("Input matrix no. "+str(m)+" is not symmetric!")
+        return nws
 
 ##########################################################################################
 def arrcheck(arr,kind,varname,bounds=None):
