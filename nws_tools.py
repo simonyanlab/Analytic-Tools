@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: December 22 2014
-# Last modified: <2017-02-22 12:09:05>
+# Last modified: <2017-07-17 17:05:43>
 
 from __future__ import division
 import numpy as np
@@ -12,7 +12,10 @@ import os
 import csv
 import inspect
 import fnmatch
-from scipy import weave
+try:
+    from scipy import weave
+except:
+    import weave
 from numpy.linalg import norm
 from mpl_toolkits.mplot3d import Axes3D, proj3d
 from matplotlib.patches import FancyArrowPatch, Circle
@@ -2928,7 +2931,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         except:
             raise TypeError("The provided branch dimensions have to be a dictionary with the same keys as `branches`!")
         for branch in branches.keys():
-            arrcheck(branch_extent[branch],'vector','branch dimensions',[0,np.inf])
+            arrcheck(branch_extent[branch],'vector','branch dimensions')
             if branch_extent[branch].size != 2:
                 raise ValueError("Only two values by branch supported for branch dimensions!")
             if branch_extent[branch][0] >= branch_extent[branch][1]:
@@ -3208,9 +3211,9 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
             rgb_arr = np.ones((zsurf.shape[0],zsurf.shape[1],3))
 
     # Start by truncating color-values based on vrange limits that were provided
-    if [0,1] != node_vrange:
+    if np.any([0,1] != node_vrange):
         node_cmap = plt.cm.ScalarMappable(norm=Normalize(node_vrange[0],node_vrange[1]),cmap=node_cmap).to_rgba
-    if [0,1] != edge_vrange:
+    if np.any([0,1] != edge_vrange):
         edge_cmap = plt.cm.ScalarMappable(norm=Normalize(edge_vrange[0],edge_vrange[1]),cmap=edge_cmap).to_rgba
 
     # Plot branches and construct nodal patches (we do this no matter if we're 3-dimensional or not)

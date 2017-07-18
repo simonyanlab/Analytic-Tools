@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
 # Created: June 23 2014
-# Last modified: <2016-12-05 10:28:17>
+# Last modified: <2017-07-18 09:24:35>
 
 from __future__ import division
 import numpy as np
@@ -25,8 +25,8 @@ import tempfile
 try:
     from the_model import par, solve_model
 except:
-    print "ERROR: Could not import the model. Try running `make all` in a terminal first"
-    sys.exit()
+    print "\n\tWARNING: Could not import the model - `run_model` will not work!"
+    print "\tTry running `make all` in a terminal first"
 
 ##########################################################################################
 def run_model(V0, Z0, DA0, task, outfile, \
