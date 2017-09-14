@@ -1,20 +1,13 @@
-# Make shortcuts to imports if from mypy import * is done
-# Last modified: <2015-03-27 14:17:11>
-from chambolle import chambolle
-import difftools as dft
-import imtools as imt
-from imtools import blendedges
-from imtools import imwrite
-from imtools import normalize
-from kmeans import kmeans
-import makeimg as mi 
-import loadimg as li
-from myat import myat
-import myvec
+# __init__.py - Assign import shortcuts
+# 
+# Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
+# Created: August 22 2012
+# Last modified: <2017-09-14 10:48:56>
+
 import recipes
-import tools1d
 import nws_tools as nwt
 import sde_solvers as sde
 import eeg_tools as eeg
 import sim_tools as smt
 import stats_tools as sta
+
