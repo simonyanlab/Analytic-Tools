@@ -1,0 +1,6 @@
+nws\_tools\.strengths\_und
+==========================
+
+.. currentmodule:: nws_tools
+
+.. autofunction:: strengths_und

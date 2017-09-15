@@ -1,0 +1,6 @@
+nws\_tools\.csv2dict
+====================
+
+.. currentmodule:: nws_tools
+
+.. autofunction:: csv2dict

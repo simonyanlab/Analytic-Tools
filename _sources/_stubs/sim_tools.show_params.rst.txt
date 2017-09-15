@@ -1,0 +1,6 @@
+sim\_tools\.show\_params
+========================
+
+.. currentmodule:: sim_tools
+
+.. autofunction:: show_params

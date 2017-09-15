@@ -1,0 +1,6 @@
+nws\_tools\.corrcheck
+=====================
+
+.. currentmodule:: nws_tools
+
+.. autofunction:: corrcheck

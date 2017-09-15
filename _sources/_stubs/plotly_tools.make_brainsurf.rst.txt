@@ -1,0 +1,6 @@
+plotly\_tools\.make\_brainsurf
+==============================
+
+.. currentmodule:: plotly_tools
+
+.. autofunction:: make_brainsurf

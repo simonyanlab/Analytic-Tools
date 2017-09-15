@@ -1,0 +1,6 @@
+recipes\.query\_yes\_no
+=======================
+
+.. currentmodule:: recipes
+
+.. autofunction:: query_yes_no

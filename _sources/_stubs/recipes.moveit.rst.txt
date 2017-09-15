@@ -1,0 +1,6 @@
+recipes\.moveit
+===============
+
+.. currentmodule:: recipes
+
+.. autofunction:: moveit

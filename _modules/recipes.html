@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>recipes</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/myaddon.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Analytic Tools Documentation</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="https://www.masseyeandear.org/research/otolaryngology/investigators/laboratories/simonyanlab">Dystonia and Motor Control Laboratory</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Browse <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.degrees_und.html">nws_tools.degrees_und</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.strengths_und.html">nws_tools.strengths_und</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.density_und.html">nws_tools.density_und</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.get_corr.html">nws_tools.get_corr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.mutual_info.html">nws_tools.mutual_info</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.corrcheck.html">nws_tools.corrcheck</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.rm_negatives.html">nws_tools.rm_negatives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.rm_selfies.html">nws_tools.rm_selfies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.issym.html">nws_tools.issym</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.get_meannw.html">nws_tools.get_meannw</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.thresh_nws.html">nws_tools.thresh_nws</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.generate_randnws.html">nws_tools.generate_randnws</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.shownet.html">nws_tools.shownet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.show_nw.html">nws_tools.show_nw</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.csv2dict.html">nws_tools.csv2dict</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.normalize.html">nws_tools.normalize</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.nw_zip.html">nws_tools.nw_zip</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.hdfburp.html">nws_tools.hdfburp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.printdata.html">nws_tools.printdata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.img2vid.html">nws_tools.img2vid</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/plotly_tools.cmap_plt2js.html">plotly_tools.cmap_plt2js</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/plotly_tools.make_brainsurf.html">plotly_tools.make_brainsurf</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.read_eeg.html">eeg_tools.read_eeg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.load_data.html">eeg_tools.load_data</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.bandpass_filter.html">eeg_tools.bandpass_filter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.MA.html">eeg_tools.MA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.time2ind.html">eeg_tools.time2ind</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/stats_tools.perm_test.html">stats_tools.perm_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/stats_tools.printstats.html">stats_tools.printstats</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.natural_sort.html">recipes.natural_sort</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.regexfind.html">recipes.regexfind</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.query_yes_no.html">recipes.query_yes_no</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.myglob.html">recipes.myglob</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.get_numlines.html">recipes.get_numlines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.moveit.html">recipes.moveit</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.run_model.html">sim_tools.run_model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.make_bold.html">sim_tools.make_bold</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.plot_sim.html">sim_tools.plot_sim</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.show_params.html">sim_tools.show_params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.make_D.html">sim_tools.make_D</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Navigate <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <h1>Source code for recipes</h1><div class="highlight"><pre>
+<span></span><span class="c1"># recipes.py - Here are some general purpose convenience functions</span>
+<span class="c1"># </span>
+<span class="c1"># Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]</span>
+<span class="c1"># Created: June 25 2013</span>
+<span class="c1"># Last modified: &lt;2017-09-15 16:07:08&gt;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">fnmatch</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="k">import</span> <span class="n">norm</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">texttable</span> <span class="k">import</span> <span class="n">Texttable</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">ndimage</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="c1">##########################################################################################</span>
+<div class="viewcode-block" id="query_yes_no"><a class="viewcode-back" href="../_stubs/recipes.query_yes_no.html#recipes.query_yes_no">[docs]</a><span class="k">def</span> <span class="nf">query_yes_no</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ask a yes/no question via `raw_input()` and return the answer.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    question : str</span>
+<span class="sd">        The question to be printed in the prompt</span>
+<span class="sd">    default : str</span>
+<span class="sd">        The presumed answer that is used in case the &lt;Return&gt; key is pressed</span>
+<span class="sd">        (must be either &quot;yes&quot; or &quot;no&quot;). </span>
+<span class="sd">        If `default` is `None` then a definitive answer is required </span>
+<span class="sd">        (pressing &lt;Return&gt; will re-print `question` in the prompt)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    answer : bool</span>
+<span class="sd">        Either `True` if the input was &quot;yes&quot;/&quot;y&quot; or `False` otherwise. </span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This code is a slightly modified version of recipe no. 577058 from ActiveState </span>
+<span class="sd">    written by Trent Mick. </span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    ActiveState : ActiveState Code Recipe #577058 currently available </span>
+<span class="sd">                  `here &lt;http://code.activestate.com/recipes/577058/&gt;`_</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check mandatory input</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">question</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Input question has to be a string!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Parse optional `default` answer</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;yes&quot;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span>   <span class="s2">&quot;y&quot;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span>  <span class="s2">&quot;ye&quot;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span>
+             <span class="s2">&quot;no&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span>     <span class="s2">&quot;n&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">default</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot; [y/n] &quot;</span>
+    <span class="k">elif</span> <span class="n">default</span> <span class="o">==</span> <span class="s2">&quot;yes&quot;</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot; [Y/n] &quot;</span>
+    <span class="k">elif</span> <span class="n">default</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot; [y/N] &quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid default answer: &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">default</span><span class="p">)</span>
+
+    <span class="c1"># Do the actual work</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">question</span> <span class="o">+</span> <span class="n">prompt</span><span class="p">)</span>
+        <span class="n">choice</span> <span class="o">=</span> <span class="n">raw_input</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">choice</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">valid</span><span class="p">[</span><span class="n">default</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">choice</span> <span class="ow">in</span> <span class="n">valid</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">valid</span><span class="p">[</span><span class="n">choice</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Please respond with &#39;yes&#39; or &#39;no&#39; &quot;</span>\
+                             <span class="s2">&quot;(or &#39;y&#39; or &#39;n&#39;).</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<span class="c1">##########################################################################################</span>
+<div class="viewcode-block" id="natural_sort"><a class="viewcode-back" href="../_stubs/recipes.natural_sort.html#recipes.natural_sort">[docs]</a><span class="k">def</span> <span class="nf">natural_sort</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span> 
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sort a list/NumPy 1darray in a &quot;natural&quot; way</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lst : list or NumPy 1darray</span>
+<span class="sd">        Python list or 1darray of strings</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lst_sort : list or NumPy 1darray</span>
+<span class="sd">        Lexicographically sorted version of the input list `lst`</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This function was originally intended to perform a natural sorting of a file-listing</span>
+<span class="sd">    (see Coding Horror&#39;s </span>
+<span class="sd">    `note &lt;http://www.codinghorror.com/blog/2007/12/sorting-for-humans-natural-sort-order.html&gt;`_ </span>
+<span class="sd">    on this topic for more details). Briefly, an input list `lst` of strings </span>
+<span class="sd">    containing digits is sorted such that the actual numerical value of the </span>
+<span class="sd">    digits is respected (see Examples for more details). </span>
+<span class="sd">    The code below is based on a Stackoverflow submission by Mark Byers, currently available </span>
+<span class="sd">    `here &lt;http://stackoverflow.com/questions/4836710/does-python-have-a-built-in-function-for-string-natural-sort&gt;`_. </span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Calling `glob` in a directory containing files named `Elm` and `elm` plus </span>
+<span class="sd">    two-digit suffixes will result in a file listing sorted as follows:</span>
+
+<span class="sd">    &gt;&gt;&gt; lst = [&#39;Elm11&#39;, &#39;Elm12&#39;, &#39;Elm2&#39;, &#39;elm0&#39;, &#39;elm1&#39;, &#39;elm10&#39;, &#39;elm13&#39;, &#39;elm9&#39;]</span>
+
+<span class="sd">    Using `natural_sort` to order `lst` yields</span>
+
+<span class="sd">    &gt;&gt;&gt; natural_sort(lst)</span>
+<span class="sd">    [&#39;elm0&#39;, &#39;elm1&#39;, &#39;Elm2&#39;, &#39;elm9&#39;, &#39;elm10&#39;, &#39;Elm11&#39;, &#39;Elm12&#39;, &#39;elm13&#39;]</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check our single mandatory input argument</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lst</span><span class="p">,(</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Input has to be a Python list or NumPy 1darray, not &#39;</span><span class="o">+</span><span class="nb">type</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Convert all list entries to strings to avoid any trouble below</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">lst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input must be a list/NumPy 1darray of strings!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Do the actual sorting</span>
+    <span class="n">convert</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">text</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> 
+    <span class="n">alphanum_key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">key</span><span class="p">:</span> <span class="p">[</span> <span class="n">convert</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;([0-9]+)&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="p">]</span> 
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="n">alphanum_key</span><span class="p">)</span></div>
+
+<span class="c1">##########################################################################################</span>
+<div class="viewcode-block" id="get_numlines"><a class="viewcode-back" href="../_stubs/recipes.get_numlines.html#recipes.get_numlines">[docs]</a><span class="k">def</span> <span class="nf">get_numlines</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get number of lines of an text file</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        File to be read</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lineno : int</span>
+<span class="sd">        Number of lines in the file</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This routine is based on this </span>
+<span class="sd">    `Stackoverflow submission &lt;http://stackoverflow.com/questions/845058/how-to-get-line-count-cheaply-in-python&gt;`_</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check if input makes sense</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fname</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Filename has to be a string!&#39;</span><span class="p">)</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">fname</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">slash</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">slash</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">fname</span><span class="p">[:</span><span class="n">fname</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)]):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid path to file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Cycle through lines of the file and do exactly nothing</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">lineno</span> <span class="o">+</span> <span class="mi">1</span></div>
+
+<span class="c1">##########################################################################################</span>
+<div class="viewcode-block" id="myglob"><a class="viewcode-back" href="../_stubs/recipes.myglob.html#recipes.myglob">[docs]</a><span class="k">def</span> <span class="nf">myglob</span><span class="p">(</span><span class="n">flpath</span><span class="p">,</span><span class="n">spattern</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a glob-like list of paths matching a regular expression </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    flpath : str</span>
+<span class="sd">        Path to search (to search current directory use `flpath=&#39;&#39;` or `flpath=&#39;.&#39;`)</span>
+<span class="sd">    spattern : str</span>
+<span class="sd">        Pattern to search for in `flpath`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    flist : list</span>
+<span class="sd">        A Python list of all files found in `flpath` that match the input pattern `spattern`</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    List all png/PNG files in the folder `MyHolidayFun` found under `Documents`</span>
+
+<span class="sd">    &gt;&gt;&gt; myglob(&#39;Documents/MyHolidayFun&#39;,&#39;*.[Pp][Nn][Gg]&#39;)</span>
+<span class="sd">    [&#39;Documents/MyHolidayFun/img1.PNG&#39;,&#39;Documents/MyHolidayFun/img1.png&#39;]</span>
+<span class="sd">        </span>
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    glob : Unix-style path-name and pattern expansion in Python</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Make sure provided path is a string and makes sense</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">flpath</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Filepath has to be a string!&#39;</span><span class="p">)</span>
+    <span class="n">flpath</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">flpath</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">flpath</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">flpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">flpath</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">slash</span> <span class="o">=</span> <span class="n">flpath</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">slash</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">flpath</span><span class="p">[:</span><span class="n">flpath</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)]):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid path: &#39;</span><span class="o">+</span><span class="n">flpath</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spattern</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Pattern has to be a string!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># If user wants to search current directory, make sure that works as expected</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">flpath</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">flpath</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">flpath</span><span class="p">)):</span>
+        <span class="n">flpath</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span>
+
+    <span class="c1"># Append trailing slash to filepath</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">flpath</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">:</span> <span class="n">flpath</span> <span class="o">=</span> <span class="n">flpath</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span>
+
+    <span class="c1"># Return glob-like list</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">flpath</span><span class="p">,</span> <span class="n">fnm</span><span class="p">)</span> <span class="k">for</span> <span class="n">fnm</span> <span class="ow">in</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">flpath</span><span class="p">),</span><span class="n">spattern</span><span class="p">)]</span></div>
+
+<span class="c1">##########################################################################################</span>
+<div class="viewcode-block" id="moveit"><a class="viewcode-back" href="../_stubs/recipes.moveit.html#recipes.moveit">[docs]</a><span class="k">def</span> <span class="nf">moveit</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if a file/directory exists, if yes, rename it</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fname : str</span>
+<span class="sd">        A string specifying (the path to) the file/directory to be renamed (if existing)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Nothing : None</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    None</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check if input makes sense</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fname</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;File-/Directory-name has to be a string!&quot;</span><span class="p">)</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">fname</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="c1"># If file already exists, rename it</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+        <span class="n">now</span>     <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">dot</span>     <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+        <span class="n">idx</span>     <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dot</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">dot</span>
+        <span class="n">newname</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[:</span><span class="n">idx</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_bak_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">year</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">month</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">day</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">hour</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">minute</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">second</span><span class="p">)</span><span class="o">+</span>\
+                  <span class="n">fname</span><span class="p">[</span><span class="n">idx</span><span class="p">::]</span>
+        <span class="nb">print</span> <span class="s2">&quot;WARNING: File &quot;</span><span class="o">+</span><span class="n">fname</span><span class="o">+</span><span class="s2">&quot; already exists, renaming it to: &quot;</span><span class="o">+</span><span class="n">newname</span><span class="o">+</span><span class="s2">&quot;!&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span><span class="n">newname</span><span class="p">)</span>
+
+    <span class="c1"># If directory already exists, rename it</span>
+    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+        <span class="n">now</span>     <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">slash</span>   <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">slash</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span> <span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[:</span><span class="n">slash</span><span class="p">]</span>
+        <span class="n">newname</span> <span class="o">=</span> <span class="n">fname</span> <span class="o">+</span> <span class="s2">&quot;_bak_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">year</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">month</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">day</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">hour</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">minute</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span>\
+                  <span class="nb">str</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">second</span><span class="p">)</span>
+        <span class="nb">print</span> <span class="s2">&quot;WARNING: Directory &quot;</span><span class="o">+</span><span class="n">fname</span><span class="o">+</span><span class="s2">&quot; already exists, renaming it to: &quot;</span><span class="o">+</span><span class="n">newname</span><span class="o">+</span><span class="s2">&quot;!&quot;</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span><span class="n">newname</span><span class="p">)</span></div>
+    
+<span class="c1">##########################################################################################</span>
+<div class="viewcode-block" id="regexfind"><a class="viewcode-back" href="../_stubs/recipes.regexfind.html#recipes.regexfind">[docs]</a><span class="k">def</span> <span class="nf">regexfind</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span><span class="n">expr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find regular expression in a NumPy array</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    arr : NumPy 1darray</span>
+<span class="sd">        Array of strings to search </span>
+<span class="sd">    expr : str</span>
+<span class="sd">        Regular expression to search for in the components of `arr`</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ind : NumPy 1darray</span>
+<span class="sd">        Index array of elements in `arr` that contain expression `expr`. If `expr` was not found</span>
+<span class="sd">        anywhere in `arr` an empty array is returned</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Suppose the array `arr` is given by</span>
+
+<span class="sd">    &gt;&gt;&gt; arr</span>
+<span class="sd">    array([&#39;L_a&#39;, &#39;L_b&#39;, &#39;R_a&#39;, &#39;R_b&#39;], </span>
+<span class="sd">      dtype=&#39;|S3&#39;)</span>
+
+<span class="sd">    If we want to find all elements of `arr` starting with `l_` or `L_` we could use</span>
+
+<span class="sd">    &gt;&gt;&gt; regexfind(arr,&quot;[Ll]_*&quot;)</span>
+<span class="sd">    array([0, 1])</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Sanity checks</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input must be a NumPy array/Python list, not &quot;</span><span class="o">+</span><span class="nb">type</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+    <span class="n">sha</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sha</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input must be a NumPy 1darray or Python list!&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">arr</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">el</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Every element in the input array has to be a string!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input expression has to be a string, not &quot;</span><span class="o">+</span><span class="nb">type</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Now do something: start by compiling the input expression</span>
+    <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+
+    <span class="c1"># Create a generalized function to find matches</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="nb">bool</span><span class="p">(</span><span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">x</span><span class="p">)))(</span><span class="n">arr</span><span class="p">)</span>
+
+    <span class="c1"># Get matching indices and return</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">match</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
