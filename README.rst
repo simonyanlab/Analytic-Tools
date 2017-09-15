@@ -39,8 +39,7 @@ Acknowledgements
 ================
 The Dystonia and Motor Control Laboratory is funded by the National Institute on Deafness and Other Communication Disorders, the National Institute of Neurological Disorders and Stroke, and the National Institutes of Health.
 
-.. figure:: ../pix/nih_med_hr2_med_hr.png
-   :height: 120
-   :figwidth: 400px
+.. figure:: docs/pix/nih_med_hr2_med_hr.png
+   :figwidth: 80%
    :alt: NIH
    :align: center
