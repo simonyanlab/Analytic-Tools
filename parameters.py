@@ -1,14 +1,14 @@
 # parameters.py - Default parameters for the NMM
 # 
-# Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
+# Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: June 23 2014
-# Last modified: <2016-11-23 14:57:18>
+# Last modified: <2017-09-15 16:45:07>
 
 from __future__ import division
 
 # ===============================================================================================
 # IMPORTANT NOTE: All variable names in this file have a specific meaning and must not be changed 
-#        	  to maintain compatibility with sim_tools.py!
+#        	  to maintain compatibility with `sim_tools.py`!
 # ===============================================================================================
 
 # File-name (including path if not in working directory) of HDF5 container that holds coupling matrix

@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: August 10 2017
-# Last modified: <2017-08-28 14:17:13>
+# Last modified: <2017-09-14 16:51:19>
 
 from __future__ import division
 import numpy as np
@@ -248,6 +248,9 @@ def make_brainsurf(surfname, orientation=True, orientation_lines=True, orientati
             colorcheck(eval(var),var)
         orientation_lcolor = orientation_lcolor.lower()
         orientation_fcolor = orientation_fcolor.lower()
+    else:
+        orientation_lines = False
+        orientation_labels = False
         
     # Finally, check `view`
     if view is not None:
@@ -389,6 +392,9 @@ def make_brainsurf(surfname, orientation=True, orientation_lines=True, orientati
     # ==========================================================================================
     # Set initial camera position (if `view == None` use default camera position)
     if view is not None:
+
+        # import ipdb
+        # ipdb.set_trace()
 
         # Initialize `scene` dict if necessary
         if not orientation_lines:

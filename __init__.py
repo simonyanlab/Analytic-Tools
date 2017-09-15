@@ -1,8 +1,8 @@
 # __init__.py - Assign import shortcuts
 # 
-# Author: Stefan Fuertinger [stefan.fuertinger@gmx.at]
-# Created: August 22 2012
-# Last modified: <2017-09-14 10:48:56>
+# Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
+# Created: May 22 2013
+# Last modified: <2017-09-15 16:44:47>
 
 import recipes
 import nws_tools as nwt

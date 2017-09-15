@@ -1,8 +1,8 @@
 # setup.py - Distutils script to build the the Cython extension of the model
 # 
-# Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
-# Created: June 25th 2014
-# Last modified: <2016-07-22 15:24:39>
+# Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
+# Created: June 25 2014
+# Last modified: <2017-09-15 16:46:14>
 
 from distutils.core import setup
 from distutils.extension import Extension

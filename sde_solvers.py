@@ -1,8 +1,8 @@
 # sde_solvers.py - Collection of numerical methods to solve (vector-valued) SDEs
 # 
-# Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
+# Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: February 19 2014
-# Last modified: <2015-01-29 12:19:17>
+# Last modified: <2017-09-15 11:31:25>
 
 from __future__ import division
 import numpy as np

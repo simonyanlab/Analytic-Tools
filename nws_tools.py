@@ -1,8 +1,8 @@
 # nws_tools.py - Collection of network creation/processing/analysis/plotting routines
 # 
-# Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
+# Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-07-17 17:05:43>
+# Last modified: <2017-09-15 16:05:40>
 
 from __future__ import division
 import numpy as np
@@ -21,6 +21,8 @@ from mpl_toolkits.mplot3d import Axes3D, proj3d
 from matplotlib.patches import FancyArrowPatch, Circle
 from matplotlib.colors import Normalize, colorConverter, LightSource
 import math
+
+from recipes import myglob
 
 ##########################################################################################
 def strengths_und(CIJ):
@@ -121,18 +123,15 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
 
     Parameters
     ----------
-    txtpath : string
+    txtpath : str
         Path to directory holding ROI-averaged time-series dumped in `txt` files.
-        The following file-naming convention is required
-
-                `sNxy_bla_bla.txt`,
-
+        The following file-naming convention is required `sNxy_bla_bla.txt`, 
         where `N` is the group id (1,2,3,...), `xy` denotes the subject number 
         (01,02,...,99 or 001,002,...,999) and anything else is separated 
         by underscores. The files will be read in lexicographic order,
         i.e., `s101_1.txt`, `s101_2.txt`,... or `s101_Amygdala.txt`, `s101_Beemygdala`,...
         See Notes for more details. 
-    corrtype : string
+    corrtype : str
         Specifier indicating which type of statistical dependence to use to compute 
         pairwise dependence. Currently supported options are 
 
@@ -156,20 +155,18 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
 
         corrs : NumPy 3darray
             `N`-by-`N` matrices of pair-wise regional statistical dependencies 
-	    of `numsubs` subjects. Format is 
-                    `corrs.shape = (N,N,numsubs)`,
-            such that
-                    `corrs[:,:,i]` = `N x N` statistical dependence matrix of `i`-th subject 
+	    of `numsubs` subjects. Format is `corrs.shape = (N,N,numsubs)` such that
+            `corrs[:,:,i]` = `N x N` statistical dependence matrix of `i`-th subject 
         bigmat : NumPy 3darray
             Tensor holding unprocessed time series of all subjects. Format is 
-                    `bigmat.shape = (tlen,N,numsubs)`,
-            where `tlen` is the maximum time-series-length across all subjects 
-            (if time-series of different lengths were used in the computation, 
-            any unfilled entries in `bigmat` will be NumPy `nan`'s, see Notes 
-            for details) and `N` is the number of regions (=nodes in the networks). 
+            `bigmat.shape = (tlen,N,numsubs)` where `tlen` is the maximum 
+            time-series-length across all subjects (if time-series of different 
+            lengths were used in the computation, any unfilled entries in `bigmat` 
+            will be NumPy `nan`'s, see Notes for details) and `N` is the number of 
+            regions (=nodes in the networks). 
         sublist : list of strings
             List of processed subjects specified by `txtpath`, e.g.,
-                    `sublist = ['s101','s103','s110','s111','s112',...]`
+            `sublist = ['s101','s103','s110','s111','s112',...]`
 
     Notes
     -----
@@ -183,7 +180,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
 
     See also
     --------
-    numpy.corrcoef : Pearson product-moment correlation coefficents
+    corrcoef : Pearson product-moment correlation coefficents computed in NumPy
     mutual_info : Compute (normalized) mutual information coefficients
     """
 
@@ -198,7 +195,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
 
     # Check `corrtype`
     if not isinstance(corrtype,(str,unicode)):
-        raise TypeError('Correlation type input must be a string, not '+type(corrtype).__name__+'!')
+        raise TypeError('Statistical dependence type input must be a string, not '+type(corrtype).__name__+'!')
     if corrtype != 'mi' and corrtype != 'pearson':
         raise ValueError("Currently, only Pearson and (N)MI supported!")
 
@@ -296,7 +293,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     # Allocate tensor to hold all time series
     bigmat = np.zeros((tlens.max(),numregs,numsubs)) + np.nan
 
-    # Allocate tensor holding correlation matrices of all subjects 
+    # Allocate tensor holding statistical dependence matrices of all subjects 
     corrs = np.zeros((numregs,numregs,numsubs))
 
     # Ready to do this...
@@ -311,7 +308,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
                 bigmat[:tlens[k],col,k] = ts_vec
                 col += 1
 
-        # Compute correlations based on corrtype
+        # Compute statistical dependence based on corrtype
         if corrtype == 'pearson':
             corrs[:,:,k] = np.corrcoef(bigmat[:tlens[k],:,k],rowvar=0,**kwargs)
         elif corrtype == 'mi':
@@ -324,25 +321,25 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
 ##########################################################################################
 def corrcheck(*args,**kwargs):
     """
-    Sanity checks for statistical dependence matrices (Pearson or NMI)
+    Sanity checks for statistical dependence matrices
     
     Parameters
     ----------
     Dynamic : Usage as follows
     corrcheck(A) : input is NumPy 2darray                    
-        shows some statistics for the correlation matrix `A`
+        shows some statistics for the statistical dependence matrix `A`
     corrcheck(A,label) : input is NumPy 2darray and `['string']`
         shows some statistics for the matrix `A` and uses
         `label`, a list containing one string, as title in figures. 
     corrcheck(A,B,C,...) : input are many NumPy 2darrays            
-        shows some statistics for the correlation matrices `A`, `B`, `C`,....
+        shows some statistics for the statistical dependence matrices `A`, `B`, `C`,....
     corrcheck(A,B,C,...,label) : input are many NumPy 2darrays and a list of strings      
-        shows some statistics for the correlation matrices `A`, `B`, `C`,....
+        shows some statistics for the statistical dependence matrices `A`, `B`, `C`,....
         and uses the list of strings `label` to generate titles in figures. 
         Note that `len(label)` has to be equal to the number of 
         input matrices. 
     corrcheck(T) : input is NumPy 3darray                    
-        shows some statistics for correlation matrices stored 
+        shows some statistics for statistical dependence matrices stored 
         in the tensor `T`. The storage scheme has to be
                 `T[:,:,0] = A`
 
@@ -472,7 +469,7 @@ def corrcheck(*args,**kwargs):
     if nmat <= cplot: cplot = nmat
     plt.ion()
 
-    # Now let's actually do something and plot the correlation matrices (show warning matrix if is not symmetric)
+    # Now let's actually do something and plot the statistical dependence matrices (show warning matrix if is not symmetric)
     fig = plt.figure(figsize=(8,8))
     if nofigname: figtitle = fig.canvas.get_window_title()
     fig.canvas.set_window_title(figtitle+': '+str(N)+' Nodes',)
@@ -488,13 +485,13 @@ def corrcheck(*args,**kwargs):
     fig.colorbar(im, cax=cbar_ax)
     plt.draw()
 
-    # Plot correlation histograms
+    # Plot statistical dependence histograms
     meanval = np.mean([minval,maxval])
     idx = np.nonzero(np.triu(np.ones((N,N)),1))
     NN  = (N**2 - N)/2
     fig = plt.figure(figsize=(8,8))
     if nofigname: figtitle = fig.canvas.get_window_title()
-    fig.canvas.set_window_title(figtitle+': '+"Correlation Histograms")
+    fig.canvas.set_window_title(figtitle+': '+"Statistical Dependence Histograms")
     bars = []; ylims = []
     for i in xrange(nmat):
         cvec = corrs[idx[0],idx[1],i]
@@ -525,7 +522,7 @@ def corrcheck(*args,**kwargs):
     # Diversity
     fig = plt.figure(figsize=(8,8))
     if nofigname: figtitle = fig.canvas.get_window_title()
-    fig.canvas.set_window_title(figtitle+': '+"Diversity of Correlations")
+    fig.canvas.set_window_title(figtitle+': '+"Diversity of Statistical Dependencies")
     xsteps = np.arange(1,N+1)
     stems = []; ylims = []
     for i in xrange(nmat):
@@ -548,10 +545,8 @@ def get_meannw(nws,percval=0.0):
     Parameters
     ----------
     nws : NumPy 3darray
-        `N`-by-`N` connection matrices of `numsubs` subjects. Format is 
-                `nws.shape = (N,N,numsubs)`,
-        such that
-                `nws[:,:,i] = N x N` connection matrix of `i`-th subject 
+        `N`-by-`N` connection matrices of `numsubs` subjects. Format is `nws.shape = (N,N,numsubs)` 
+        such that `nws[:,:,i] = N x N` connection matrix of `i`-th subject 
     percval : float
         Percentage value, such that connections not present in at least `percval`
         percent of subjects are not considered, thus `0 <= percval <= 1`.
@@ -570,13 +565,16 @@ def get_meannw(nws,percval=0.0):
     -----
     If the current setting of `percval` leads to a disconnected network, 
     the code increases `percval` in 5% steps to ensure connectedness of the group-averaged graph. 
-    The concept of using only a certain percentage of edges present in subjects was taken from 
-    M. van den Heuvel, O. Sporns: "Rich-Club Organization of the Human Connectome" (2011), J. Neurosci. 
-    Currently available `here <http://www.jneurosci.org/content/31/44/15775.full>`_
+    The concept of using only a certain percentage of edges present in subjects was taken from [1]_. 
     
     See also
     --------
     None
+
+    References
+    ----------
+    .. [1] M. van den Heuvel, O. Sporns. Rich-Club Organization of the Human Connectome. 
+           J. Neurosci, 31(44) 15775-15786, 2011. 
     """
 
     # Sanity checks
@@ -630,15 +628,13 @@ def get_meannw(nws,percval=0.0):
 ##########################################################################################
 def rm_negatives(corrs):
     """
-    Remove negative entries from correlation matrices
+    Remove negative entries from connection matrices
 
     Parameters
     ----------
     corrs : NumPy 3darray
-        An array of `K` correlation matrices of dimension `N`-by-`N`. Format is 
-                `corrs.shape = (N,N,K)`,
-        such that
-                `corrs[:,:,i]` is the `i`-th `N x N` correlation matrix
+        An array of `K` matrices of dimension `N`-by-`N`. Format is `corrs.shape = (N,N,K)`,
+        such that `corrs[:,:,i]` is the `i`-th `N x N` matrix
 
     Returns
     -------
@@ -664,7 +660,7 @@ def rm_negatives(corrs):
     for i in xrange(K):
         np.fill_diagonal(corrs[:,:,i],0)
 
-    # Remove negative correlations
+    # Remove negative entries
     nws = (corrs > 0)*corrs
 
     # Check if we lost some nodes...
@@ -686,10 +682,8 @@ def rm_selfies(conns):
     Parameters
     ----------
     conns : NumPy 3darray
-        An array of `K` connection matrices of dimension `N`-by-`N`. Format is 
-                `conns.shape = (N,N,K)`,
-        such that
-                `conns[:,:,i]` is the `i`-th `N x N` connection matrix
+        An array of `K` connection matrices of dimension `N`-by-`N`. Format is `conns.shape = (N,N,K)`,
+        such that `conns[:,:,i]` is the `i`-th `N x N` connection matrix
 
     Returns
     -------
@@ -723,10 +717,9 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
     Parameters
     ----------
     nws : NumPy 3darray
-        Undirected `N`-by-`N` (un)weighted connection matrices of `numsubs` subjects. Format is 
-                `corrs.shape = (N,N,numsubs)`,
-        such that
-                `corrs[:,:,i] = N x N` connection matrix of `i`-th subject 
+        Undirected `N`-by-`N` (un)weighted connection matrices of `numsubs` subjects. 
+        Format is `corrs.shape = (N,N,numsubs)` such that `corrs[:,:,i] = N x N` 
+        connection matrix of `i`-th subject 
     userdens : int
         By default, the input networks are thresholded down to the lowest common 
         connection density without disconnecting any nodes in the networks using 
@@ -1175,9 +1168,10 @@ def csv2dict(csvfile):
 
     Parameters
     ----------
-    csvfile : string 
+    csvfile : str
         File-name of (or full path to) the csv file holding the nodal coordinates.
         The format of this file HAS to be 
+
                  `x, y, z` 
 
                  `x, y, z` 
@@ -1188,13 +1182,15 @@ def csv2dict(csvfile):
 
                  .
 
-        for each node. Thus #rows = #nodes. 
+        for each node. Thus `#rows = #nodes`. 
 
     Returns
     -------
-    mydict : dictionary 
+    mydict : dict
         Nodal coordinates as read from the input csv file. Format is
+
                 `{0: (x, y, z),`
+
                 `{1: (x, y, z),`
 
                 `{2: (x, y, z),`
@@ -1203,7 +1199,7 @@ def csv2dict(csvfile):
 
                  .
 
-        Thus the dictionary has #nodes keys. 
+        Thus the dictionary has `#nodes` keys. 
     
     Notes
     -----
@@ -1241,14 +1237,15 @@ def csv2dict(csvfile):
 ##########################################################################################
 def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lwdths=[5,2,.1],nodecmap='jet',edgecmap='jet',textscale=3):
     """
-    Plots a 3d network using Mayavi
+    Plots a network in 3D using Mayavi
 
     Parameters
     ----------
     A : NumPy 2darray
         Square `N`-by-`N` connection matrix of the network
-    coords: dictionary 
+    coords: dict
         Nodal coordinates of the graph. Format is
+
                 `{0: (x, y, z),`
 
                 `{1: (x, y, z),`
@@ -1267,22 +1264,22 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
     sizevec : NumPy 1darray 
         Vector of nodal sizes. This could be degree, centrality, etc. Thus `sizevec` has to be of length 
         `N` and all its components must be `>= 0`. 
-    labels : Python list/NumPy 1darray
+    labels : list or NumPy 1darray
         Nodal labels. Format is `['Name1','Name2','Name3',...]` where the ordering HAS to be the same
         as in the `coords` dictionary. Note that the list/array has to have length `N`. 
-    threshs : Python list/NumPy 1darray
+    threshs : list or NumPy 1darray
         Thresholds for visualization. Edges with weights larger than `threshs[0]` are drawn 
         thickest, weights `> threshs[1]` are thinner and so on. Note that if `threshs[-1]>0` not all 
         edges of the network are plotted (since edges with `0 < weight < threshs[-1]` will be ignored). 
-    lwdths : Python list/NumPy 1darray
+    lwdths : list or NumPy 1darray
         Line-widths associated to the thresholds provided by `threshs`. Edges with weights larger than 
         `threshs[0]` are drawn with line-width `lwdths[0]`, edges with `weights > threshs[1]` 
         have line-width `lwdths[1]` and so on. Thus `len(lwdths) == len(threshs)`. 
-    nodecmap : string 
+    nodecmap : str 
         Mayavi colormap to be used for plotting nodes. See Notes for details. 
-    edgecmap : string 
+    edgecmap : str 
         Mayavi colormap to be used for plotting edges. See Notes for details. 
-    textscale : real number
+    textscale : float
         Scaling factor for labels (larger numbers -> larger text)
 
     Returns
@@ -1306,7 +1303,7 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
     try:
         from mayavi import mlab
     except: 
-        msg = 'Mayavi could not be imported. You might want to try show_nw, a slower (but more feature '\
+        msg = 'Mayavi could not be imported. You might want to try `show_nw`, a slower (but more feature '\
               +'rich) graph rendering routine based on Matplotlib.'
         raise ImportError(msg)
 
@@ -1437,14 +1434,15 @@ def shownet(A,coords,colorvec=None,sizevec=None,labels=None,threshs=[.8,.3,0],lw
 ##########################################################################################
 def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cmap(name='jet'),edgecmap=plt.get_cmap(name='jet'),linewidths=None,nodes3d=False,viewtype='axial'):
     """
-    Matplotlib-based plotting routine for 3d networks
+    Matplotlib-based plotting routine for networks
 
     Parameters
     ----------
     A : NumPy 2darray
         Square `N`-by-`N` connection matrix of the network
-    coords: dictionary 
+    coords: dict
         Nodal coordinates of the graph. Format is
+
                 `{0: (x, y, z),`
 
                 `{1: (x, y, z),`
@@ -1463,7 +1461,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
     sizevec : NumPy 1darray 
         Vector of nodal sizes. This could be degree, centrality, etc. Thus `sizevec` has to be of 
         length `N` and all its components must be `>= 0`. 
-    labels : Python list/NumPy 1darray
+    labels : list or NumPy 1darray
         Nodal labels. Format is `['Name1','Name2','Name3',...]` where the ordering HAS to be the same
         as in the `coords` dictionary. Note that the list/array has to have length `N`. 
     nodecmap : Matplotlib colormap
@@ -1480,6 +1478,7 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
         2d disks (faster).
     viewtype : str
         Camera position, `viewtype` can be one of the following
+
                 `axial (= axial_t)`       : Axial view from top down
 
                 `axial_t`                 : Axial view from top down
@@ -1662,9 +1661,9 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
     ----------
     nw : NumPy 2darray
         Connection matrix of input network
-    M : integer > 1
-        Number of random networks to generate
-    method : string
+    M : int
+        Number of random networks to generate (> 1)
+    method : str
         String specifying which method to use to randomize 
         the input network. Currently supported options are 
         `'auto'` (default), `'null_model_und_sign'`, `'randmio_und'`, `'randmio_und_connected'`, 
@@ -1674,19 +1673,17 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
         the the properties of the input network (directedness, edge-density, sign of 
         edge weights). In case of very dense networks (density > 75%) the `null_model`
         routines are used to at least shuffle the input network's edge weights. 
-    rwr : postive integer
-        Number of approximate rewirings per edge (default 5). 
-    rwr_max : positive integer
-        Maximal number of rewirings per edge to enforce randomization (default 10). 
+    rwr : int
+        Number of approximate rewirings per edge (default: 5). 
+    rwr_max : int
+        Maximal number of rewirings per edge to enforce randomization (default: 10). 
         Note that `rwr_max` has to be greater or equals than `rwr`. 
 
     Returns
     -------
     rnws : NumPy 3darray
-        Random networks based on input graph `nw`. Format is
-                `rnws.shape = (N,N,M)`
-        such that
-                `rnws[:,:,m] = m-th N x N` random network
+        Random networks based on input graph `nw`. Format is `rnws.shape = (N,N,M)`
+        such that `rnws[:,:,m] = m-th N x N` random network
 
     Notes
     -----
@@ -1844,8 +1841,7 @@ def hdfburp(f):
     -----
     This function takes an `h5py`-file object and creates variables in the caller's
     local name-space corresponding to the respective dataset-names in the file. 
-    The naming format of the generated variable is 
-        `groupname_datasetname`,
+    The naming format of the generated variables is `groupname_datasetname`,
     where the `groupname` is empty for datasets in the `root` directory of the file. 
     Thus, if a HDF5 file contains the datasets
         `/a`
@@ -1860,7 +1856,8 @@ def hdfburp(f):
 
         `/group2/b`
 
-    then the code below creates the variables
+    then this routine creates the variables
+
         `a`
 
         `b`
@@ -1878,7 +1875,7 @@ def hdfburp(f):
     The black magic part of the code was taken from Pykler's answer to 
     `this stackoverflow question <http://stackoverflow.com/questions/2515450/injecting-variables-into-the-callers-scope>`_
     
-    WARNING: EXISTING VARIABLES IN THE CALLER'S WORKSPACE WILL BE OVERWRITTEN!!!
+    WARNING: EXISTING VARIABLES IN THE CALLER'S WORKSPACE ARE MERCILESSLY OVERWRITTEN!!!
 
     See also
     --------
@@ -1978,7 +1975,7 @@ def normalize_time_series(time_series_array):
 ##########################################################################################
 def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
     """
-    Calculate the (normalized) mutual information matrix at zero lag
+    Calculate a (normalized) mutual information matrix at zero lag
 
     Parameters
     ----------
@@ -2363,13 +2360,13 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
 ##########################################################################################
 def issym(A,tol=1e-9):
     """
-    Check for symmetry of a 2d NumPy array A
+    Check for symmetry of a 2d NumPy array
 
     Parameters
     ----------
-    A : square NumPy 2darray
+    A : NumPy 2darray
         A presumably symmetric matrix
-    tol : positive real scalar
+    tol : float
         Tolerance :math:`\\tau` for checking if :math:`A` is sufficiently close to :math:`A^\\top`.
 
     Returns
@@ -2399,59 +2396,6 @@ def issym(A,tol=1e-9):
     return is_sym
 
 ##########################################################################################
-def myglob(flpath,spattern):
-    """
-    Return a glob-like list of paths matching a path-name pattern BUT support fancy shell syntax
-
-    Parameters
-    ----------
-    flpath : str
-        Path to search (to search current directory use `flpath=''` or `flpath='.'`
-    spattern : str
-        Pattern to search for in `flpath`
-
-    Returns
-    -------
-    flist : list
-        A Python list of all files found in `flpath` that match the input pattern `spattern`
-
-    Examples
-    --------
-    List all png/PNG files in the folder `MyHolidayFun` found under `Documents`
-
-    >>> filelist = myglob('Documents/MyHolidayFun','*.[Pp][Nn][Gg]')
-    >>> print filelist
-    >>> ['Documents/MyHolidayFun/img1.PNG','Documents/MyHolidayFun/img1.png']
-        
-    See also
-    --------
-    glob : Unix-style path-name and pattern expansion in Python
-    """
-
-    # Make sure provided path is a string and makes sense
-    if not isinstance(flpath,(str,unicode)):
-        raise TypeError('Filepath has to be a string!')
-    flpath = str(flpath)
-    if flpath.find("~") == 0:
-        flpath = os.path.expanduser('~') + flpath[1:]
-    slash = flpath.rfind(os.sep)
-    if slash >= 0 and not os.path.isdir(flpath[:flpath.rfind(os.sep)]):
-        raise ValueError('Invalid path: '+flpath+'!')
-    if not isinstance(spattern,(str,unicode)):
-        raise TypeError('Pattern has to be a string!')
-
-    # If user wants to search current directory, make sure that works as expected
-    if (flpath == '') or (flpath.count(' ') == len(flpath)):
-        flpath = '.'
-
-    # Append trailing slash to filepath
-    else:
-        if flpath[-1] != os.sep: flpath = flpath + os.sep
-
-    # Return glob-like list
-    return [os.path.join(flpath, fnm) for fnm in fnmatch.filter(os.listdir(flpath),spattern)]
-
-##########################################################################################
 def printdata(data,leadrow,leadcol,fname=None):
     """
     Pretty-print/-save array-like data
@@ -2466,7 +2410,7 @@ def printdata(data,leadrow,leadcol,fname=None):
     leadcol : Python list or NumPy 1darray
         List/array of length `M` providing labels to be printed in the first column of the table
         (strings/numerals or both)
-    fname : string
+    fname : str
         Name of a csv-file (with or without extension `.csv`) used to save the table 
         (WARNING: existing files will be overwritten!). Can also be a path + filename 
         (e.g., `fname='path/to/file.csv'`). By default output is not saved. 

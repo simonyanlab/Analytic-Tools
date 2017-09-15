@@ -1,8 +1,8 @@
-# stats_tools.py - Tools to perform statistical tests
+# stats_tools.py - Tools to assess group-wise statistical inference
 # 
-# Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
+# Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 30 2014
-# Last modified: <2016-05-05 11:17:07>
+# Last modified: <2017-09-15 16:51:51>
 
 from __future__ import division
 import numpy as np
@@ -140,9 +140,9 @@ def perm_test(X,Y,paired=None,useR=False,nperms=10000,tail='two',correction="max
     exercise induced an increase in heart rate, blood pressure and body temperature. 
     To test our hypotheses we use the following command
 
-    >>> perm_test(X,Y,paired=True,nperms=20000,tail='less',fname='stats.csv',\
-                  vars=['Heart Rate','Blood Pressure','Body Temperature'],\
-                  g1str='Before Exercise',g2str='After Exercise')
+    >>> perm_test(X,Y,paired=True,nperms=20000,tail='less',fname='stats.csv',
+    >>>           vars=['Heart Rate','Blood Pressure','Body Temperature'],
+    >>>           g1str='Before Exercise',g2str='After Exercise')
 
     which performs a lower-tailed paired permutation t-test with 20000 permutations, 
     prints the results to the prompt and also saves them in the file `stats.csv`. 
@@ -150,25 +150,27 @@ def perm_test(X,Y,paired=None,useR=False,nperms=10000,tail='two',correction="max
     References
     ----------
     .. [1] F. Pesarin. Multivariate Permutation Tests with Applications in Biostatistics.
-           Wiley, New York, 2001. 
+       Wiley, New York, 2001. 
     .. [2] A. Gramfort, M. Luessi, E. Larson, D. Engemann, D. Strohmeier, C. Brodbeck, L. Parkkonen, 
-           M. Haemaelaeinen. MNE software for processing MEG and EEG data. NeuroImage 86, 446-460, 2014
+       M. Haemaelaeinen. MNE software for processing MEG and EEG data. NeuroImage 86, 446-460, 2014
     """
 
     # Check mandatory inputs and make sure `X` and `Y` are tested for the same no. of variables
     try:
         [nsamples_x,n_testsx] = X.shape
-    except: raise TypeError('First input `X` has to be a NumPy 2darray!')
+    except:
+        raise TypeError('First input `X` has to be a NumPy 2darray!')
     try:
         [nsamples_y,n_testsy] = Y.shape
-    except: raise TypeError('First input `Y` has to be a NumPy 2darray!')
+    except:
+        raise TypeError('First input `Y` has to be a NumPy 2darray!')
 
     if n_testsx != n_testsy:
         raise ValueError('Number of variables different in `X` and `Y`!')
     n_tests = n_testsx
 
     for arr in [X,Y]:
-        if not plt.is_numlike(arr):
+        if not plt.is_numlike(arr) or not np.isreal(arr).all():
             raise ValueError('Inputs `X` and `Y` must be real-valued NumPy 2darrays')
         if np.isfinite(arr).min() == False:
             raise ValueError('Inputs `X` and `Y` must be real-valued NumPy 2darrays without Infs or NaNs!')
@@ -194,7 +196,7 @@ def perm_test(X,Y,paired=None,useR=False,nperms=10000,tail='two',correction="max
         raise TypeError("The switch `get_dist` has to be Boolean!")
 
     # Check `nperms`
-    if not np.isscalar(nperms) or not plt.is_numlike(nperms):
+    if not np.isscalar(nperms) or not plt.is_numlike(nperms) or not np.isreal(nperms).all():
         raise TypeError("The number of permutations has to be provided as scalar!")
     if not np.isfinite(nperms):
         raise TypeError("The number of permutations must be finite!")
@@ -475,8 +477,7 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
     --------
     texttable : a module for creating simple ASCII tables (currently available at the 
                 `Python Package Index <https://pypi.python.org/pypi/texttable/0.8.1>`_)
-    printdata : a function that pretty-prints/-saves data given in an array (part of 
-                `nws_tools.py <http://research.mssm.edu/simonyanlab/analytical-tools/nws_tools.printdata.html#nws_tools.printdata>`_)
+    printdata : a function that pretty-prints/-saves data given in an array (part of ``nws_tools.py``)
     """
 
     # Make sure that the groups, p-values and tested variables have appropriate dimensions

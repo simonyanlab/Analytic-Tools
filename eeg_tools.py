@@ -1,8 +1,8 @@
 # eeg_tools.py - Toolset to read/write EEG data
 # 
-# Author: Stefan Fuertinger [stefan.fuertinger@mssm.edu]
+# Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: March 19 2014
-# Last modified: <2016-12-23 10:02:35>
+# Last modified: <2017-09-15 16:41:38>
 
 from __future__ import division
 import numpy as np
@@ -49,7 +49,7 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
     stopdB : float
         Minimal frequency attentuation in the stopband (in dB). For `ftype = FIR` (see below) 
         `passdB` has to be equals `stopdB`.
-    ftype : string
+    ftype : str
         Type of filter to be used (either `IIR` = infinite impulse response filter, or
         `FIR` = finite impulse response filter). 
     verbose : bool
@@ -77,44 +77,45 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
     filters the offset is calculated as 0.5 times the width of the pass-band. The following
     skteches illustrate the filter's operating modes
 
+    :: 
 
-    Amplification 
-    (dB)
-    /\
-    ||            Low-pass
-    || ---------------------+
-    ||                      |\
-    ||                      | \
-    ||                      |  +---------
-    ||               PASS   |OS|   STOP
-    || 
-    ++===================================> Frequency (Hz)
-
-
-    Amplification 
-    (dB)
-    /\
-    ||            High-pass
-    ||           +------------------------
-    ||          /|	    
-    ||         / |	    
-    || -------+  |	    
-    || STOP   |OS|   PASS  
-    || 
-    ++===================================> Frequency (Hz)
+       Amplification 
+       (dB)
+       / \\
+       ||            Low-pass
+       || ---------------------+
+       ||                      |\\
+       ||                      | \\
+       ||                      |  +---------
+       ||               PASS   |OS|   STOP
+       || 
+       ++===================================> Frequency (Hz)
 
 
-    Amplification 
-    (dB)
-    /\
-    ||            Band-pass
-    ||	         +----------+
-    ||	        /|	    |\
-    ||         / |	    | \
-    || -------+  |	    |  +---------
-    || STOP   |OS|   PASS   |OS|   STOP
-    ||
-    ++===================================> Frequency (Hz)
+       Amplification 
+       (dB)
+       /\\
+       ||            High-pass
+       ||           +------------------------
+       ||          /|	    
+       ||         / |	    
+       || -------+  |	    
+       || STOP   |OS|   PASS  
+       || 
+       ++===================================> Frequency (Hz)
+
+
+       Amplification 
+       (dB)
+       /\\
+       ||            Band-pass
+       ||	    +----------+
+       ||	   /|          |\\
+       ||         / |	       | \\
+       || -------+  |	       |  +---------
+       || STOP   |OS|   PASS   |OS|   STOP
+       ||
+       ++===================================> Frequency (Hz)
 
 
     Where `STOP` = stop-band, `OS` = offset, `PASS` = pass-band. 
@@ -166,7 +167,7 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
     scipy.signal.lfilter : filters the input signal using calculated Butterworth filter design
     """
 
-    # Sanity checks: signal
+    # Sanity checks: `signal`
     try:
         stu = signal.shape
     except:
@@ -175,19 +176,18 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
         raise ValueError('Signal must be a 1d/2d NumPy array')
     if max(stu) == 1:
         raise ValueError('Signal only consists of one datapoint!')
-    if np.isnan(signal).max()==True or np.isinf(signal).max()==True or np.isreal(signal).min()==False:
+    if not plt.is_numlike(signal) or not np.isreal(signal).all():
+        raise TypeError('Signal must be a real-valued '+dim_msg+' NumPy array!')
+    if np.isfinite(signal).min() == False:
         raise ValueError('Signal must be a real valued NumPy array without Infs or NaNs!')
 
     # Both cutoffs undefined
     if (locut is None) and (hicut is None):
-        raise ValueError('Both cutoff frequencies are None!')
+        raise ValueError('Both cutoff frequencies are `None`!')
 
     # Sampling rate
-    try:
-        bad = (srate <= 0)
-    except: 
-        raise TypeError('Sampling rate has to be a strictly positive number, not '+type(srate).__name__+'!')
-    if bad:
+    scalarcheck(srate,'srate')
+    if srate <= 0:
         raise ValueError('Sampling rate hast to be > 0!')
 
     # Compute Nyquist frequency and initialize passfreq
@@ -196,33 +196,20 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
 
     # Lower cutoff frequency
     if locut is not None:
-        try:
-            bad = (locut < 0)
-        except: 
-            raise TypeError('Locut has to be None or lower cutoff frequency, not '+type(locut).__name__+'!')
-        if bad:
-            raise ValueError('Locut frequency has to be >= 0!')
+        scalarcheck(locut,'locut',bounds=[0,np.inf])
     else:
         passfreq = hicut/nyq
 
     # Higher cutoff frequency
     if hicut is not None:
-        try:
-            bad = (hicut < 0)
-        except: 
-            raise TypeError('Hicut has to be None or higher cutoff frequency, not '+type(hicut).__name__+'!')
-        if bad:
-            raise ValueError('Hicut frequency has to be >= 0!')
+        scalarcheck(hicut,'hicut',bounds=[0,np.inf])
     else:
         passfreq = locut/nyq
 
     # Offset frequency for filter
     if offset is not None:
-        try:
-            bad = (offset <= 0)
-        except:
-            raise TypeError('Frequency offset has to be a strictly positive number, not '+type(offset).__name__+'!')
-        if bad:
+        scalarcheck(offset,'offset',)
+        if offset <= 0:
             raise ValueError('Frequency offset has to be > 0!')
 
         # Adjust offset for Nyquist frequency
@@ -238,31 +225,23 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
             offset = offmult*passfreq
 
     # Filter type
-    try:
-        bad = (ftype != 'IIR') and (ftype != 'FIR')
-    except:
-        raise TypeError('Filtertype has to be either FIR or IIR, not '+type(ftype).__name__+'!')
-    if bad:
+    if not isinstance(ftype,(str,unicode)):
+        raise TypeError("Filtertype has to be either 'FIR' or 'IIR', not "+type(ftype).__name__+'!')
+    if (ftype != 'IIR') and (ftype != 'FIR'):
         raise ValueError('Filtertype has to be either FIR or IIR!')
 
     # Passband decibel value
     userpass = False
+    scalarcheck(passdB,'passdB')
     if passdB != 1.0:
-        try: 
-            bad = (passdB <= 0)
-        except:
-            raise TypeError('Passband dB has to be a strictly positive number, not '+type(passdB).__name__+'!')
-        if bad:
+        if passdB <= 0:
             raise ValueError('Passband dB has to be > 0!')
         userpass = True
 
     # Stopband decibel value
+    scalarcheck(stopdB,'stopdB')
     if stopdB != 30:
-        try: 
-            bad = (stopdB <= 0)
-        except:
-            raise TypeError('Stopband dB has to be a strictly positive number, not '+type(stopdB).__name__+'!')
-        if bad:
+        if stopdB <= 0:
             raise ValueError('Stopband dB has to be > 0!')
         userpass = True
 
@@ -297,7 +276,8 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
     else:
         ftype    = 'bandpass'
         passfreq = [locut/nyq,hicut/nyq]
-        if offset is None: offset = offmult*(passfreq[1] - passfreq[0])
+        if offset is None:
+            offset = offmult*(passfreq[1] - passfreq[0])
         stopfreq = [passfreq[0] - offset, passfreq[1] + offset]
         if (stopfreq[0] > passfreq[0]) or (stopfreq[1] < passfreq[1]):
             raise ValueError('Stopband is inside the passband!')
@@ -357,14 +337,14 @@ def bcd(int_in):
 ##########################################################################################
 def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     """
-    Read raw EEG data from binary *.EEG/*.eeg and *.21E files
+    Read raw EEG data from binary `*.EEG/*.eeg` and `*.21E` files
 
     Parameters
     ----------
-    eegpath : string
+    eegpath : str
         Path to the *.EEG/*.eeg file (the code assumes that the corresponding *.21E/*.21e file is 
         in the same location)
-    outfile : string
+    outfile : str
         Path specifying the HDF5 file to be created. WARNING: File MUST NOT exist!
     electrodelist : list
         Python list of strings holding names of electrodes to be saved (if not the entire 
@@ -438,15 +418,15 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     If only the electrodes 'RFA1' and 'RFA3' are of interest and the read-out should be saved
     by the respective electrode names then the following command could be used
 
-    >> read_eeg('mytest/test.eeg','Results/test.h5',electrodelist=['RFA1','RFA3'],savemat=False)
+    >>> read_eeg('mytest/test.eeg','Results/test.h5',electrodelist=['RFA1','RFA3'],savemat=False)
 
     In this case the `EEG` group of the resulting HDF5 file looks like this
 
-    >> f = h5py.File('Results/test.h5')
-    >> f['EEG'].keys()
-    >> ['RFA1', 'RFA3']
-    >> f['EEG']['RFA1'].value
-    >> array([32079, 32045, 32001, ..., 33607, 33556, 33530], dtype=uint16)
+    >>> f = h5py.File('Results/test.h5')
+    >>> f['EEG'].keys()
+    >>> ['RFA1', 'RFA3']
+    >>> f['EEG']['RFA1'].value
+    >>> array([32079, 32045, 32001, ..., 33607, 33556, 33530], dtype=uint16)
 
     Thus, the electrode time-courses are saved using the respective electrode names. 
 
@@ -455,16 +435,15 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     h5py : A Pythonic interface to the HDF5 binary data format
     """
 
-    # Make sure eegpath is a regular string and doesn't contain any unicode weirdness 
-    # (and expand "~" if present)
-    if str(eegpath) != eegpath:
+    # Make sure `eegpath` is a string and expand "~" if present
+    if not isinstance(eegpath,(str,unicode)):
         raise TypeError('Input has to be a string specifying the path/name of the EEG files!')
     eegpath = str(eegpath)
     if eegpath.find("~") == 0:
         eegpath = os.path.expanduser('~') + eegpath[1:]
 
-    # Same for outfile: no unicode and additionally check if the path is valid
-    if str(outfile) != outfile:
+    # Same for `outfile`: additionally check if the path is valid
+    if not isinstance(outfile,(str,unicode)):
         raise TypeError('Output filename has to be a string!')
     outfile = str(outfile)
     if outfile.find("~") == 0:
@@ -475,12 +454,12 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     if os.path.isfile(outfile): 
         raise ValueError("Target HDF5 container already exists!")
 
-    if electrodelist is not None: 
-        try: le = len(electrodelist)
-        except:
-            raise TypeError('Input electrodlist must be a Python list!')
-        if le == 0:
-            raise ValueError('Input electrodelist has length 0!')
+    # Check `electrodelist`
+    if electrodelist is not None:
+        if not isinstance(electrodelist,(list,np.ndarray)):
+            raise TypeError('Input `electrodlist` must be a Python list!')
+        if len(electrodelist) == 0:
+            raise ValueError('Input `electrodelist` has length 0!')
 
     # Make sure `savemat` is Boolean
     if not isinstance(savemat,bool):
@@ -575,7 +554,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
     T_minute = bcd(int(np.fromfile(fid,dtype='uint8',count=1)))
     T_second = bcd(int(np.fromfile(fid,dtype='uint8',count=1)))
 
-    # Expand T_year to full format and account for millenium (i.e., 13 -> 2013, 96 -> 1996)
+    # Expand `T_year` to full format and account for millenium (i.e., 13 -> 2013, 96 -> 1996)
     if T_year < 30:
         T_year = 2000 + T_year
     else:
@@ -646,7 +625,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
         # Skip 6 bits starting at current position
         fid.seek(6,1)
 
-        # Read channel sensitivity and determine CAL in microvolts
+        # Read channel sensitivity and determine `CAL` in microvolts
         chan_sens = np.fromfile(fid,dtype='uint8',count=1)
         CAL       = CALopts[int(np.fromfile(fid,dtype='uint8',count=1))]
         GAIN[i]   = CAL/AD_val
@@ -671,11 +650,11 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
         # In case the electrodlist was not ordered as the binary file, fix this 
         idxlist.sort()
 
-        # Synchronize goodElec and electrodelist
+        # Synchronize `goodElec` and `electrodelist`
         goodElec[:]       = False 
         goodElec[idxlist] = True
 
-    # The indexlist is the whole "good" goodElec array
+    # The indexlist is the whole "good" `goodElec` array
     else:
         idxlist = np.nonzero(goodElec)[0].tolist()
 
@@ -775,7 +754,7 @@ def read_eeg(eegpath,outfile,electrodelist=None,savemat=True):
 ##########################################################################################
 def load_data(h5file,nodes=None):
     """
-    Load data from HDF5 container generated with read_eeg
+    Load data from HDF5 container generated with `read_eeg`
 
     Parameters
     ----------
@@ -790,7 +769,7 @@ def load_data(h5file,nodes=None):
     Returns
     -------
     data : NumPy 2darray
-        A #nodes-by-#samples array holding the data in float64 format
+        A `#nodes`-by-`#samples` array holding the data in float64 format
 
     Notes
     -----
@@ -857,7 +836,7 @@ def load_data(h5file,nodes=None):
     CAL = f['EEG'].attrs['CAL']
     N   = f['EEG'].attrs['numSamples']
 
-    # Extract data from HDF5 file and divide by upper bound of dtype (-> values b/w -1/+1), multiply by CAL
+    # Extract data from HDF5 file and divide by upper bound of dtype (-> values b/w -1/+1), multiply by `CAL`
     data = np.zeros((len(idx),N))
     if (ismat):
         dt = f['EEG']['eeg_mat'].dtype
@@ -889,7 +868,7 @@ def MA(signal, window_size, past=True):
         devices, etc.) and `N` is the number of observations/measurements. Smoothing is performed along the 
         second axis, i.e., for each source all `N` observations are smoothed independently of each other
         using the same moving average window. 
-    window_size : scalar
+    window_size : int
         Positive scalar defining the size of the window to average over
     past : bool
         If `past = True` then only preceding data is used to calculate the moving average. In addition, 
@@ -923,20 +902,20 @@ def MA(signal, window_size, past=True):
     try:
         shs = signal.shape
     except:
-        raise TypeError("Input `signal` must be a NumPy 1d/2darray, not "+type(signal).__name__+"!")
+        raise TypeError('Signal must be a 1d/2d NumPy array, not '+type(signal).__name__+'!')
     if len(shs) > 2:
-        raise ValueError("Input `signal` must be a NumPy 1d/2darray!")
-    if np.max(shs) < 2:
-        raise ValueError("Input `signal` is an array of only one element! ")
-    if np.isnan(signal).max() == True or np.isinf(signal).max() == True or np.isreal(signal).min() == False:
-        raise ValueError("Input `signal` must be real without NaNs or Infs!")
+        raise ValueError('Signal must be a 1d/2d NumPy array')
+    if max(shs) == 1:
+        raise ValueError('Signal only consists of one datapoint!')
+    if not plt.is_numlike(signal) or not np.isreal(signal).all():
+        raise TypeError('Signal must be a real-valued '+dim_msg+' NumPy array!')
+    if np.isfinite(signal).min() == False:
+        raise ValueError('Signal must be a real valued NumPy array without Infs or NaNs!')
 
-    try:
-        bad = window_size <= 0
-    except:
-        raise TypeError("Input window-size must be a positive scalar, not "+type(window_size).__name__+"!")
-    if bad:
-        raise ValueError("Input window-size must be a positive scalar!")
+    # Check `window_size`
+    scalarcheck(window_size,'window_size',kind='int')
+    if window_size <= 0:
+        raise ValueError("Input `window-size` must be a positive integer!")
 
     # Check if `past` is Boolean
     if not isinstance(past,bool):
@@ -946,7 +925,8 @@ def MA(signal, window_size, past=True):
     if past:
 
         # If the signal is 1D, reshape it so that the for loops work
-        if len(shs) < 2: signal = signal.reshape((1,signal.size))
+        if len(shs) < 2:
+            signal = signal.reshape((1,signal.size))
 
         # Allocate space for output
         ma_signal = np.zeros(signal.shape)
@@ -974,7 +954,7 @@ def MA(signal, window_size, past=True):
 
         return ma_signal, sd_signal
 
-    # Much faster: use a convolution to compute the mean over [-window_size/2,0,window_size/2]
+    # Much faster: use a convolution to compute the mean over `[-window_size/2,0,window_size/2]`
     else:
         
         # Assemble window and compute moving average of signal
@@ -1000,18 +980,28 @@ def time2ind(h5file,t_start,t_end):
 
     Returns
     -------
-    ind_start : integer
+    ind_start : int
         Index of iEEG array corresponding to provided start time `t_start`
-    ind_stop : integer
+    ind_stop : int
         Index of iEEG array corresponding to provided end time `t_stop`
 
     See also
     --------
-    load_eeg : Load data from HDF5 container generated with read_eeg
+    load_data : Load data from HDF5 container generated with read_eeg
     """
 
     # Check if input HDF5 container makes sense
     f, closefile, ismat, ec_list = check_hdf(h5file)
+
+    # Check start/end times
+    for t_lst in [t_start, t_end]:
+        if not isinstance(t_lst,(list,np.ndarray)):
+            raise TypeError('Start and end times must be Python lists!')
+        if len(t_lst) != 3:
+            raise ValueError("Start and end times must be 3-element lists")
+        scalarcheck(t_lst[0],'Start/end hour',kind='int',bounds=[0,23])
+        scalarcheck(t_lst[1],'Start/end minute',kind='int',bounds=[0,59])
+        scalarcheck(t_lst[2],'Start/end second',kind='int',bounds=[0,59])
 
     # Read session date and sampling rate from file
     sess_start = f['EEG'].attrs['record_date']
@@ -1069,6 +1059,9 @@ def time2ind(h5file,t_start,t_end):
 
 ##########################################################################################
 def check_hdf(h5file):
+    """
+    Local helper function performing sanity checks on HDF5 containers
+    """
 
     # See if we can open provided HDF5 container
     if str(h5file) == h5file:
@@ -1100,6 +1093,25 @@ def check_hdf(h5file):
         ec_list = f['EEG'].keys()
 
     # Return HDF5 file object and tell caller if 
-    # container uses an array (ismat = True) or named list storage format and
-    # if the file needs to be closed at the end(closefile = True)
+    # container uses an array (`ismat = True`) or named list storage format and
+    # if the file needs to be closed at the end (`closefile = True`)
     return f, closefile, ismat, ec_list
+
+##########################################################################################
+def scalarcheck(val,varname,kind=None,bounds=None):
+    """
+    Local helper function performing sanity checks on scalars
+    """
+
+    if not np.isscalar(val) or not plt.is_numlike(val) or not np.isreal(val).all():
+        raise TypeError("Input `"+varname+"` must be a real scalar!")
+    if not np.isfinite(val):
+        raise TypeError("Input `"+varname+"` must be finite!")
+
+    if kind == 'int':
+        if (round(val) != val):
+            raise ValueError("Input `"+varname+"` must be an integer!")
+
+    if bounds is not None:
+        if val < bounds[0] or val > bounds[1]:
+            raise ValueError("Input scalar `"+varname+"` must be between "+str(bounds[0])+" and "+str(bounds[1])+"!")
