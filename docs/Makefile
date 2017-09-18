@@ -26,6 +26,7 @@ clean:
 
 # Build documentation in `gh-pages` branch
 gh-pages:
+	cd ..
 	git checkout gh-pages
 	rm -rf _images _modules _sources _static _stubs
 	git checkout master docs *.py *.pyx
