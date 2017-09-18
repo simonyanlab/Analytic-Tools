@@ -50,7 +50,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="../index.html">
+        <a class="navbar-brand" href="../README.html">
           Analytic Tools Documentation</a>
         <span class="navbar-text navbar-version pull-left"><b></b></span>
       </div>
@@ -66,7 +66,7 @@
      id="dLabelGlobalToc"
      data-toggle="dropdown"
      data-target="#"
-     href="../index.html">Browse <b class="caret"></b></a>
+     href="../README.html">Browse <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
       role="menu"
       aria-labelledby="dLabelGlobalToc"><ul>
@@ -224,12 +224,12 @@ the alternative hypothesis is that the means of the data are different (&#8216;t
 <blockquote>
 <div><p>Multiplicity correction method. If the <cite>R</cite> package <cite>flip</cite> is not used for testing (<cite>useR = False</cite>)
 this option is ignored, since <cite>MNE</cite>&#8216;s permutation t-test only supports <cite>p</cite>-value correction using 
-the maximal test statistic <cite>Tmax</cite> <a class="reference internal" href="#r7" id="id1">[R7]</a>. 
+the maximal test statistic <cite>Tmax</cite> <a class="reference internal" href="#r14" id="id1">[R14]</a>. 
 Otherwise (either if <cite>paired = False</cite> or <cite>useR = True</cite>) the <cite>R</cite> library <cite>flip</cite> is used which 
 supports the options
 &#8220;holm&#8221;, &#8220;hochberg&#8221;, &#8220;hommel&#8221;, &#8220;bonferroni&#8221;, &#8220;BH&#8221;, &#8220;BY&#8221;, &#8220;fdr&#8221;, &#8220;none&#8221;, &#8220;Fisher&#8221;, &#8220;Liptak&#8221;, 
 &#8220;Tippett&#8221;, &#8220;MahalanobisT&#8221;, &#8220;MahalanobisP&#8221;, &#8220;minP&#8221;, &#8220;maxT&#8221;, &#8220;maxTstd&#8221;, &#8220;sumT&#8221;, &#8220;Direct&#8221;, 
-&#8220;sumTstd&#8221;, &#8220;sumT2&#8221; (see <a class="reference internal" href="#r6" id="id2">[R6]</a> for a detailed explanation). By default &#8220;maxT&#8221; 
+&#8220;sumTstd&#8221;, &#8220;sumT2&#8221; (see <a class="reference internal" href="#r13" id="id2">[R13]</a> for a detailed explanation). By default &#8220;maxT&#8221; 
 is used.</p>
 </div></blockquote>
 <p><strong>get_dist</strong> : bool</p>
@@ -242,7 +242,7 @@ returned (by default it is not returned).</p>
 <div><p>Only relevant if testing is done in <cite>R</cite> (<cite>useR = True</cite> or <cite>paired = False</cite>). If <cite>mth</cite> is 
 not specified a permutation t-test will be performed. Available (but completely untested!)
 options are: &#8220;t&#8221;, &#8220;F&#8221;, &#8220;ANOVA&#8221;,&#8221;Kruskal-Wallis&#8221;, &#8220;kruskal&#8221;, &#8220;Mann-Whitney&#8221;, &#8220;sum&#8221;, 
-&#8220;Wilcoxon&#8221;, &#8220;rank&#8221;, &#8220;Sign&#8221; (see <a class="reference internal" href="#r6" id="id3">[R6]</a> for details). Note that by design this wrapper only 
+&#8220;Wilcoxon&#8221;, &#8220;rank&#8221;, &#8220;Sign&#8221; (see <a class="reference internal" href="#r13" id="id3">[R13]</a> for details). Note that by design this wrapper only 
 supports two-sample problems (<cite>X</cite> and <cite>Y</cite>). To analyze <cite>k</cite>-sample data using, e.g., an ANOVA,
 please refer to the <cite>flip</cite> package directly.</p>
 </div></blockquote>
@@ -303,25 +303,25 @@ is created for the employed sampling distribution.</p>
 <p class="rubric">Notes</p>
 <p>This routine is merely a wrapper and does not do any heavy computational lifting.  
 In case of paired data and <cite>useR = False</cite> the function <cite>permutation_t_test</cite> of 
-the <cite>MNE</cite> package <a class="reference internal" href="#r7" id="id5">[R7]</a> is called. 
+the <cite>MNE</cite> package <a class="reference internal" href="#r14" id="id5">[R14]</a> is called. 
 If the samples are independent (<cite>paired = False</cite>) or <cite>useR = True</cite> the <cite>R</cite> 
-library <cite>flip</cite> <a class="reference internal" href="#r6" id="id6">[R6]</a> is loaded. Thus, this routine has a 
+library <cite>flip</cite> <a class="reference internal" href="#r13" id="id6">[R13]</a> is loaded. Thus, this routine has a 
 number of dependencies: for paired data at least the Python package <cite>mne</cite> is required, 
 unpaired samples can only be tested if <cite>pandas</cite> as well as <cite>rpy2</cite> (for <cite>R</cite>/Python conversion)
 and, of course, <cite>R</cite> and the <cite>R</cite>-library <cite>flip</cite> are installed (and in the search path). 
 To show/save results the routine <cite>printstats</cite> (part of this module) is called.</p>
 <p class="rubric">References</p>
-<table class="docutils citation" frame="void" id="r6" rules="none">
+<table class="docutils citation" frame="void" id="r13" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[R6]</td><td><em>(<a class="fn-backref" href="#id2">1</a>, <a class="fn-backref" href="#id3">2</a>, <a class="fn-backref" href="#id6">3</a>, <a class="fn-backref" href="#id7">4</a>)</em> F. Pesarin. Multivariate Permutation Tests with Applications in Biostatistics.
+<tr><td class="label">[R13]</td><td><em>(<a class="fn-backref" href="#id2">1</a>, <a class="fn-backref" href="#id3">2</a>, <a class="fn-backref" href="#id6">3</a>, <a class="fn-backref" href="#id7">4</a>)</em> F. Pesarin. Multivariate Permutation Tests with Applications in Biostatistics.
 Wiley, New York, 2001.</td></tr>
 </tbody>
 </table>
-<table class="docutils citation" frame="void" id="r7" rules="none">
+<table class="docutils citation" frame="void" id="r14" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[R7]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id5">2</a>, <a class="fn-backref" href="#id8">3</a>)</em> A. Gramfort, M. Luessi, E. Larson, D. Engemann, D. Strohmeier, C. Brodbeck, L. Parkkonen, 
+<tr><td class="label">[R14]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id5">2</a>, <a class="fn-backref" href="#id8">3</a>)</em> A. Gramfort, M. Luessi, E. Larson, D. Engemann, D. Strohmeier, C. Brodbeck, L. Parkkonen, 
 M. Haemaelaeinen. MNE software for processing MEG and EEG data. NeuroImage 86, 446-460, 2014</td></tr>
 </tbody>
 </table>
