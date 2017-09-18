@@ -20,7 +20,8 @@ The implemented routines provide functionality to
 * render the spatial embedding of networks in three-dimensional brain surfaces
 * simulate brain activity using a biological neural population model
 
-To get started clone or download the repository and visit the LINKdocumentationLINK. 
+To get started clone or download the repository and visit the
+`documentation <https://pantaray.github.io/Analytic-Tools/>`_. 
 
 Contact
 =======
@@ -40,6 +41,6 @@ Acknowledgements
 The Dystonia and Motor Control Laboratory is funded by the National Institute on Deafness and Other Communication Disorders, the National Institute of Neurological Disorders and Stroke, and the National Institutes of Health.
 
 .. figure:: docs/pix/nih_med_hr2_med_hr.png
-   :figwidth: 80%
+   :figwidth: 70%
    :alt: NIH
    :align: center
