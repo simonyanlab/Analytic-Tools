@@ -79,22 +79,22 @@ overview of available routines sorted by application area.
 .. |simlink| replace:: :ref:`Launching a Simulation <simulate>`
 .. |toollink| replace:: :ref:`Working with the Model <tools>`
 
-.. _NWTools: index.html#networksection
+.. _NWTools: #networksection
 .. |NWTools| replace:: **Network Science**
 
-.. _IntVis: index.html#plotlysection
+.. _IntVis: #plotlysection
 .. |IntVis| replace:: **Interactive Brain Network Visualization**
 
-.. _EEGTools: index.html#eegsection
+.. _EEGTools: #eegsection
 .. |EEGTools| replace:: **Intracranial EEG Data Processing**
 
-.. _StatsTools: index.html#statssection
+.. _StatsTools: #statssection
 .. |StatsTools| replace:: **Comparative Statistics**
 
-.. _Recipes: index.html#recipesection
+.. _Recipes: #recipesection
 .. |Recipes| replace:: **General-Purpose Convenience Functions**
 
-.. _NModel: index.html#modelsection
+.. _NModel: #modelsection
 .. |NModel| replace:: **Neural Population Modeling**
 			
 Getting Started
@@ -292,7 +292,7 @@ Intracranial EEG Data Processing
 The module ``eeg_tools.py`` contains a number of routines that we developed for our research
 in human intracranial electrophysiology.
 
-**Note:** These codes are work in progress that were designed with our specific workflow requirements
+**Note:** These codes are work in progress designed with our specific workflow requirements
 in mind. If you need a widely tested, full-fledged general purpose toolbox to analyze
 electrophysiological data, consider using `FieldTrip <http://www.fieldtriptoolbox.org/>`_. 
 

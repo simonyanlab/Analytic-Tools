@@ -143,6 +143,10 @@ html_title = ''
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+# A list of paths that contain extra files not directly related to the documentation,
+# such as robots.txt or .htaccess.
+html_extra_path = ['external_html']
+
 # If true, links to the reST sources are added to the pages.
 html_show_sourcelink = False
 
