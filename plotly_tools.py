@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: August 10 2017
-# Last modified: <2017-09-14 16:51:19>
+# Last modified: <2017-10-09 14:05:23>
 
 from __future__ import division
 import numpy as np
@@ -73,7 +73,7 @@ def cmap_plt2js(cmap, cmin=0.0, cmax=1.0, Ncols=None):
     """
 
     # Make sure that our single mandatory input argument makes sense
-    if type(cmap).__name__ != 'LinearSegmentedColormap':
+    if type(cmap).__name__.find('Colormap') < 0:
         raise TypeError('Input colormap `cmap` has to be a Matplotlib colormap!')
 
     # Check colormap bounds

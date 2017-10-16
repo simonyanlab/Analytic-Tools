@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-09-15 16:05:40>
+# Last modified: <2017-10-16 16:22:21>
 
 from __future__ import division
 import numpy as np
@@ -127,7 +127,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
         Path to directory holding ROI-averaged time-series dumped in `txt` files.
         The following file-naming convention is required `sNxy_bla_bla.txt`, 
         where `N` is the group id (1,2,3,...), `xy` denotes the subject number 
-        (01,02,...,99 or 001,002,...,999) and anything else is separated 
+        (01,02,...,99 or 001,002,...,999) and everything else is separated 
         by underscores. The files will be read in lexicographic order,
         i.e., `s101_1.txt`, `s101_2.txt`,... or `s101_Amygdala.txt`, `s101_Beemygdala`,...
         See Notes for more details. 
@@ -249,10 +249,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
         msg = "Processing "
 
     # Talk to the user
-    substr = str(sublist)
-    substr = substr.replace('[','')
-    substr = substr.replace(']','')
-    print msg+str(numsubs)+" subjects: "+substr
+    print msg+str(numsubs)+" subjects: "+"".join(sb+", " for sb in sublist)[:-2]
 
     # Get number of regions
     numregs = ''.join(txtfiles).count(subject)
@@ -265,7 +262,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     for k in xrange(numsubs):
         roi = 0
         for fl in txtfiles:
-            if fl.count(sublist[k]):
+            if fl.count(sublist[k]+"_"):        # make sure we differentiate b/w "s1_*.txt" and "s10_.txt"...
                 try:
                     ts_vec = np.loadtxt(fl)
                 except:
@@ -303,7 +300,7 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     for k in xrange(numsubs):
         col = 0
         for fl in txtfiles:
-            if fl.count(sublist[k]):
+            if fl.count(sublist[k]+"_"): 
                 ts_vec = np.loadtxt(fl)
                 bigmat[:tlens[k],col,k] = ts_vec
                 col += 1
@@ -1731,11 +1728,8 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
                  "randmio_dir_connected","randmio_dir","null_model_dir_sign",\
                  "randmio_und_signed","randmio_dir_signed"]
     if supported.count(method) == 0:
-        sp_str = str(supported)
-        sp_str = sp_str.replace('[','')
-        sp_str = sp_str.replace(']','')
         msg = 'Network cannot be randomized with `'+str(method)+\
-              '`. Available options are: '+sp_str
+              '`. Available options are: '+''.join(supp+', ' for supp in supported)[:-2]
         raise ValueError(msg)
 
     # See if `rwr` makes sense
@@ -2531,11 +2525,7 @@ def printdata(data,leadrow,leadcol,fname=None):
 
     # If wanted, save stuff in a csv file
     if save:
-        head = str(head)
-        head = head.replace("[","")
-        head = head.replace("]","")
-        head = head.replace("'","")
-        np.savetxt(fname,Data,delimiter=",",fmt="%s",header=head,comments="")
+        np.savetxt(fname,Data,delimiter=",",fmt="%s",header="".join(str(hd)+", " for hd in head)[:-2],comments="")
 
     return
 
@@ -2674,10 +2664,9 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
         raise TypeError('Preset specifier for video encoding has to be a string!')
     supported = ['ultrafast','superfast','veryfast','faster','fast','medium','slow','slower','veryslow','placebo']
     if supported.count(preset) == 0:
-        opts = str(supported)
-        opts = opts.replace('[','')
-        opts = opts.replace(']','')
-        raise ValueError('Preset `'+preset+'` not supported by ffmpeg. Supported options are: '+opts)
+        msg = 'Preset `'+preset+'` not supported by ffmpeg. Supported options are: '+\
+              ''.join(supp+', ' for supp in supported)[:-2]
+        raise ValueError(msg)
 
     # Now let's start to actually do something and set the null device based on which platform we're running on
     if os.uname()[0].find('Windows') > 0:
