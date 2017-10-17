@@ -1,0 +1,14 @@
+pytest
+natsort
+progressbar
+shapely
+seaborn
+plotly
+oct2py
+cmocean
+weave
+rpy2
+texttable
+nipy
+mne
+descartes
