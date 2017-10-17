@@ -7,7 +7,7 @@ plotly
 oct2py
 cmocean
 weave
-rpy2
+rpy2==2.8.6
 texttable
 nipy
 mne
