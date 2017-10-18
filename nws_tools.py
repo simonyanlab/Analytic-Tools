@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-10-16 16:22:21>
+# Last modified: <2017-10-18 15:49:49>
 
 from __future__ import division
 import numpy as np
@@ -3521,9 +3521,9 @@ def arrcheck(arr,kind,varname,bounds=None):
     """
     Local helper function performing sanity checks on arrays (1d/2d/3d)
     """
-    
     try:
         sha = arr.shape
+        arr.flatten()           # Make sure arr is not a Pandas dataframe
     except:
         raise TypeError('Input `'+varname+'` must be a NumPy array, not '+type(arr).__name__+'!')
 
@@ -3543,15 +3543,15 @@ def arrcheck(arr,kind,varname,bounds=None):
         sha = arr.squeeze().shape
         if len(sha) != 1:
             raise ValueError('Input `'+varname+'` must be a NumPy 1darray')
-        if min(sha)==1:
+        if sha[0] <= 1:
             raise ValueError('Input `'+varname+'` must be a NumPy 1darray of length `N`!')
         dim_msg = ''
     else:
         print "Error checking could not be performed - something's wrong here..."
     if not plt.is_numlike(arr) or not np.isreal(arr).all():
-        raise TypeError('Input `'+varname+'` must be a real-valued '+dim_msg+' NumPy array!')
+        raise ValueError('Input `'+varname+'` must be a real-valued '+dim_msg+' NumPy array!')
     if np.isfinite(arr).min() == False:
-        raise ValueError('Input `'+varname+'` must be a real valued NumPy array without Infs or NaNs!')
+        raise ValueError('Input `'+varname+'` must be a real-valued NumPy array without Infs or NaNs!')
         
     if bounds is not None:
         if arr.min() < bounds[0] or arr.max() > bounds[1]:

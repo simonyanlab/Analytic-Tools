@@ -2,12 +2,14 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-10-16 17:15:09>
+# Last modified: <2017-10-18 17:03:44>
 
 import pytest
 import os
 import sys
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 sys.path.insert(0,'../analytic_tools/')
 import nws_tools as nwt
 
@@ -60,7 +62,7 @@ def txt_files(tmpdir_factory):
 class Test_get_corr(object):
 
     # Test error-checking of `txtpath`
-    def test_txtpath(self,capsys):
+    def test_txtpath(self, capsys):
         with capsys.disabled():
             sys.stdout.write("-> Testing error handling of `txtpath`... ")
             sys.stdout.flush()
@@ -72,31 +74,31 @@ class Test_get_corr(object):
         assert "Invalid directory" in str(excinfo.value)
 
     # Test error-checking of `corrtype`
-    def test_corrtype(self,capsys,txt_files):
+    def test_corrtype(self, capsys, txt_files):
         with capsys.disabled():
             sys.stdout.write("-> Testing error handling of `corrtype`... ")
             sys.stdout.flush()
         with pytest.raises(TypeError) as excinfo:
-            nwt.get_corr(str(txt_files['txtpath']),corrtype=3)
+            nwt.get_corr(str(txt_files['txtpath']), corrtype=3)
         assert "Statistical dependence type" in str(excinfo.value)
         with pytest.raises(ValueError) as excinfo:
-            nwt.get_corr(str(txt_files['txtpath']),corrtype='neither_pearson_nor_mi')
+            nwt.get_corr(str(txt_files['txtpath']), corrtype='neither_pearson_nor_mi')
         assert "Currently, only Pearson" in str(excinfo.value)
 
     # Test error-checking of `sublist`
-    def test_sublist(self,capsys,txt_files):
+    def test_sublist(self, capsys, txt_files):
         with capsys.disabled():
             sys.stdout.write("-> Testing error handling of `sublist`... ")
             sys.stdout.flush()
         with pytest.raises(TypeError) as excinfo:
-            nwt.get_corr(str(txt_files['txtpath']),sublist=3)
+            nwt.get_corr(str(txt_files['txtpath']), sublist=3)
         assert "Subject codes have to be provided as Python list/NumPy 1darray, not int!" in str(excinfo.value)
         with pytest.raises(ValueError) as excinfo:
-            nwt.get_corr(str(txt_files['txtpath']),sublist=np.ones((2,2)))
+            nwt.get_corr(str(txt_files['txtpath']), sublist=np.ones((2,2)))
         assert "Subject codes have to be provided as 1-d list" in str(excinfo.value) 
 
     # Here comes the actual torture-testing of the routine.... 
-    def test_torture(self,capsys,txt_files):
+    def test_torture(self, capsys, txt_files):
         with capsys.disabled():
             sys.stdout.write("-> Torture-testing `get_corr`: ")
             sys.stdout.flush()
@@ -104,14 +106,14 @@ class Test_get_corr(object):
         # Let ``get_corr`` loose on the artifical data.
         # Note: we're only testing Pearson correlations here, (N)MI computation is
         # checked when testing ``nwt.mutual_info``
-        res_dict = nwt.get_corr(str(txt_files['txtpath']),corrtype='pearson')
+        res_dict = nwt.get_corr(str(txt_files['txtpath']), corrtype='pearson')
 
         # Make sure `bigmat` was assembled correctly
         with capsys.disabled():
             sys.stdout.write("\n\t-> data extraction... ")
             sys.stdout.flush()
         msg = "Data not correctly read from disk!"
-        assert np.allclose(res_dict['bigmat'],txt_files['arr']), msg
+        assert np.allclose(res_dict['bigmat'], txt_files['arr']), msg
 
         # Check if `txt_files["sublist"]` and `res_dict["sublist"]` are identical (preserving order!)
         with capsys.disabled():
@@ -195,5 +197,154 @@ class Test_get_corr(object):
         msg = "Found fewer than 2 text files"
         assert msg in str(excinfo.value)
 
+# ==========================================================================================
+#                                       arrcheck
+# ==========================================================================================
+# Assemble a bunch of fixtures to iterate over a plethora of obscure invalid inputs
+# Start by checking if non-array objects and array-likes can get past the gatekeeper
+@pytest.fixture(scope="class", params=[2, [2,3], (2,3), pd.DataFrame([2,3]), "string", plt.cm.jet])
+def arrcheck_nonarray(request):
+    return request.param
+
+# Here come three separate fixtures for the tensor-, matrix- and vector-case. 
+# Note: defining an one-size-fits-all fixture that uses all of the below akin to
+#       ``invalid_dims(tensor_dimerr, matrix_dimerr, vector_dimerr, request)``
+# doesn't really work, since it produces all possible (redundant) input combinations -> ~2.5k calls 
+@pytest.fixture(scope="class", params=[np.empty(()),
+                                       np.empty((0)),
+                                       np.empty((1)),
+                                       np.empty((3,)),
+                                       np.empty((3,1)),
+                                       np.empty((1,3)),
+                                       np.empty((3,3)),
+                                       np.empty((3,1,3)),
+                                       np.empty((1,3,3)),
+                                       np.empty((2,3,3)),
+                                       np.empty((3,2,3)),
+                                       np.empty((3,3,2,1))])
+def tensor_dimerr(request):
+    return request.param
+
+@pytest.fixture(scope="class", params=[np.empty(()),
+                                       np.empty((0)),
+                                       np.empty((1)),
+                                       np.empty((3,)),
+                                       np.empty((3,1)),
+                                       np.empty((1,3)),
+                                       np.empty((2,3)),
+                                       np.empty((3,2)),
+                                       np.empty((3,3,1))])
+def matrix_dimerr(request):
+    return request.param
+
+@pytest.fixture(scope="class", params=[np.empty(()),
+                                       np.empty((0)),
+                                       np.empty((1)),
+                                       np.empty((2,3)),
+                                       np.empty((3,2)),
+                                       np.empty((3,3)),
+                                       np.empty((3,3,1))])
+def vector_dimerr(request):
+    return request.param
+
+# The following two work in concert: `invalid_arrs` uses `array_maker` to fill a tensor/matrix/vector with nonsense
+@pytest.fixture(scope="class", params=["tensor","matrix","vector"])
+def array_maker(request):
+    if request.param == "tensor":
+        return np.empty((3,3,2))
+    elif request.param == "matrix":
+        return np.empty((3,3))
+    else:
+        return np.empty((3,))
+    
+@pytest.fixture(scope="class", params=[np.inf, np.nan, "string", plt.cm.jet, complex(2,3)])
+def invalid_arrs(array_maker, request):
+    val = array_maker.astype(type(request.param))
+    val[:] = request.param
+    return val
+
+# The following two work in concert: `invalid_range` uses `bounds_maker` to generate input arguments for `arrcheck`
+@pytest.fixture(scope="class", params=[[-np.inf,0.5], [2,np.inf], [-1,0.5], [-0.5,0.5]])
+def bounds_maker(request):
+    return request.param
+
+@pytest.fixture(scope="class", params=["tensor","matrix","vector"])
+def invalid_range(bounds_maker, request):
+    if request.param == "tensor":
+        arr = np.ones((3,3,2))
+    elif request.param == "matrix":
+        arr = np.ones((3,3))
+    else:
+        arr = np.ones((3,))
+    return {"arr":arr, "kind": request.param, "bounds":bounds_maker}
+
+# Perform the actual error checking
+class Test_arrcheck(object):
+
+    # See if non-NumPy arrays can get past `arrcheck`
+    def test_scalars(self, capsys, arrcheck_nonarray):
+        with capsys.disabled():
+            sys.stdout.write("-> Test if non-NumPy arrays can get through... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.arrcheck(arrcheck_nonarray, "tensor", "testname")
+        assert "Input `testname` must be a NumPy array, not" in str(excinfo.value)
+    
+    # See if the tensor-specific dimension testing works
+    def test_tensor(self, capsys, tensor_dimerr):
+        with capsys.disabled():
+            sys.stdout.write("-> Trying to sneak in non-tensors... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.arrcheck(tensor_dimerr, "tensor", "testname")
+        assert "Input `testname` must be a `N`-by-`N`-by-`k` NumPy array" in str(excinfo.value)
+    
+    # See if the matrix-specific dimension testing works
+    def test_matrix(self, capsys, matrix_dimerr):
+        with capsys.disabled():
+            sys.stdout.write("-> Trying to sneak in non-matrices... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.arrcheck(matrix_dimerr, "matrix", "testname")
+        assert "Input `testname` must be a `N`-by-`N` NumPy array" in str(excinfo.value)
+    
+    # See if the vector-specific dimension testing works
+    def test_vector(self, capsys, vector_dimerr):
+        with capsys.disabled():
+            sys.stdout.write("-> Trying to sneak in non-vectors... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.arrcheck(vector_dimerr, "vector", "testname")
+        assert "Input `testname` must be a NumPy 1darray" in str(excinfo.value)
+        
+    # Feed `arrcheck` with arrays stuffed with a boatload of invalid values
+    def test_valerr(self, capsys, invalid_arrs):
+        with capsys.disabled():
+            sys.stdout.write("-> Trying to slip by infinite/undefined/non-real values... ")
+            sys.stdout.flush()
+        if len(invalid_arrs.shape) == 3:
+            with pytest.raises(ValueError) as excinfo:
+                nwt.arrcheck(invalid_arrs, "tensor", "testname")
+            assert "Input `testname` must be a real-valued" in str(excinfo.value)
+        elif len(invalid_arrs.shape) == 2:
+            with pytest.raises(ValueError) as excinfo:
+                nwt.arrcheck(invalid_arrs, "matrix", "testname")
+            assert "Input `testname` must be a real-valued" in str(excinfo.value)
+        else:
+            with pytest.raises(ValueError) as excinfo:
+                nwt.arrcheck(invalid_arrs, "vector", "testname")
+            assert "Input `testname` must be a real-valued" in str(excinfo.value)
+
+    # Pass arrays that consequently violate the provided bounds
+    def test_bounds(self, capsys, invalid_range):
+        with capsys.disabled():
+            sys.stdout.write("-> Values out of specified bounds... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.arrcheck(invalid_range["arr"],
+                         invalid_range["kind"],
+                         "testname",
+                         bounds=invalid_range["bounds"])
+        assert "Values of input array `testname` must be between" in str(excinfo.value)
 
 # For MI try np.vstack([np.cos(xvec),np.sin(xvec)]).T

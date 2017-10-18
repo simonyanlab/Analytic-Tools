@@ -1,3 +1,7 @@
+numpy
+scipy
+matplotlib
+pandas
 pytest
 natsort
 progressbar
