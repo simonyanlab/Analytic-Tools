@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-10-18 18:00:45>
+# Last modified: <2017-10-18 18:12:35>
 
 import pytest
 import os
@@ -342,9 +342,9 @@ class Test_arrcheck(object):
             sys.stdout.write("-> Values out of specified bounds... ")
             sys.stdout.flush()
         with pytest.raises(ValueError) as excinfo:
-            nwt.arrcheck(invalid_range["arr"],
-                         invalid_range["kind"],
-                         "testname",
+            nwt.arrcheck(invalid_range["arr"],\
+                         invalid_range["kind"],\
+                         "testname",\
                          bounds=invalid_range["bounds"])
         assert "Values of input array `testname` must be between" in str(excinfo.value)
 
