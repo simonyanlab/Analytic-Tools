@@ -4,7 +4,7 @@ python:
   - "2.7"
 
 before_install:
-  - sudo apt-get install r
+  - sudo apt-get install r-base
 
 install:
   - pip install -r tests/requirements.txt
