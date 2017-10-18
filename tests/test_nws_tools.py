@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-10-18 17:03:44>
+# Last modified: <2017-10-18 18:00:45>
 
 import pytest
 import os
@@ -10,7 +10,8 @@ import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-sys.path.insert(0,'../analytic_tools/')
+module_pth = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, module_pth + os.sep+'..'+os.sep)
 import nws_tools as nwt
 
 # ==========================================================================================
