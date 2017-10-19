@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-10-18 15:49:49>
+# Last modified: <2017-10-19 16:40:25>
 
 from __future__ import division
 import numpy as np
@@ -251,8 +251,27 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
     # Talk to the user
     print msg+str(numsubs)+" subjects: "+"".join(sb+", " for sb in sublist)[:-2]
 
-    # Get number of regions
-    numregs = ''.join(txtfiles).count(subject)
+    # Check if the number of ROIs is consistent across subjects
+    nrois = np.zeros((numsubs,),dtype=int)
+    txtflstr = ''.join(txtfiles)
+    for ns, sub in enumerate(sublist):
+        nrois[ns] = txtflstr.count(sub+"_")
+    nroisu = np.unique(nrois).astype(int)
+    if nroisu.size > 1:
+        if nroisu.min() == 0:
+            bad_subs = ""
+        else:
+            bad_subs = "Found "
+        for nsu in nroisu:
+            if nsu == 0:
+                bad_subs += "No data found for Subject(s) "
+            else:
+                bad_subs += str(nsu)+" regions in Subject(s) "
+            bad_subs += "".join(sublist[idx]+", " for idx in np.where(nrois == nsu)[0])
+        msg = "Inconsisten number of time-series across subjects! "+bad_subs[:-2]
+        raise ValueError(msg)
+    else:
+        numregs = nroisu[0]    
     
     # Get (actual) number of subjects
     numsubs = len(sublist)
@@ -274,14 +293,6 @@ def get_corr(txtpath,corrtype='pearson',sublist=[],**kwargs):
                                      " Expected a time-series of length "+str(tlens[k])+", "+
                                      "but actual length is "+str(ts_vec.size))
                 roi += 1
-
-        # Safeguard: stop if subject is missing, i.e., `roi == 0` still (weirder things have happened...)
-        if roi == 0: 
-            raise ValueError("Subject "+sublist[k]+" is missing!")
-
-        # Safeguard: stop if subject hast more/fewer ROIs than expected
-        elif roi != numregs:
-            raise ValueError("Found "+str(int(roi))+" time-series for subject "+sublist[k]+", expected "+str(int(numregs)))
 
     # Check the lengths of the detected time-series
     if tlens.min() <= 2: 
@@ -382,10 +393,12 @@ def corrcheck(*args,**kwargs):
 
     # Sanity checks
     myin = len(args)
-    if myin == 0: raise ValueError('At least one input required!')
+    if myin == 0:
+        raise ValueError('At least one input required!')
 
     # Assign global name for all figures if provided by additional keyword argument `title`
-    figtitle = kwargs.get('title',None); nofigname = False
+    figtitle = kwargs.get('title',None);
+    nofigname = False
     if figtitle is None: 
         nofigname = True
     else:
@@ -405,9 +418,9 @@ def corrcheck(*args,**kwargs):
         usrlbl = 0
 
     # Try to get shape of input
-    try:
-        szin = len(args[0].shape)
-    except: raise TypeError("Expected NumPy array(s) as input, found "+type(args[0]).__name__+"!")
+    if not isinstance(args[0],np.ndarray):
+        raise TypeError("Expected NumPy array(s) as input, found "+type(args[0]).__name__+"!")
+    szin = len(args[0].shape)
 
     # If input is a list of matrices, store them in a tensor
     if szin == 2:
@@ -436,7 +449,7 @@ def corrcheck(*args,**kwargs):
     N    = corrs.shape[0]
 
     # Check if those matrices are real and "reasonable"
-    if not plt.is_numlike(corrs) or not np.isreal(corrs).all():
+    if not np.issubdtype(corrs.dtype, np.number) or not np.isreal(corrs).all():
         raise TypeError("Input arrays must be real-valued!")
     if np.isfinite(corrs).min() == False:
         raise ValueError("All matrices must be real without NaNs or Infs!")
@@ -1132,7 +1145,7 @@ def normalize(arr,vmin=0,vmax=1):
         raise TypeError('Input `arr` has to be a NumPy ndarray!')
     if (tmp): 
         raise ValueError('Input `arr` has to be a NumPy ndarray of size > 1!')
-    if not plt.is_numlike(arr) or not np.isreal(arr).all():
+    if not np.issubdtype(arr.dtype, np.number) or not np.isreal(arr).all():
         raise TypeError("Input array hast to be real-valued!")
     if np.isfinite(arr).min() == False: 
         raise ValueError("Input `arr` must be real-valued without Inf's or NaN's!")
@@ -2064,7 +2077,7 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
         raise ValueError('Input must be a timepoint-by-index NumPy 2d array')
     if (min(shtsdata)==1):
         raise ValueError('At least two time-series/two time-points are required to compute (N)MI!')
-    if not plt.is_numlike(tsdata) or not np.isreal(tsdata).all():
+    if not np.issubdtype(tsdata.dtype, np.number) or not np.isreal(tsdata).all():
         raise TypeError("Input must be real-valued!")
     if np.isfinite(tsdata).min() == False:
         raise ValueError('Input must be a real valued NumPy 2d array without Infs or NaNs!')
@@ -2821,7 +2834,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
     # See if a camera position (in azimuth/elevation degrees) was provided, if not use some defaults
     if viewpoint is not None:
         viewpoint = np.array(viewpoint)
-        if plt.is_numlike(viewpoint):
+        if np.issubdtype(viewpoint.dtype, np.number):
             arrcheck(viewpoint,'vector','viewpoint')
             if viewpoint.size != 2:
                 raise ValueError("View-point has to be provided as azimuth/altitude degrees!")
@@ -2897,7 +2910,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         for branch in branches.keys():
             if branches[branch].size != labels[branch].size:
                 raise ValueError("Provided branches and nodal labels don't match up!")
-            if plt.is_numlike(labels[branch]):
+            if np.issubdtype(labels[branch].dtype, np.number):
                 raise ValueError("The provided nodal labels must be strings!")
         if full3d or nodes3d:
             print "WARNING: Due to limiations in mplot3d the positiong of text in 3d space is somewhat screwed up..."
@@ -2927,7 +2940,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
                 elev = np.pi/2 - (elev > 0)*elev + (elev < 0)*np.abs(elev)
                 angle[branch] = np.array([azim,elev])
             else:
-                if not np.isscalar(angle[branch]) or not plt.is_numlike(angle[branch]) or not np.isreal(angle[branch]).all():
+                if not np.isscalar(angle[branch]) or not np.issubdtype(angle[branch].dtype, np.number) or not np.isreal(angle[branch]).all():
                     raise TypeError("Branch angles must be real-valued, one value per branch!")
                 if np.isfinite(angle[branch]) == False:
                     raise ValueError("Branch angles must not be NaN or Inf!")
@@ -2959,7 +2972,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
             for branch in branches.keys():
                 if len(branch_colors[branch]) > 1:
                     raise ValueError("Only one color per branch is supported!")
-                if plt.is_numlike(branch_colors[branch]):
+                if np.issubdtype(branch_colors[branch].dtype, np.number):
                     raise ValueError("The provided branch colors must be strings!")
         elif isinstance(branch_colors,str):
             bc = branch_colors
@@ -3034,7 +3047,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         except:
             raise TypeError("The provided branch line-widths have to be a dictionary with the same keys as `branches`!")
         for branch in branches.keys():
-            if not np.isscalar(branch_lw[branch]) or not plt.is_numlike(branch_lw[branch]) or not np.isreal(branch_extent[branch]).all():
+            if not np.isscalar(branch_lw[branch]) or not np.issubdtype(branch_lw[branch].dtype, np.number) or not np.isreal(branch_extent[branch]).all():
                 raise ValueError("Branch line-widths must be real-valued, one value per branch!")
             if np.isfinite(branch_lw[branch]) == False:
                 raise ValueError("Branch line-widths must not be NaN or Inf!")
@@ -3057,7 +3070,7 @@ def build_hive(ax,branches,connections,node_vals=None,center=(0,0),branch_extent
         except:
             raise TypeError("The provided branch alpha values have to be a dictionary with the same keys as `branches`!")
         for branch in branches.keys():
-            if not np.isscalar(branch_alpha[branch]) or not plt.is_numlike(branch_alpha[branch]) or not np.isreal(branch_extent[branch]).all():
+            if not np.isscalar(branch_alpha[branch]) or not np.issubdtype(branch_alpha[branch].dtype, np.number) or not np.isreal(branch_extent[branch]).all():
                 raise ValueError("Branch alpha values must be real-valued, one value per branch!")
             if np.isfinite(branch_alpha[branch]) == False:
                 raise ValueError("Branch alpha values must not be NaN or Inf!")
@@ -3447,7 +3460,7 @@ def nw_zip(ntw):
         raise TypeError('Input network must be a NumPy array, not '+type(ntw).__name__+'!')
     if len(stw) > 3:
         raise ValueError('Input network must not have more than 3 dimensions!')
-    if not plt.is_numlike(ntw) or not np.isreal(ntw).all():
+    if not np.issubdtype(ntw.dtype, np.number) or not np.isreal(ntw).all():
         raise TypeError('Input network must be a real-valued NumPy array!')
     if np.isfinite(ntw).min() == False:
         raise ValueError('Input network must be a real valued NumPy array without Infs or NaNs!')
@@ -3521,12 +3534,11 @@ def arrcheck(arr,kind,varname,bounds=None):
     """
     Local helper function performing sanity checks on arrays (1d/2d/3d)
     """
-    try:
-        sha = arr.shape
-        arr.flatten()           # Make sure arr is not a Pandas dataframe
-    except:
-        raise TypeError('Input `'+varname+'` must be a NumPy array, not '+type(arr).__name__+'!')
 
+    if not isinstance(arr,np.ndarray):
+        raise TypeError('Input `'+varname+'` must be a NumPy array, not '+type(arr).__name__+'!')
+    sha = arr.shape
+    
     if kind == 'tensor':
         if len(sha) != 3:
             raise ValueError('Input `'+varname+'` must be a `N`-by-`N`-by-`k` NumPy array')
@@ -3548,7 +3560,7 @@ def arrcheck(arr,kind,varname,bounds=None):
         dim_msg = ''
     else:
         print "Error checking could not be performed - something's wrong here..."
-    if not plt.is_numlike(arr) or not np.isreal(arr).all():
+    if not np.issubdtype(arr.dtype, np.number) or not np.isreal(arr).all():
         raise ValueError('Input `'+varname+'` must be a real-valued '+dim_msg+' NumPy array!')
     if np.isfinite(arr).min() == False:
         raise ValueError('Input `'+varname+'` must be a real-valued NumPy array without Infs or NaNs!')
@@ -3564,10 +3576,10 @@ def scalarcheck(val,varname,kind=None,bounds=None):
     Local helper function performing sanity checks on scalars
     """
 
-    if not np.isscalar(val) or not plt.is_numlike(val) or not np.isreal(val).all():
-        raise TypeError("Input `"+varname+"` must be a real scalar!")
-    if not np.isfinite(val):
-        raise TypeError("Input `"+varname+"` must be finite!")
+    if not np.isscalar(val) or not plt.is_numlike(val): 
+        raise TypeError("Input `"+varname+"` must be a scalar!")
+    if not np.isfinite(val) or not np.isreal(val):
+        raise ValueError("Input `"+varname+"` must be real and finite!")
 
     if kind == 'int':
         if (round(val) != val):

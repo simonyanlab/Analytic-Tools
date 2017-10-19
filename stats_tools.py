@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 30 2014
-# Last modified: <2017-09-15 16:51:51>
+# Last modified: <2017-10-19 15:55:56>
 
 from __future__ import division
 import numpy as np
@@ -170,7 +170,7 @@ def perm_test(X,Y,paired=None,useR=False,nperms=10000,tail='two',correction="max
     n_tests = n_testsx
 
     for arr in [X,Y]:
-        if not plt.is_numlike(arr) or not np.isreal(arr).all():
+        if not np.issubdtype(arr.dtype, np.number) or not np.isreal(arr).all():
             raise ValueError('Inputs `X` and `Y` must be real-valued NumPy 2darrays')
         if np.isfinite(arr).min() == False:
             raise ValueError('Inputs `X` and `Y` must be real-valued NumPy 2darrays without Infs or NaNs!')
@@ -492,7 +492,7 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
     if not isinstance(pvals,(list,np.ndarray)):
         raise TypeError('The p-values must be provided as NumPy 1d array, not '+type(variables).__name__+'!')
     pvals = np.array(pvals)
-    if not plt.is_numlike(pvals):       # Don't check for NaNs and Infs - some tests might return that...
+    if not np.issubdtype(pvals.dtype, np.number): # Don't check for NaNs and Infs - some tests might return that...
         raise ValueError('Provided p-values must be real-valued!')
     M = pvals.size
     if M != m:
@@ -505,7 +505,7 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
         raise TypeError('Data-set 1 must be a NumPy 2d array, not '+type(group1).__name__+'!')
     if M != m:
         raise ValueError('No. of variables (=labels) and dimension of group1 do not match up!')
-    if not plt.is_numlike(group1):       
+    if not np.issubdtype(group1.dtype, np.number):       
         raise ValueError('Provided p-values must be real-valued!')
     try:
         N,M = group2.shape
@@ -513,7 +513,7 @@ def printstats(variables,pvals,group1,group2,g1str='group1',g2str='group2',foot=
         raise TypeError('Data-set 2 must be a NumPy 2d array, not '+type(group2).__name__+'!')
     if M != m:
         raise ValueError('No. of variables (=labels) and dimension of group2 do not match up!')
-    if not plt.is_numlike(group2):       
+    if not np.issubdtype(group2.dtype, np.number):       
         raise ValueError('Provided p-values must be real-valued!')
 
     # If column labels were provided, make sure they are printable strings

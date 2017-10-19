@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+    travis-debug:
+        image: travis_debug_at
+        container_name: travis-debug-at
+        volumes:
+            - ~/Documents/job/Python/analytic_tools:/home/travis/analytic_tools
+        working_dir: /home/travis/analytic_tools
+        command: ["/sbin/init"]

@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: June 23 2014
-# Last modified: <2017-09-15 16:46:31>
+# Last modified: <2017-10-19 16:40:42>
 
 from __future__ import division
 import numpy as np
@@ -974,12 +974,11 @@ def arrcheck(arr,kind,varname,bounds=None):
     """
     Local helper function performing sanity checks on arrays (1d/2d/3d)
     """
-    
-    try:
-        sha = arr.squeeze().shape
-    except:
-        raise TypeError('Input '+varname+' must be a NumPy array, not '+type(arr).__name__+'!')
 
+    if not isinstance(arr,np.ndarray):
+        raise TypeError('Input `'+varname+'` must be a NumPy array, not '+type(arr).__name__+'!')
+    sha = arr.shape
+    
     if kind == 'tensor':
         if len(sha) != 3:
             raise ValueError('Input `'+varname+'` must be a `N`-by-`N`-by-`k` NumPy array')
@@ -993,17 +992,18 @@ def arrcheck(arr,kind,varname,bounds=None):
             raise ValueError('Input `'+varname+'` must be a `N`-by-`N` NumPy array!')
         dim_msg = '`N`-by-`N`'
     elif kind == 'vector':
+        sha = arr.squeeze().shape
         if len(sha) != 1:
             raise ValueError('Input `'+varname+'` must be a NumPy 1darray')
-        if min(sha)==1:
+        if sha[0] <= 1:
             raise ValueError('Input `'+varname+'` must be a NumPy 1darray of length `N`!')
         dim_msg = ''
     else:
         print "Error checking could not be performed - something's wrong here..."
-    if not plt.is_numlike(arr) or not np.isreal(arr).all():
-        raise TypeError('Input `'+varname+'` must be a real-valued '+dim_msg+' NumPy array!')
+    if not np.issubdtype(arr.dtype, np.number) or not np.isreal(arr).all():
+        raise ValueError('Input `'+varname+'` must be a real-valued '+dim_msg+' NumPy array!')
     if np.isfinite(arr).min() == False:
-        raise ValueError('Input `'+varname+'` must be a real valued NumPy array without Infs or NaNs!')
+        raise ValueError('Input `'+varname+'` must be a real-valued NumPy array without Infs or NaNs!')
         
     if bounds is not None:
         if arr.min() < bounds[0] or arr.max() > bounds[1]:
@@ -1016,10 +1016,10 @@ def scalarcheck(val,varname,kind=None,bounds=None):
     Local helper function performing sanity checks on scalars
     """
 
-    if not np.isscalar(val) or not plt.is_numlike(val) or not np.isreal(val).all():
-        raise TypeError("Input `"+varname+"` must be a real scalar!")
-    if not np.isfinite(val):
-        raise TypeError("Input `"+varname+"` must be finite!")
+    if not np.isscalar(val) or not plt.is_numlike(val): 
+        raise TypeError("Input `"+varname+"` must be a scalar!")
+    if not np.isfinite(val) or not np.isreal(val):
+        raise ValueError("Input `"+varname+"` must be real and finite!")
 
     if kind == 'int':
         if (round(val) != val):

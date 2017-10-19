@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: March 19 2014
-# Last modified: <2017-09-15 16:41:38>
+# Last modified: <2017-10-19 15:52:05>
 
 from __future__ import division
 import numpy as np
@@ -176,7 +176,7 @@ def bandpass_filter(signal,locut,hicut,srate,offset=None,passdB=1.0,stopdB=30.0,
         raise ValueError('Signal must be a 1d/2d NumPy array')
     if max(stu) == 1:
         raise ValueError('Signal only consists of one datapoint!')
-    if not plt.is_numlike(signal) or not np.isreal(signal).all():
+    if not np.issubdtype(signal.dtype, np.number) or not np.isreal(signal).all():
         raise TypeError('Signal must be a real-valued '+dim_msg+' NumPy array!')
     if np.isfinite(signal).min() == False:
         raise ValueError('Signal must be a real valued NumPy array without Infs or NaNs!')
@@ -907,7 +907,7 @@ def MA(signal, window_size, past=True):
         raise ValueError('Signal must be a 1d/2d NumPy array')
     if max(shs) == 1:
         raise ValueError('Signal only consists of one datapoint!')
-    if not plt.is_numlike(signal) or not np.isreal(signal).all():
+    if not np.issubdtype(signal.dtype, np.number) or not np.isreal(signal).all():
         raise TypeError('Signal must be a real-valued '+dim_msg+' NumPy array!')
     if np.isfinite(signal).min() == False:
         raise ValueError('Signal must be a real valued NumPy array without Infs or NaNs!')
