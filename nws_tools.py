@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-10-19 16:40:25>
+# Last modified: <2017-10-20 15:30:28>
 
 from __future__ import division
 import numpy as np
@@ -429,10 +429,12 @@ def corrcheck(*args,**kwargs):
             raise ValueError('Input matrices must be square!')
         corrs = np.zeros((rw,cl,myin))
         for i in xrange(myin):
+            if not isinstance(args[i],np.ndarray):
+                raise TypeError("All but last input must be NumPy arrays!")
             try:
                 corrs[:,:,i] = args[i]
             except:
-                raise ValueError('All input matrices have to be of the same size!')
+                raise ValueError('All input matrices must be real and of the same size!')
 
     # If input is a tensor, there's not much to do  
     elif szin == 3:
@@ -442,7 +444,7 @@ def corrcheck(*args,**kwargs):
             raise ValueError('Input tensor must be of the format N-by-N-by-k!')
         corrs = args[0]
     else:
-        raise TypeError('Input has to be either a matrix/matrices or a tensor!')
+        raise TypeError('Input has to be either a matrix/matrices or a rank1-tensor!')
 
     # Count number of matrices and get their dimension
     nmat = corrs.shape[-1]
@@ -450,7 +452,7 @@ def corrcheck(*args,**kwargs):
 
     # Check if those matrices are real and "reasonable"
     if not np.issubdtype(corrs.dtype, np.number) or not np.isreal(corrs).all():
-        raise TypeError("Input arrays must be real-valued!")
+        raise ValueError("Input arrays must be real-valued!")
     if np.isfinite(corrs).min() == False:
         raise ValueError("All matrices must be real without NaNs or Infs!")
 
@@ -467,7 +469,8 @@ def corrcheck(*args,**kwargs):
 
     # If labels have been provided, check if we got enough of'em; if there are no labels, generate defaults
     if (usrlbl):
-        if len(labels) != nmat: raise ValueError('Numbers of labels and matrices do not match up!')
+        if len(labels) != nmat:
+            raise ValueError('Numbers of labels and matrices do not match up!')
         for lb in labels:
             if not isinstance(lb,(str,unicode)):
                 raise ValueError('Labels must be provided as list of strings or a single string!')
@@ -616,18 +619,18 @@ def get_meannw(nws,percval=0.0):
             mean_wghted = mean_wghted + nws[:,:,i]
 
         # Kick out connections not present in at least `percval%` of subjects (in binary and weighted NWs)
-        mean_binary = (mean_binary/numsubs >= percval).astype(float)
+        mean_binary = (mean_binary/numsubs > percval).astype(float)
         mean_wghted = mean_wghted/numsubs * mean_binary
 
         # Check connectedness of mean network
         if degrees_und(mean_binary).min() == 0:
-            print "WARNING: Mean network disconnected for percval = "+str(np.round(1e2*percval))+"%"
-            if percval < 1:
-                print "Decreasing percval by 5%..."
+            print "WARNING: Mean network disconnected for `percval` = "+str(np.round(1e2*percval))+"%"
+            if percval > 0:
+                print "Decreasing `percval` by 5%..."
                 percval -= 0.05
-                print "New value for percval is now "+str(np.round(1e2*percval))+"%"
+                print "New value for `percval` is now "+str(np.round(1e2*percval))+"%"
             else:
-                msg = "Mean network disconnected for percval = 0%. That means at least one node is "+\
+                msg = "Mean network disconnected for `percval` = 0%. That means at least one node is "+\
                       "disconnected in ALL per-subject networks..."
                 raise ValueError(msg)
         else:
@@ -879,7 +882,8 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
 
     # Get max. and min. weights (min weight should be >= 0 otherwise the stuff below makes no sense...)
     maxw = nws.max()
-    if nws.min() < 0: raise ValueError('Only non-negative weights supported!')
+    if nws.min() < 0:
+        raise ValueError('Only non-negative weights supported!')
 
     # Allocate vector for original densities 
     raw_den = np.zeros((numsubs,))
@@ -893,7 +897,8 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
     max_raw = int(np.ceil(1e2*raw_den.max()))
 
     # Break if a nw has density zero or if max. density is below desired dens.
-    if min_raw == 0: raise ValueError('Network '+str(raw_den.argmin())+' has density 0%!')
+    if min_raw == 0:
+        raise ValueError('Network '+str(raw_den.argmin())+' has density 0%!')
     if userdens >= max_raw:
         print "All networks have density lower than desired density "+str(userdens)+"%"
         th_mnw,mnw_percval = get_meannw(nws,percval)

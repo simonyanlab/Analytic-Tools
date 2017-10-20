@@ -2,11 +2,13 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-10-19 16:38:08>
+# Last modified: <2017-10-20 16:59:01>
 
+from __future__ import division
 import pytest
 import os
 import sys
+import pdb
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -15,13 +17,18 @@ module_pth = module_pth[:module_pth.rfind(os.sep)]
 sys.path.insert(0, module_pth)
 import nws_tools as nwt
 
+# Check if we're running locallly or on the Travis servers to avoid always running the entire thing while
+# appending additional tests
+runninglocal = (os.environ["PWD"] == "/home/travis/analytic_tools")
+skiplocal = pytest.mark.skipif(runninglocal, reason="debugging new tests")
+
 # ==========================================================================================
 #                                       arrcheck
 # ==========================================================================================
 # Assemble a bunch of fixtures to iterate over a plethora of obscure invalid inputs
 # Start by checking if non-array objects and array-likes can get past the gatekeeper
-@pytest.fixture(scope="class", params=[2, [2,3], (2,3), pd.DataFrame([2,3]), "string", plt.cm.jet])
-def arrcheck_nonarray(request):
+@pytest.fixture(scope="session", params=[2, [2,3], (2,3), pd.DataFrame([2,3]), "string", plt.cm.jet])
+def check_nonarray(request):
     return request.param
 
 # Here come three separate fixtures for the tensor-, matrix- and vector-case. 
@@ -97,15 +104,16 @@ def invalid_range(bounds_maker, request):
     return {"arr":arr, "kind": request.param, "bounds":bounds_maker}
 
 # Perform the actual error checking
+@skiplocal
 class Test_arrcheck(object):
 
     # See if non-NumPy arrays can get past `arrcheck`
-    def test_nonarrays(self, capsys, arrcheck_nonarray):
+    def test_nonarrays(self, capsys, check_nonarray):
         with capsys.disabled():
             sys.stdout.write("-> Test if non-NumPy arrays can get through... ")
             sys.stdout.flush()
         with pytest.raises(TypeError) as excinfo:
-            nwt.arrcheck(arrcheck_nonarray, "tensor", "testname")
+            nwt.arrcheck(check_nonarray, "tensor", "testname")
         assert "Input `testname` must be a NumPy array, not" in str(excinfo.value)
     
     # See if the tensor-specific dimension testing works
@@ -183,6 +191,7 @@ def invalid_bounds(request):
     return request.param
 
 # Perform the actual error checking
+@skiplocal
 class Test_scalarcheck(object):
 
     # See if non-scalars can get past `scalarcheck`
@@ -264,7 +273,8 @@ def txt_files(tmpdir_factory):
 
     return {"txtpath":txtpath, "sub_fls":sub_fls, "sublist":sublist, "arr":arr, "res":res}
 
-# This class performs the actual testing    
+# This class performs the actual testing
+@skiplocal
 class Test_get_corr(object):
 
     # Test error-checking of `txtpath`
@@ -306,7 +316,7 @@ class Test_get_corr(object):
     # Here comes the actual torture-testing of the routine.... 
     def test_torture(self, capsys, txt_files):
         with capsys.disabled():
-            sys.stdout.write("-> Torture-testing `get_corr`: ")
+            sys.stdout.write("-> Start torture-testing ``get_corr``: ")
             sys.stdout.flush()
 
         # Let ``get_corr`` loose on the artifical data.
@@ -422,4 +432,302 @@ class Test_get_corr(object):
         msg = "Found fewer than 2 text files"
         assert msg in str(excinfo.value)
 
+# ==========================================================================================
+#                                       corrcheck
+# ==========================================================================================
+# The usual fixtures to automate things
+@pytest.fixture(scope="class", params=[np.empty(()), np.empty((0)), np.empty((1)), np.empty((3,)), np.empty((3,3,2,1))])
+def corrcheck_typeerr(request):
+    return request.param
+
+# Use a list of lists here since ``corrcheck`` accepts multiple input args (use `*args` to invoke ``corrcheck`` below)
+@pytest.fixture(scope="class", params=[[np.empty((3,1))],
+                                       [np.empty((1,3))],
+                                       [np.empty((3,2))],
+                                       [np.empty((2,3))],
+                                       [np.empty((3,3)), np.empty((3,2))],
+                                       [np.empty((3,3)), np.empty((2,2))],
+                                       [np.empty((3,3,2)), np.empty((3,3))],
+                                       [np.empty((3,1,3))],
+                                       [np.empty((1,3,3))],
+                                       [np.empty((2,3,3))],
+                                       [np.empty((3,2,3))]])
+def corrcheck_valerr(request):
+    return request.param
+
+@pytest.fixture(scope="class", params=[np.inf, np.nan, "string", plt.cm.jet])
+def invalid_mats(request):
+    val = np.empty((2,2)).astype(type(request.param))
+    val[:] = request.param
+    return val
+
+# Perform the actual error checking
+@skiplocal
+class Test_corrcheck(object):
+
+    # Recycle ``check_nonarray`` to throw some invalid arguments at ``corrcheck``
+    def test_nonarrays(self, capsys, check_nonarray):
+        with capsys.disabled():
+            sys.stdout.write("-> Test if non-NumPy arrays can get through... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.corrcheck(check_nonarray)
+        assert "Expected NumPy array(s) as input, found" in str(excinfo.value)
+    
+    # Screw around with labels
+    def test_labels(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Screwing up labels... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.corrcheck(np.empty((2,2)),["A"],["B"])
+        assert "All but last input must be NumPy arrays!" in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.corrcheck(np.empty((2,2)),np.empty((2,2)),["A"])
+        assert "Numbers of labels and matrices do not match up!" in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.corrcheck(np.empty((2,2,2)),["A"])
+        assert "Numbers of labels and matrices do not match up!" in str(excinfo.value)
+        
+    # Feed in invalid arrays (`TypeErrors` raise different messages, so we don't check for that here)
+    def test_types(self, capsys, corrcheck_typeerr):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid arrays... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError):
+            nwt.corrcheck(corrcheck_typeerr)
+    
+    # Screw around with array input dimensions
+    def test_values(self, capsys, corrcheck_valerr):
+        with capsys.disabled():
+            sys.stdout.write("-> Screwing up array dimenions... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError):
+            nwt.corrcheck(*corrcheck_valerr)
+
+    # Arrays with nonsense (note: `corrcheck` discards the imag. part of complex numbers, so we don't check for that)
+    def test_values(self, capsys, invalid_mats):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid array values... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError):
+            nwt.corrcheck(invalid_mats)
+
+# ==========================================================================================
+#                                       rm_selfies
+# ==========================================================================================
+# This should be quick (inputs are vetted by ``arrcheck`` and ``scalarcheck``)
+@skiplocal
+class Test_rm_selfies(object):
+    def test_rm_selfies(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Test if self-connections are removed correctly... ")
+            sys.stdout.flush()
+        msg = "Self connections not removed correctly. This should *really* work as expected... "
+        N = 5
+        conns = np.ones((N,N))
+        res = (conns - np.eye(N)).reshape(N,N,1)
+        assert np.all(nwt.rm_selfies(conns.reshape(N,N,1)) == res) == True, msg
+
+# ==========================================================================================
+#                                       get_meannw
+# ==========================================================================================
+# Only test numerics and handling of missing connections (inputs are vetted by ``arrcheck`` and ``scalarcheck``)
+@skiplocal
+class Test_get_meannw(object):
+    def test_numerics(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Start torture-testing ``get_meannw``: ")
+            sys.stdout.flush()
+
+        # Set network dimension `N`, group-size `M`, and common ratio `r` for geometric progression
+        N = 10
+        M = 10
+        r = 0.5
+        nws = np.zeros((N,N,M))
+        for m in xrange(M):
+            nws[:,:,m] = r**m
+
+        # The group-average is given by the `M`-th partial sum of the geometric series scaled by `1/M`
+        values = 1/M*(1 - r**M)/(1 - r)
+        res = np.ones((N,N)) - np.eye(N)
+        res *= values
+
+        # Start by making sure the code averages correctly
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> See if group-average is computed correctly... ")
+            sys.stdout.flush()
+        msg = "Group-average network not computed correctly! "
+        res_nwt, pval_nwt = nwt.get_meannw(nws)
+        assert np.all(np.isclose(res_nwt,res)) == True, msg
+        msg = "Returned percentage value does not match up!"
+        assert pval_nwt == 0.0, msg
+
+        # Remove randomly chosen connections from randomly chosen networks (but don't disconnect nodes though)
+        # Note: the removal percentage `rm_perc` *has* to be > 0.5 (strict!) for the test below to work
+        rm_perc = 0.7
+        all_gr = np.arange(M)
+        all_nd = np.arange(N)
+        graphs = np.random.choice(all_gr,size=(int(np.round(rm_perc*M)),),replace=False)
+        nodes = np.random.choice(all_nd,size=(int(np.round(rm_perc*N)),),replace=False)
+        graphs.sort(); nodes.sort()
+        edges = zip(nodes,nodes[::-1])
+        for gr in graphs:
+            for edg in edges:
+                nws[edg[0],edg[1],gr] = 0.0
+                nws[edg[1],edg[0],gr] = 0.0
+
+        # Use `rm_perc` as cutoff percentage in ``nwt.get_meannw``, thus effectively removing these
+        # edges from the group-averaged network
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Testing percentage-based group-averaging... ")
+            sys.stdout.flush()
+        res_nwt, pval_nwt = nwt.get_meannw(nws,percval=rm_perc)
+        for edg in edges:
+            res[edg[0],edg[1]] = 0.0
+            res[edg[1],edg[0]] = 0.0
+        msg = "Percentage-based average not correct!"
+        assert np.all(np.isclose(res_nwt,res)) == True, msg
+        msg = "Returned percentage value does not match up!"
+        assert pval_nwt == rm_perc, msg
+
+        # Now don't just remove some edges but disconnect the selected nodes in the chosen graphs
+        for gr in graphs:
+            for nd in nodes:
+                nws[:,nd,gr] = 0.0
+                nws[nd,:,gr] = 0.0
+
+        # Use the fact that diagonals are not zero in `nws` to compute the `1 - rm_perc` weighted
+        # average across all non-pruned graphs
+        rem_nd = np.setdiff1d(all_nd,nodes)
+        rem_gr = np.setdiff1d(all_gr,graphs)
+        val = nws[rem_nd[0],rem_nd[0],rem_gr].sum()/M
+
+        # Use again `rm_perc` as cutoff percentage, which should trigger the safe-guard percentage
+        # decrease in ``get_meannw``
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Testing percentage-correction in group-averaging... ")
+            sys.stdout.flush()
+        res_nwt, pval_nwt = nwt.get_meannw(nws,percval=rm_perc)
+        res[:] = val
+        for nd in rem_nd:
+            res[nd,rem_nd] = values
+        np.fill_diagonal(res,0)
+        msg = "Percentage-corrected average not correct!"
+        assert np.all(np.isclose(res_nwt,res)) == True, msg
+        msg = "Corrected percentage not computed correctly!"
+        assert np.isclose(pval_nwt, 1-rm_perc), msg
+
+        # Finally, cut off a node in all networks to trigger a `ValueError`
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Disconnecting a node from all networks... ")
+            sys.stdout.flush()
+        nws[:,nodes[0],:] = 0.0
+        nws[nodes[0],:,:] = 0.0
+        with pytest.raises(ValueError) as excinfo:
+            nwt.get_meannw(nws)
+        assert "Mean network disconnected for `percval` = 0%" in str(excinfo.value)
+        
+# ==========================================================================================
+#                                       rm_negatives
+# ==========================================================================================
+# This should be quick (inputs are vetted by ``arrcheck``)
+@skiplocal
+class Test_rm_negatives(object):
+    def test_rm_negatives(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Test if negative edge-weights are removed correctly... ")
+            sys.stdout.flush()
+        msg = "Negative edges not removed correctly. This should *really* work as expected... "
+        N = 10
+        no_negatives = True
+        while no_negatives:
+            conns = np.random.normal(loc=0.0, scale=1.0, size=((N,N)))
+            conns = np.triu(conns,1)
+            conns += conns.T
+            msk = (conns < 0)
+            no_negatives = (msk.max() == False)
+        res = conns.copy()
+        res[msk] = 0.0
+        assert np.all(nwt.rm_negatives(conns.reshape(N,N,1)) == res.reshape(N,N,1)) == True, msg
+
+# ==========================================================================================
+#                                       thresh_nws
+# ==========================================================================================
+# Only test methodology and handling of disconnected nodes (inputs are vetted by ``arrcheck`` and ``scalarcheck``)
+class Test_thresh_nws(object):
+    def test_numerics(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Start torture-testing ``thresh_nws``: ")
+            sys.stdout.flush()
+
+        # Set up our testing network cohort filled with random weights and pick an arbitrary node/network
+        N = 10
+        M = 10
+        msk = np.triu(np.ones((N,N),dtype=bool),1)
+        all_nw = np.arange(M)
+        all_nd = np.arange(N)
+        all_eg = np.arange(msk.sum())
+        nws = np.zeros((N,N,M))
+        for m in all_nw:
+            nw = np.random.normal(loc=0.5,scale=0.2,size=((N,N)))
+            nw[nw < 0] = 0.0
+            nw = np.triu(nw,1)
+            nw += nw.T
+            nws[:,:,m] = nw
+        rand_nw = np.random.choice(M,1)[0]
+        rand_nd = np.random.choice(N,1)[0]
+        nw_rand = nws[:,:,rand_nw].copy()
+
+        # Start with a cheap symmetry violation
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Try to sneak in a directed network... ")
+            sys.stdout.flush()
+        nws[rand_nd,1,rand_nw] = nws.max() + 0.1
+        with pytest.raises(ValueError) as excinfo:
+            nwt.thresh_nws(nws)
+        assert "Matrix "+str(rand_nw)+" is not symmetric!" in str(excinfo.value)
+        
+        # Now a cheap sign error
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Try to sneak in negative edge weights... ")
+            sys.stdout.flush()
+        nws[rand_nd,1,rand_nw] = -1.0
+        nws[1,rand_nd,rand_nw] = -1.0
+        with pytest.raises(ValueError) as excinfo:
+            nwt.thresh_nws(nws)
+        assert "Only non-negative weights supported!" in str(excinfo.value)
+        
+        # Next a cheap density error
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Try to sneak in zero-density graph... ")
+            sys.stdout.flush()
+        nws[:,:,rand_nw] = 0.0
+        with pytest.raises(ValueError) as excinfo:
+            nwt.thresh_nws(nws)
+        assert "Network "+str(rand_nw)+" has density 0%" in str(excinfo.value)
+
+        # Now start screwing around with the density of our input networks: lower it to `tgt_dens`
+        tgt_dens = 0.7
+        nws[:,:,rand_nw] = nw_rand.copy()
+        rm_no = int(np.round((1 - tgt_dens)*all_eg.size))
+        for m in all_nw:
+            nw = nws[:,:,m]
+            vals = nw[msk]
+            nw[:] = 0.0
+            rm_edg = np.random.choice(all_eg,size=(rm_no,),replace=False)
+            vals[rm_edg] = 0.0
+            nw[msk] = vals
+            nw += nw.T
+            nws[:,:,m] = nw.copy()
+
+        # Ironically, make sure ``nwt.thresh_nws`` does exactly nothing here
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Networks do not need to be thresholded... ")
+            sys.stdout.flush()
+        res_nwt = nwt.thresh_nws(nws,userdens=tgt_dens*100+10)
+        msg = "Networks were thresholded despite being of lower density than required!"
+        assert res_nwt["tau_levels"] is None, msg
+        
 # For MI try np.vstack([np.cos(xvec),np.sin(xvec)]).T
+
