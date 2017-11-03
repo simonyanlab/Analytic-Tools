@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-10-30 18:10:43>
+# Last modified: <2017-11-03 12:37:30>
 
 from __future__ import division
 import numpy as np
@@ -958,7 +958,6 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
             # the associated average degree of the wanted target network as
             # avdg = np.round(userdens/100*(N**2 - N)/N)
             avdg = np.round(userdens/100*(N - 1))
-            # import pdb;pdb.set_trace()
             print "\nReducing network densities to "+str(userdens)+"% by inversely populating maximum spanning trees..."
 
             # Use this average degree value to cut down input networks to desired density
@@ -1120,14 +1119,12 @@ def normalize(arr,vmin=0,vmax=1):
     """
 
     # Ensure that `arr` is a NumPy-ndarray
-    try:
-        tmp = arr.size == 1
-    except TypeError: 
+    if not isinstance(arr,np.ndarray):
         raise TypeError('Input `arr` has to be a NumPy ndarray!')
-    if (tmp): 
+    if arr.size == 1: 
         raise ValueError('Input `arr` has to be a NumPy ndarray of size > 1!')
     if not np.issubdtype(arr.dtype, np.number) or not np.isreal(arr).all():
-        raise TypeError("Input array hast to be real-valued!")
+        raise ValueError("Input array hast to be real-valued!")
     if np.isfinite(arr).min() == False: 
         raise ValueError("Input `arr` must be real-valued without Inf's or NaN's!")
 
@@ -1136,17 +1133,17 @@ def normalize(arr,vmin=0,vmax=1):
     scalarcheck(vmax,'vmax')
     if vmax <= vmin: 
         raise ValueError('Lower bound `vmin` has to be strictly smaller than upper bound `vmax`!')
-    if np.absolute(vmin - vmax) < np.finfo(float).eps:
+    if np.absolute(vmin - vmax) < 2*np.finfo(float).eps:
             raise ValueError('Bounds too close: `|vmin - vmax| < eps`, no normalization possible')
 
     # Get min and max of array
     arrmin = arr.min()
     arrmax = arr.max()
 
-    # If min and max values of array are identical do nothing, if they differ close to machine precision abort
+    # If min and max values of array are identical do nothing, if they differ close to machine precision, abort
     if arrmin == arrmax:
         return arr
-    elif np.absolute(arrmin - arrmax) < np.finfo(float).eps:
+    elif np.absolute(arrmin - arrmax) <= np.finfo(float).eps:
         raise ValueError('Minimal and maximal values of array too close, no normalization possible')
 
     # Return normalized array

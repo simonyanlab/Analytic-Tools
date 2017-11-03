@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-11-03 10:59:44>
+# Last modified: <2017-11-03 12:36:55>
 
 from __future__ import division
 import pytest
@@ -10,6 +10,7 @@ import os
 import sys
 import pdb
 import numpy as np
+import scipy as sp
 import pandas as pd
 import matplotlib.pyplot as plt
 module_pth = os.path.dirname(os.path.abspath(__file__))
@@ -27,7 +28,7 @@ skiplocal = pytest.mark.skipif(runninglocal, reason="debugging new tests")
 # ==========================================================================================
 # Assemble a bunch of fixtures to iterate over a plethora of obscure invalid inputs
 # Start by checking if non-array objects and array-likes can get past the gatekeeper
-@pytest.fixture(scope="session", params=[2, [2,3], (2,3), pd.DataFrame([2,3]), "string", plt.cm.jet])
+@pytest.fixture(params=[2, [2,3], (2,3), pd.DataFrame([2,3]), "string", plt.cm.jet])
 def check_nonarray(request):
     return request.param
 
@@ -176,7 +177,6 @@ class Test_arrcheck(object):
 # ==========================================================================================
 #                                       scalarcheck
 # ==========================================================================================
-
 @pytest.fixture(scope="class", params=[np.empty(()), np.empty((0)), np.empty((1)), np.empty((2,2)),
                                        pd.DataFrame([2,3]), "s", plt.cm.jet])
 def scalarcheck_nonscalar(request):
@@ -655,6 +655,7 @@ class Test_rm_negatives(object):
 #                                       thresh_nws
 # ==========================================================================================
 # Only test methodology and handling of disconnected nodes (inputs are vetted by ``arrcheck`` and ``scalarcheck``)
+@skiplocal
 class Test_thresh_nws(object):
     def test_numerics(self, capsys):
         with capsys.disabled():
@@ -776,6 +777,96 @@ class Test_thresh_nws(object):
         res_nwt = nwt.thresh_nws(nws, userdens=100*min_den, span_tree=True)
         msg = "Spanning trees not populated correctly!"
         assert np.abs(res_nwt["den_values"] - min_den).max() < 1e-1, msg
+
+# ==========================================================================================
+#                                       normalize
+# ==========================================================================================
+# A fixture to that creates a bunch of 2darrays filled with invalid entries
+@pytest.fixture(scope="class", params=[np.inf, np.nan, "string", plt.cm.jet, complex(2,3)])
+def invalid_2darrs(request):
+    val = np.empty((2,2)).astype(type(request.param))
+    val[:] = request.param
+    return val
+
+# Only test array handling and methodology (scalar inputs are vetted by ``scalarcheck``)
+class Test_normalize(object):
+    
+    # Recycle ``check_nonarray`` to throw some invalid arguments at ``normalize``
+    def test_nonarrays(self, capsys, check_nonarray):
+        with capsys.disabled():
+            sys.stdout.write("-> Test if non-NumPy arrays can get through... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.normalize(check_nonarray)
+        assert "Input `arr` has to be a NumPy ndarray" in str(excinfo.value)
         
+    # Arrays with nonsense
+    def test_values(self, capsys, invalid_2darrs):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid array values... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError):
+            nwt.normalize(invalid_2darrs)
+
+    # Test the actual computational performance of ``normalize``
+    def test_numerics(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Start torture-testing ``normalize``: ")
+            sys.stdout.flush()
+
+        # Use a diagonla matrix for testing below
+        arr = sp.diag([1.,2.,3.], k=0)
+
+        # Start with a cheap normalization bound violation
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Lower bound greater than upper bound... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.normalize(arr, vmin=1., vmax=0.)
+        assert "Lower bound `vmin` has to be strictly smaller than upper bound `vmax`!" in str(excinfo.value)
+
+        # Bounds are too close
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Difference in lower and upper bounds close to machine precision... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.normalize(arr, vmin=0., vmax=np.finfo(float).eps)
+        assert "Bounds too close: `|vmin - vmax| < eps`, no normalization possible" in str(excinfo.value)
+
+        # Array not normalizable
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Array min/max close to machine precision... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.normalize(np.array([0,np.finfo(float).eps]))
+        assert "Minimal and maximal values of array too close, no normalization possible" in str(excinfo.value)
+
+        # All elements in array are equal
+        brr = np.ones((3,3))
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Array elements identical... ")
+            sys.stdout.flush()
+        res_arr = nwt.normalize(brr)
+        msg = "Output array different from input array!"
+        assert np.all(brr == res_arr), msg
+        
+        # Use Matplotlib's ``Normalize`` as reference implementation for the case `vmin = 0.0`, `vmax = 1.0`
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Compare unit normalization to Matplotlib's ``Normalize``... ")
+            sys.stdout.flush()
+        res_arr = nwt.normalize(arr)
+        mpl_nrm = plt.Normalize()
+        msg = "Unit normalization differs from Matplotlib's reference implementation!"
+        assert np.all(mpl_nrm(arr) == res_arr), msg
+
+        # Construct an integral example for which we can easily establish the normalization
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Check normalization based on an integral example... ")
+            sys.stdout.flush()
+        res_arr = nwt.normalize(arr, vmin=4., vmax=10.)
+        ref_arr = 2*arr + 4.
+        msg = "Exemplary toy array was not normalized correctly!"
+        assert np.all(ref_arr == res_arr), msg
+
 # For MI try np.vstack([np.cos(xvec),np.sin(xvec)]).T
 
