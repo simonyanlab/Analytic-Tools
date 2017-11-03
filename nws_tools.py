@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-10-20 15:30:28>
+# Last modified: <2017-10-30 18:10:43>
 
 from __future__ import division
 import numpy as np
@@ -912,7 +912,7 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
                 mnw = nws[:,:,i].squeeze()
                 mnw = np.triu(mnw,1)                              
                 nws_forest[:,:,i] = octave.backbone_wu(mnw + mnw.T,2)
-            mean_tree,mtree_percval = get_meannw(nws_forest,percval)
+            mean_tree, mtree_percval = get_meannw(nws_forest,percval)
             res_dict['nws_forest'] = nws_forest
             res_dict['mean_tree'] = mean_tree
             res_dict['mtree_percval'] = mtree_percval
@@ -954,9 +954,11 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
             # with `avdg` denoting the average nodal degree in the graph (divide by two
             # to not count links twice (we have undirected links i <-> j, not i -> j and j <- i).
             # Thus, substituting (2) for `K` in (1) and re-arranging terms yields
-            # `avdg = d*(N**2 - N)/N`. Thus, for a user-provided density value, we can compute
+            # `avdg = d*(N - 1)`. Thus, for a user-provided density value, we can compute
             # the associated average degree of the wanted target network as
-            avdg = np.round(userdens/100*(N**2 - N)/N)
+            # avdg = np.round(userdens/100*(N**2 - N)/N)
+            avdg = np.round(userdens/100*(N - 1))
+            # import pdb;pdb.set_trace()
             print "\nReducing network densities to "+str(userdens)+"% by inversely populating maximum spanning trees..."
 
             # Use this average degree value to cut down input networks to desired density
@@ -965,14 +967,14 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
                 mnw      = np.triu(mnw,1)                              
                 raw_dper = int(np.round(1e2*raw_den[i]))
                 if raw_dper <= userdens:
-                    print "Density of raw network #"+str(i)+" is "+str(raw_dper)+"%"+\
+                    print "Density of raw network #"+str(i+1)+" is "+str(raw_dper)+"%"+\
                         " which is already lower than thresholding density of "+str(userdens)+"%"
                     print "Returning original unthresholded network"
                     th_nws[:,:,i] = nws[:,:,i].copy()
                     den_values[i] = raw_den[i]
                     nws_forest[:,:,i] = octave.backbone_wu(mnw + mnw.T.squeeze(),2)
                 else:
-                    nws_forest[:,:,i],th_nws[:,:,i] = octave.backbone_wu(mnw + mnw.T,avdg)
+                    nws_forest[:,:,i], th_nws[:,:,i] = octave.backbone_wu(mnw + mnw.T, avdg, nout=2)
                     den_values[i] = density_und(th_nws[:,:,i])
             mean_tree,mtree_percval = get_meannw(nws_forest,percval)
 
@@ -982,44 +984,18 @@ def thresh_nws(nws,userdens=None,percval=0.0,force_den=False,span_tree=False):
     # Here the good ol' relative weight thresholding
     else:
 
-        # Allocate space for thresholds
+        # Allocate space for thresholds and thresholding stepsize
         tau_levels = np.zeros((numsubs,))
+        dt = 1e-3
 
-        # Create vector of thresholds to iterate over
-        dt      = 1e-3
-        threshs = np.arange(0,1+2*dt,dt)
-
-        # Cycle through subjects and threshold the connection matrices until a node disconnects
+        # Compute minimal admissible density per network
         for i in xrange(numsubs):
-            tau = -1
             mnw = nws[:,:,i]
-            den = density_und(mnw)
-
-            # Start with 1%-weight threshold and increase 
-            for th in threshs:
-
-                # Save old iterates
-                den_old = den
-                tau_old = tau
-                mnw_old = mnw
-
-                # Threshold based on percentage of max. weight: throw out all weights < than 1%-max. weight, 2%, ...
-                # Thin out connection matrix step by step (that's why we only have to load `nws[:,:,i]` once
-                tau = th*maxw
-                mnw = mnw*(mnw >= tau).astype(float)
-
-                # Compute density of thinned graph (weight info is discarded)
-                den = density_und(mnw)
-
-                # Compute nodal degrees of network 
-                deg = degrees_und(mnw)
-
-                # As soon as one node gets disconnected (i.e. `deg[i] == 0`) stop thresholding and save previous dens
-                if deg.min() == 0:
-                    th_nws[:,:,i] = mnw_old
-                    tau_levels[i] = tau_old
-                    den_values[i] = den_old
-                    break
+            tau = mnw.max(axis=0).min()
+            mnw = mnw*(mnw >= tau)
+            th_nws[:,:,i] = mnw.copy()
+            den_values[i] = density_und(mnw)
+            tau_levels[i] = tau - dt
 
         # Compute minimal density before fragmentation across all subjects
         densities = np.round(1e2*den_values)

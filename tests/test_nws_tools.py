@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-10-20 16:59:01>
+# Last modified: <2017-11-03 10:59:44>
 
 from __future__ import division
 import pytest
@@ -17,8 +17,8 @@ module_pth = module_pth[:module_pth.rfind(os.sep)]
 sys.path.insert(0, module_pth)
 import nws_tools as nwt
 
-# Check if we're running locallly or on the Travis servers to avoid always running the entire thing while
-# appending additional tests
+# Check if we're running locallly or on the Travis servers to avoid always going through
+# the entire thing while appending additional tests
 runninglocal = (os.environ["PWD"] == "/home/travis/analytic_tools")
 skiplocal = pytest.mark.skipif(runninglocal, reason="debugging new tests")
 
@@ -674,16 +674,15 @@ class Test_thresh_nws(object):
             nw[nw < 0] = 0.0
             nw = np.triu(nw,1)
             nw += nw.T
-            nws[:,:,m] = nw
+            nws[:,:,m] = nw.copy()
         rand_nw = np.random.choice(M,1)[0]
-        rand_nd = np.random.choice(N,1)[0]
         nw_rand = nws[:,:,rand_nw].copy()
 
         # Start with a cheap symmetry violation
         with capsys.disabled():
             sys.stdout.write("\n\t-> Try to sneak in a directed network... ")
             sys.stdout.flush()
-        nws[rand_nd,1,rand_nw] = nws.max() + 0.1
+        nws[0,1,rand_nw] = nws.max() + 0.1
         with pytest.raises(ValueError) as excinfo:
             nwt.thresh_nws(nws)
         assert "Matrix "+str(rand_nw)+" is not symmetric!" in str(excinfo.value)
@@ -692,15 +691,15 @@ class Test_thresh_nws(object):
         with capsys.disabled():
             sys.stdout.write("\n\t-> Try to sneak in negative edge weights... ")
             sys.stdout.flush()
-        nws[rand_nd,1,rand_nw] = -1.0
-        nws[1,rand_nd,rand_nw] = -1.0
+        nws[0,1,rand_nw] = -1.0
+        nws[1,0,rand_nw] = -1.0
         with pytest.raises(ValueError) as excinfo:
             nwt.thresh_nws(nws)
         assert "Only non-negative weights supported!" in str(excinfo.value)
         
         # Next a cheap density error
         with capsys.disabled():
-            sys.stdout.write("\n\t-> Try to sneak in zero-density graph... ")
+            sys.stdout.write("\n\t-> Try to sneak in a zero-density graph... ")
             sys.stdout.flush()
         nws[:,:,rand_nw] = 0.0
         with pytest.raises(ValueError) as excinfo:
@@ -712,7 +711,7 @@ class Test_thresh_nws(object):
         nws[:,:,rand_nw] = nw_rand.copy()
         rm_no = int(np.round((1 - tgt_dens)*all_eg.size))
         for m in all_nw:
-            nw = nws[:,:,m]
+            nw = nws[:,:,m].copy()
             vals = nw[msk]
             nw[:] = 0.0
             rm_edg = np.random.choice(all_eg,size=(rm_no,),replace=False)
@@ -725,9 +724,58 @@ class Test_thresh_nws(object):
         with capsys.disabled():
             sys.stdout.write("\n\t-> Networks do not need to be thresholded... ")
             sys.stdout.flush()
-        res_nwt = nwt.thresh_nws(nws,userdens=tgt_dens*100+10)
-        msg = "Networks were thresholded despite being of lower density than required!"
+        res_nwt = nwt.thresh_nws(nws, userdens=tgt_dens*100+10)
+        msg = "Networks were thresholded despite having lower density than required!"
         assert res_nwt["tau_levels"] is None, msg
+        
+        # Same thing, but use spanning tree to do (almost) nothing
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Networks do not need to be thresholded with spanning trees either... ")
+            sys.stdout.flush()
+        res_nwt = nwt.thresh_nws(nws, userdens=tgt_dens*100+10, span_tree=True)
+        assert np.all(res_nwt["th_nws"] == nws), msg
+
+        # Manipulate the `rand_nw` network so that its minimal admissible density `min_den`
+        # is 10% below `tgt_dens`. Note: `min_den` can be expressed in terms of `K`, the no. of entries
+        # in the upper triangular portion of the network's connection matrix, as follows:
+        #       `min_den = K/((N**2 - N)/2)`
+        # Use this to compute `K` for a given `min_den`
+        nw_rand = nws[:,:,rand_nw].copy()
+        min_den = tgt_dens - 0.1
+        nw[:] = 0.0
+        K = int(np.round((min_den*(N**2 - N)/2)))
+        vals = nw[msk]
+        ad_edg = np.random.choice(all_eg,size=(K,), replace=False)
+        vals[ad_edg] = nw_rand.max()
+        nw[msk] = vals
+        nw += nw.T
+        nws[:,:,rand_nw] = nw.copy()
+
+        # Make sure that ``thresh_nws`` computes the minimal admissible density across `nws` correctly
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Check correct calculation of minimal admissible density... ")
+            sys.stdout.flush()
+        res_nwt = nwt.thresh_nws(nws)
+        msg = "Minimal admissible density not calculated correctly!"
+        assert np.abs(res_nwt["den_values"] - min_den).mean() < 1e-2, msg
+
+        # Use `foce_den` with a `userdens` that guarantess that the `rand_nw` network disconnects
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Force-threshold networks to disconnect nodes... ")
+            sys.stdout.flush()
+        res_nwt = nwt.thresh_nws(nws, userdens=100*min_den-10, force_den=True)
+        msg = "Thresholding should have yielded a disconnected network!"
+        assert (res_nwt["th_nws"][:,:,rand_nw] > 0).sum(axis=0).min() == 0
+
+        # Ensure that maximum spanning trees are populated correctly (the actual spanning trees
+        # are computed by `backbone_wu` in BCT and thus not error-checked
+        nws[:,:,rand_nw] = nw_rand.copy()
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Use spanning trees to construct density-reduced networks... ")
+            sys.stdout.flush()
+        res_nwt = nwt.thresh_nws(nws, userdens=100*min_den, span_tree=True)
+        msg = "Spanning trees not populated correctly!"
+        assert np.abs(res_nwt["den_values"] - min_den).max() < 1e-1, msg
         
 # For MI try np.vstack([np.cos(xvec),np.sin(xvec)]).T
 

@@ -8,15 +8,24 @@ before_install:
   - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
   - sudo apt-get update -q
   - sudo apt-get install r-base-dev
+  - sudo apt-get install octave
 
 install:
   - pip install -r tests/requirements.txt
 
+before_script:
+  - wget -P /home/travis https://sites.google.com/site/bctnet/Home/functions/BCT.zip
+  - unzip /home/travis/BCT.zip -d /home/travis
+  - export PATH=$PATH:/home/travis/BCT/
+  - echo 'addpath(genpath("~/BCT"))' > /home/travis/.octaverc
+
 script:
   - pytest --tb=short -v
 
-cache:
-  pip
-
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log
+
+cache:
+  directories:
+  - $HOME/BCT
+  - $HOME/.cache/pip
