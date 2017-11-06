@@ -1,0 +1,6 @@
+stats\_tools\.perm\_test
+========================
+
+.. currentmodule:: stats_tools
+
+.. autofunction:: perm_test

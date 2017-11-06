@@ -1,0 +1,6 @@
+recipes\.myglob
+===============
+
+.. currentmodule:: recipes
+
+.. autofunction:: myglob

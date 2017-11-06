@@ -1,0 +1,6 @@
+recipes\.natural\_sort
+======================
+
+.. currentmodule:: recipes
+
+.. autofunction:: natural_sort

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plotly_tools</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/myaddon.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Analytic Tools Documentation</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="https://www.masseyeandear.org/research/otolaryngology/investigators/laboratories/simonyanlab">Dystonia and Motor Control Laboratory</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Browse <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.degrees_und.html">nws_tools.degrees_und</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.strengths_und.html">nws_tools.strengths_und</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.density_und.html">nws_tools.density_und</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.get_corr.html">nws_tools.get_corr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.mutual_info.html">nws_tools.mutual_info</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.corrcheck.html">nws_tools.corrcheck</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.rm_negatives.html">nws_tools.rm_negatives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.rm_selfies.html">nws_tools.rm_selfies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.issym.html">nws_tools.issym</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.get_meannw.html">nws_tools.get_meannw</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.thresh_nws.html">nws_tools.thresh_nws</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.generate_randnws.html">nws_tools.generate_randnws</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.shownet.html">nws_tools.shownet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.show_nw.html">nws_tools.show_nw</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.csv2dict.html">nws_tools.csv2dict</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.normalize.html">nws_tools.normalize</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.nw_zip.html">nws_tools.nw_zip</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.hdfburp.html">nws_tools.hdfburp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.printdata.html">nws_tools.printdata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.img2vid.html">nws_tools.img2vid</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/plotly_tools.cmap_plt2js.html">plotly_tools.cmap_plt2js</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/plotly_tools.make_brainsurf.html">plotly_tools.make_brainsurf</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.read_eeg.html">eeg_tools.read_eeg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.load_data.html">eeg_tools.load_data</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.bandpass_filter.html">eeg_tools.bandpass_filter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.MA.html">eeg_tools.MA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.time2ind.html">eeg_tools.time2ind</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/stats_tools.perm_test.html">stats_tools.perm_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/stats_tools.printstats.html">stats_tools.printstats</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.natural_sort.html">recipes.natural_sort</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.regexfind.html">recipes.regexfind</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.query_yes_no.html">recipes.query_yes_no</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.myglob.html">recipes.myglob</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.get_numlines.html">recipes.get_numlines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.moveit.html">recipes.moveit</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.run_model.html">sim_tools.run_model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.make_bold.html">sim_tools.make_bold</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.plot_sim.html">sim_tools.plot_sim</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.show_params.html">sim_tools.show_params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.make_D.html">sim_tools.make_D</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Navigate <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <h1>Source code for plotly_tools</h1><div class="highlight"><pre>
+<span></span><span class="c1"># plotly_tools.py - Module providing a set of tools for rendering graphs using Plotly</span>
+<span class="c1"># </span>
+<span class="c1"># Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]</span>
+<span class="c1"># Created: August 10 2017</span>
+<span class="c1"># Last modified: &lt;2017-10-09 14:05:23&gt;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span> 
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="k">import</span> <span class="n">colorConverter</span><span class="p">,</span> <span class="n">cnames</span>
+<span class="kn">import</span> <span class="nn">plotly.offline</span> <span class="k">as</span> <span class="nn">po</span>
+<span class="kn">import</span> <span class="nn">plotly.graph_objs</span> <span class="k">as</span> <span class="nn">go</span>
+<span class="kn">import</span> <span class="nn">cmocean</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1">##########################################################################################</span>
+<div class="viewcode-block" id="cmap_plt2js"><a class="viewcode-back" href="../_stubs/plotly_tools.cmap_plt2js.html#plotly_tools.cmap_plt2js">[docs]</a><span class="k">def</span> <span class="nf">cmap_plt2js</span><span class="p">(</span><span class="n">cmap</span><span class="p">,</span> <span class="n">cmin</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">cmax</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">Ncols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts Matplotlib colormaps to JavaScript color-scales</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cmap : Matplotlib colormap</span>
+<span class="sd">        A linear segmented colormap (e.g., any member of `plt.cm`). </span>
+<span class="sd">    cmin : float</span>
+<span class="sd">        Lower cutoff value for truncating the input colormap that satisfies `0 &lt;= cmin &lt; 1`. </span>
+<span class="sd">    cmax : float</span>
+<span class="sd">        Upper cutoff value for truncating the input colormap that satisfies `0 &lt; cmax &lt;= 1`. </span>
+<span class="sd">    Ncols : int</span>
+<span class="sd">        Resolution of output color-scale, e.g., if `Ncols = 12`, the output </span>
+<span class="sd">        color-scale will contain 12 discrete RGB color increments. </span>
+<span class="sd">       </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cscale : list</span>
+<span class="sd">        List of lists containing `Ncols` float-string pairs encoding value-RGB color </span>
+<span class="sd">        assignments  in increasing order starting with `cscale[0] = [0, &#39;rgb(n_1,m_1,l_1)&#39;]`</span>
+<span class="sd">        up to `cscale[Ncols-1] = [1.0, &#39;rgb(n_Ncols,m_Ncols,l_Ncols)&#39;]`, where </span>
+<span class="sd">        `n_1,...,n_Ncols`, `m_1,...,m_Ncols` and `l_1,...,l_Ncols` are integers between </span>
+<span class="sd">        0 and 255 (see Examples for details). </span>
+<span class="sd">       </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    The following command converts and down-samples the jet colormap in the range [0.1, 1] </span>
+<span class="sd">    to a JavaScript color-scale with 12 components</span>
+
+<span class="sd">    &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">    &gt;&gt;&gt; cscale = cmap_plt2js(plt.cm.jet,cmin=0.1,Ncols=12)</span>
+<span class="sd">    &gt;&gt;&gt; cscale</span>
+<span class="sd">    [[0.0, &#39;rgb(0,0,241)&#39;],</span>
+<span class="sd">     [0.090909090909090912, &#39;rgb(0,56,255)&#39;],</span>
+<span class="sd">     [0.18181818181818182, &#39;rgb(0,140,255)&#39;],</span>
+<span class="sd">     [0.27272727272727271, &#39;rgb(0,224,251)&#39;],</span>
+<span class="sd">     [0.36363636363636365, &#39;rgb(64,255,183)&#39;],</span>
+<span class="sd">     [0.45454545454545459, &#39;rgb(131,255,115)&#39;],</span>
+<span class="sd">     [0.54545454545454541, &#39;rgb(199,255,48)&#39;],</span>
+<span class="sd">     [0.63636363636363635, &#39;rgb(255,222,0)&#39;],</span>
+<span class="sd">     [0.72727272727272729, &#39;rgb(255,145,0)&#39;],</span>
+<span class="sd">     [0.81818181818181823, &#39;rgb(255,67,0)&#39;],</span>
+<span class="sd">     [0.90909090909090917, &#39;rgb(218,0,0)&#39;],</span>
+<span class="sd">     [1.0, &#39;rgb(128,0,0)&#39;]]</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Make sure that our single mandatory input argument makes sense</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;Colormap&#39;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Input colormap `cmap` has to be a Matplotlib colormap!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Check colormap bounds</span>
+    <span class="n">varnames</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cmin&quot;</span><span class="p">,</span> <span class="s2">&quot;cmax&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">varnames</span><span class="p">:</span>
+        <span class="n">scalarcheck</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">var</span><span class="p">),</span><span class="n">var</span><span class="p">,</span><span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">cmin</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Lower cut-off for colormap must be &lt; 1.0!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cmax</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Upper cut-off for colormap must be &gt; 0.0!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check colormap resolution</span>
+    <span class="k">if</span> <span class="n">Ncols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Ncols</span> <span class="o">=</span> <span class="n">cmap</span><span class="o">.</span><span class="n">N</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">scalarcheck</span><span class="p">(</span><span class="n">Ncols</span><span class="p">,</span><span class="s1">&#39;Ncols&#39;</span><span class="p">,</span><span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>    
+
+    <span class="c1"># Create listed colormap and sub-sample/truncate input colormap if wanted</span>
+    <span class="n">new_cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">ListedColormap</span><span class="p">(</span><span class="n">cmap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">cmin</span><span class="p">,</span><span class="n">cmax</span><span class="p">,</span><span class="n">Ncols</span><span class="p">)),</span>
+                                                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;truncated_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmap</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+    <span class="c1"># For JavaScript to understand color specifications, we have to first multiply the [0,1]-normed</span>
+    <span class="c1"># color array by 255 (so that we get a colormap with 256 possible values between 0 and 255) and create</span>
+    <span class="c1"># a list of value - &quot;rgb(m,n,l)&quot; pairs</span>
+    <span class="n">newcols</span> <span class="o">=</span> <span class="n">new_cmap</span><span class="o">.</span><span class="n">colors</span><span class="p">[:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">255</span>
+    <span class="n">cscale</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">dc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">Ncols</span><span class="p">)):</span>
+        <span class="n">cscale</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">dc</span><span class="p">,</span> <span class="s2">&quot;rgb(&quot;</span><span class="o">+</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">c</span><span class="p">)))</span><span class="o">+</span><span class="s2">&quot;,&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">newcols</span><span class="p">[</span><span class="n">m</span><span class="p">,:])[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">cscale</span></div>
+
+<span class="c1">##########################################################################################</span>
+<div class="viewcode-block" id="make_brainsurf"><a class="viewcode-back" href="../_stubs/plotly_tools.make_brainsurf.html#plotly_tools.make_brainsurf">[docs]</a><span class="k">def</span> <span class="nf">make_brainsurf</span><span class="p">(</span><span class="n">surfname</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">orientation_lines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">orientation_labels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">orientation_lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">orientation_lcolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">orientation_fsize</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">orientation_fcolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                   <span class="n">shiny_srf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">surf_opac</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">surf_color</span><span class="o">=</span><span class="s1">&#39;Gainsboro&#39;</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create Plotly graph objects to render brain surfaces</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    surfname : string</span>
+<span class="sd">        Name of brain surface dataset in associated HDF5 container (access the container with</span>
+<span class="sd">        `h5py` and use `h5py.File(&#39;brainsurf/brainsurf.h5&#39;,&#39;r&#39;).keys()` to see all available surfaces). </span>
+<span class="sd">    orientation : bool</span>
+<span class="sd">        Flag to control whether axes are rendered to illustrate the employed coordinate system. </span>
+<span class="sd">        Use the `orientation_*` keywords for more fine-grained controls. </span>
+<span class="sd">    orientation_lines : bool</span>
+<span class="sd">        Flag to control whether axes illustrating the employed coordinate system are </span>
+<span class="sd">        rendered (only relevant if `orientation = True`). To prevent standard Cartesian </span>
+<span class="sd">        coordinate axes from being drawn on top of the brain&#39;s coordinate axes, use</span>
+<span class="sd">        the `&#39;scene&#39;` item of the return dictionary in Plotly&#39;s `Layout` directive, see </span>
+<span class="sd">        Examples below for details. </span>
+<span class="sd">    orientation_labels : bool</span>
+<span class="sd">        Flag to control whether labels (&quot;Anterior&quot;, &quot;Posterior&quot;, &quot;Inferior&quot;, &quot;Superior&quot;,</span>
+<span class="sd">        &quot;Left&quot;, &quot;Right&quot;) highlighting the employed coordinate system are rendered (only relevant if </span>
+<span class="sd">        `orientation = True`). </span>
+<span class="sd">    orientation_lw : float</span>
+<span class="sd">        Line-width of axes illustrating the employed coordinate system (only relevant if </span>
+<span class="sd">        both `orientation = True` and `orientation_lines = True`). </span>
+<span class="sd">    orientation_lcolor : string</span>
+<span class="sd">        String to set the color of axes lines. Check `matplotlib.colors.cnames` for supported colors </span>
+<span class="sd">        (only relevant if both `orientation = True`  and `orientation_lines = True`). </span>
+<span class="sd">    orientation_fsize : int</span>
+<span class="sd">        Font size of coordinate system labels (only relevant if both `orientation = True` and</span>
+<span class="sd">        `orientation_labels = True`). </span>
+<span class="sd">    orientation_fcolor : string</span>
+<span class="sd">        String to set the color of axes labels. Check `matplotlib.colors.cnames` for supported colors </span>
+<span class="sd">        (only relevant if both `orientation = True`  and `orientation_labels = True`). </span>
+<span class="sd">    shiny_srf : bool</span>
+<span class="sd">        Flag that controls whether the rendered brain surface exhibits good or poor light reflection </span>
+<span class="sd">        properties making the surface appear &quot;glossy&quot; (`shiny_srf = True`) or matte. </span>
+<span class="sd">    surf_opac : float</span>
+<span class="sd">        Sets the opacity of the brain surface using a value between 0.0 (fully transparent) </span>
+<span class="sd">        and 1.0 (solid). </span>
+<span class="sd">    surf_color : str</span>
+<span class="sd">        String to set the color of the brain surface. Check `matplotlib.colors.cnames` for </span>
+<span class="sd">        supported colors </span>
+<span class="sd">    view : str</span>
+<span class="sd">        Camera position. Available options are &quot;Axial&quot;, &quot;Sagittal&quot; and &quot;Coronal&quot;. If `view` is </span>
+<span class="sd">        `None` Plotly&#39;s default camera position will be selected. </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ply_dict : dict</span>
+<span class="sd">        A dictionary containing at least the item `&#39;brain&#39;` representing the generated Plotly </span>
+<span class="sd">        `Mesh3d` object for rendering the brain surface respecting all provided optional arguments. </span>
+<span class="sd">        If `orientation = True` the dictionary additionally contains the items `&#39;orientation_lines&#39;`</span>
+<span class="sd">        (a Plotly `Scatter3d` object representing coordinate system axes) and `&#39;orientation_labels&#39;`</span>
+<span class="sd">        (a Plotly `Scatter3d` object representing axes labels). If only one of the provided keyword </span>
+<span class="sd">        arguments `orientation_lines` or `orientation_labels` was `True`, the output dictionary  </span>
+<span class="sd">        only contains the respective conform item. </span>
+<span class="sd">        If `ply_dict` contains the item `&#39;orientation_lines&#39;` and/or the keyword `view` was not `None`, </span>
+<span class="sd">        `ply_dict` further contains the item `&#39;scene&#39;` (a nested dictionary which can be forwarded </span>
+<span class="sd">        to Plotly&#39;s `Layout` directive to control the visibility of Plotly&#39;s default axes and/or</span>
+<span class="sd">        the initial camera position, see Examples below for details).  </span>
+<span class="sd">       </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    The following command returns a dictionary of Plotly objects to render the </span>
+<span class="sd">    `BrainMesh_Ch2withCerebellum` brain as fully opaque glossy surface and sets up </span>
+<span class="sd">    the initial camera view point in axial position</span>
+
+<span class="sd">    &gt;&gt;&gt; pyt_dict = pyt.make_brainsurf(&#39;BrainMesh_Ch2withCerebellum&#39;, view=&#39;Axial&#39;)</span>
+
+<span class="sd">    The generated objects can be subsequently used to create a HTML file for rendering</span>
+<span class="sd">    the surface in a web-browser based on embedded JavaScript code that employs D3.js </span>
+<span class="sd">    functionality</span>
+
+<span class="sd">    &gt;&gt;&gt; import plotly.offline as po</span>
+<span class="sd">    &gt;&gt;&gt; import plotly.graph_objs as go</span>
+<span class="sd">    &gt;&gt;&gt; layout = go.Layout(scene=pyt_dict[&#39;scene&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; fig = go.Figure(data=[pyt_dict[&#39;brain&#39;],</span>
+<span class="sd">                              pyt_dict[&#39;orientation_labels&#39;], </span>
+<span class="sd">                              pyt_dict[&#39;orientation_lines&#39;]],</span>
+<span class="sd">                        layout=layout)</span>
+<span class="sd">    &gt;&gt;&gt; po.plot(fig, filename=&#39;brain.html&#39;)</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    Plotly : A data analytics and visualization tool for generating interactive </span>
+<span class="sd">             2D and 3D graphs rendered with D3.js. More information available</span>
+<span class="sd">             on its `official website &lt;https://plot.ly/&gt;`_</span>
+<span class="sd">    D3.js : A JavaScript library for visualizing data with HTML, SVG, and CSS.</span>
+<span class="sd">            More information available on its `official website &lt;https://d3js.org/&gt;`_</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Start by making sure that we have access to the brain surface container (which is assumed to</span>
+    <span class="c1"># reside in the sub-directory &#39;brainsurf&#39; of the local folder) </span>
+    <span class="c1"># This beautiful construction creates a string representing the absolute path of this script</span>
+    <span class="n">mypath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">h5brain</span> <span class="o">=</span> <span class="n">mypath</span> <span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="o">+</span><span class="s1">&#39;brainsurf&#39;</span><span class="o">+</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="o">+</span><span class="s1">&#39;brainsurf.h5&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">h5brainfile</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">h5brain</span><span class="p">,</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Could not open brain surface HDF5 container &quot;</span><span class="o">+</span><span class="n">h5brain</span><span class="o">+</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Now check if the provided surface file-name makes sense</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">surfname</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Brain surface name has to be a string!&#39;</span><span class="p">)</span>
+    <span class="n">supported</span> <span class="o">=</span> <span class="n">h5brainfile</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">surfname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported</span><span class="p">:</span>
+        <span class="n">sp_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">supported</span><span class="p">)</span>
+        <span class="n">sp_str</span> <span class="o">=</span> <span class="n">sp_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">sp_str</span> <span class="o">=</span> <span class="n">sp_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Unavailable surface `&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">surfname</span><span class="p">)</span><span class="o">+</span>\
+              <span class="s1">&#39;`. Available options are: &#39;</span><span class="o">+</span><span class="n">sp_str</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># Check surface parameters</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shiny_srf</span><span class="p">,</span><span class="nb">bool</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Surface lightning atmosphere has to be provided using a binary True/False flag!&#39;</span><span class="p">)</span>
+    <span class="n">scalarcheck</span><span class="p">(</span><span class="n">surf_opac</span><span class="p">,</span><span class="s1">&#39;surf_opac&#39;</span><span class="p">,</span><span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">])</span>
+    <span class="n">colorcheck</span><span class="p">(</span><span class="n">surf_color</span><span class="p">,</span><span class="s1">&#39;surf_color&#39;</span><span class="p">)</span>
+    <span class="n">surf_color</span> <span class="o">=</span> <span class="n">surf_color</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="c1"># Let&#39;s see if orientation lines/labels are wanted... </span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="n">orientation</span><span class="p">,</span> <span class="n">orientation_lines</span><span class="p">,</span> <span class="n">orientation_labels</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,</span><span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Orientation lines/labels are turned on/off using binary True/False flags!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># ... if yes, check orientation line/label parameters</span>
+    <span class="k">if</span> <span class="n">orientation</span><span class="p">:</span>
+        <span class="n">varnames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;orientation_lw&#39;</span><span class="p">,</span> <span class="s1">&#39;orientation_fsize&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">varnames</span><span class="p">:</span>
+            <span class="n">scalarcheck</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">var</span><span class="p">),</span><span class="n">var</span><span class="p">,</span><span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
+        <span class="n">varnames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;orientation_lcolor&#39;</span><span class="p">,</span> <span class="s1">&#39;orientation_fcolor&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">varnames</span><span class="p">:</span>
+            <span class="n">colorcheck</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="n">var</span><span class="p">),</span><span class="n">var</span><span class="p">)</span>
+        <span class="n">orientation_lcolor</span> <span class="o">=</span> <span class="n">orientation_lcolor</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">orientation_fcolor</span> <span class="o">=</span> <span class="n">orientation_fcolor</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">orientation_lines</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">orientation_labels</span> <span class="o">=</span> <span class="kc">False</span>
+        
+    <span class="c1"># Finally, check `view`</span>
+    <span class="k">if</span> <span class="n">view</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sp_str</span> <span class="o">=</span> <span class="s2">&quot;&#39;Axial&#39;, &#39;Sagittal&#39;, &#39;Coronal&#39;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">view</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Brain view must be either `None` or one of &#39;</span><span class="o">+</span><span class="n">sp_str</span><span class="o">+</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="n">view</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">+</span><span class="n">view</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">sp_str</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">view</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unavailable view `&quot;</span><span class="o">+</span><span class="n">view</span><span class="o">+</span><span class="s2">&quot;`. Available options are &quot;</span><span class="o">+</span><span class="n">sp_str</span><span class="p">)</span>
+
+    <span class="c1"># Now finally start actually doing something</span>
+    <span class="c1"># Extract vertex coordinates and triangle indices from given brain container</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">h5brainfile</span><span class="p">[</span><span class="n">surfname</span><span class="p">][</span><span class="s1">&#39;coord&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">tri</span> <span class="o">=</span> <span class="n">h5brainfile</span><span class="p">[</span><span class="n">surfname</span><span class="p">][</span><span class="s1">&#39;tri&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+    <span class="n">h5brainfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># Allocate the return dictionary</span>
+    <span class="n">ply_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># ==========================================================================================</span>
+    <span class="c1">#                        BRAIN SURFACE MESH</span>
+    <span class="c1"># ==========================================================================================</span>
+    <span class="c1"># Set surface lightning properties depending on whether we want a shiny &quot;wet&quot; brain or not</span>
+    <span class="k">if</span> <span class="n">shiny_srf</span><span class="p">:</span>
+        <span class="n">amb</span> <span class="o">=</span> <span class="mf">0.4</span>
+        <span class="n">dif</span> <span class="o">=</span> <span class="mf">0.8</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="mf">1.9</span>
+        <span class="n">rough</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="n">fres</span> <span class="o">=</span> <span class="mf">0.2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">amb</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="n">dif</span> <span class="o">=</span> <span class="mf">0.6</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="mf">1.9</span>
+        <span class="n">rough</span> <span class="o">=</span> <span class="mf">0.99</span>
+        <span class="n">fres</span> <span class="o">=</span> <span class="mf">4.99</span>
+        
+    <span class="c1"># Use Plotly&#39;s `Mesh3d` to render the surface</span>
+    <span class="n">brain</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Mesh3d</span><span class="p">(</span>
+
+        <span class="c1"># Cartesian coordinates of vertices</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span>
+
+        <span class="c1"># Corresponding triangle indices</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">tri</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">tri</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">tri</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span>
+
+        <span class="c1"># Disable mouse interactions and don&#39;t let this show up in the legend</span>
+        <span class="n">hoverinfo</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+        <span class="n">showlegend</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+
+        <span class="c1"># Set surface opacity and color</span>
+        <span class="n">opacity</span> <span class="o">=</span> <span class="n">surf_opac</span><span class="p">,</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;rgb(&quot;</span><span class="o">+</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;,&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">colorConverter</span><span class="o">.</span><span class="n">to_rgb</span><span class="p">(</span><span class="n">surf_color</span><span class="p">))</span><span class="o">*</span><span class="mi">255</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">,</span>
+
+        <span class="c1"># Set lighting properties and position</span>
+        <span class="n">lighting</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">ambient</span> <span class="o">=</span> <span class="n">amb</span><span class="p">,</span>
+            <span class="n">diffuse</span> <span class="o">=</span> <span class="n">dif</span><span class="p">,</span>
+            <span class="n">specular</span> <span class="o">=</span> <span class="n">spec</span><span class="p">,</span>
+            <span class="n">roughness</span> <span class="o">=</span> <span class="n">rough</span><span class="p">,</span>
+            <span class="n">fresnel</span> <span class="o">=</span> <span class="n">fres</span>
+        <span class="p">),</span>
+        <span class="n">lightposition</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="o">-</span><span class="mi">8</span><span class="o">*</span><span class="mf">1e2</span><span class="p">,</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">ply_dict</span><span class="p">[</span><span class="s1">&#39;brain&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">brain</span>
+
+    <span class="c1"># ==========================================================================================</span>
+    <span class="c1">#                        ANTERIOR/POSTERIOR/... ORIENTATION LINES</span>
+    <span class="c1"># ==========================================================================================</span>
+    <span class="c1"># If wanted add some &quot;brain-axes&quot;</span>
+    <span class="k">if</span> <span class="n">orientation</span><span class="p">:</span>
+
+        <span class="c1"># Extend of orientation lines within Cartesian coordinate system</span>
+        <span class="n">xlo</span><span class="p">,</span> <span class="n">xhi</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="n">ylo</span><span class="p">,</span> <span class="n">yhi</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">110</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="n">zlo</span><span class="p">,</span> <span class="n">zhi</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">70</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+
+        <span class="c1"># Draw orientation lines by connecting points in 3D space</span>
+        <span class="k">if</span> <span class="n">orientation_lines</span><span class="p">:</span>
+    
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+
+                <span class="c1"># Order obviously matters a lot here... </span>
+                <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">xlo</span><span class="p">,</span> <span class="n">xlo</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">xlo</span><span class="p">,</span> <span class="n">xlo</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">xlo</span><span class="p">,</span> <span class="n">xhi</span><span class="p">],</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">ylo</span><span class="p">,</span> <span class="n">ylo</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ylo</span><span class="p">,</span> <span class="n">yhi</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">yhi</span><span class="p">,</span> <span class="n">yhi</span><span class="p">],</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="n">zlo</span><span class="p">,</span> <span class="n">zhi</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">zlo</span><span class="p">,</span> <span class="n">zlo</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">zlo</span><span class="p">,</span> <span class="n">zlo</span><span class="p">],</span>
+
+                <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;lines&#39;</span><span class="p">,</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">width</span> <span class="o">=</span> <span class="n">orientation_lw</span><span class="p">,</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="n">orientation_lcolor</span><span class="p">),</span>
+
+                <span class="c1"># Disable mouse interactions and don&#39;t let this show up in the legend</span>
+                <span class="n">hoverinfo</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+                <span class="n">showlegend</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="n">ply_dict</span><span class="p">[</span><span class="s1">&#39;orientation_lines&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lines</span>
+
+            <span class="c1"># If orientation lines are rendered, don&#39;t show Plotly&#39;s standard axes</span>
+            <span class="n">scene</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;xaxis&quot;</span><span class="p">:</span> <span class="s2">&quot;x Axis&quot;</span><span class="p">,</span> <span class="s2">&quot;yaxis&quot;</span><span class="p">:</span> <span class="s2">&quot;y Axis&quot;</span><span class="p">,</span> <span class="s2">&quot;zaxis&quot;</span><span class="p">:</span> <span class="s2">&quot;z Axis&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">scene</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">ply_dict</span><span class="p">[</span><span class="s1">&#39;scene&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scene</span>
+
+        <span class="c1"># Give some spatial orientation via textual clues in 3D space</span>
+        <span class="k">if</span> <span class="n">orientation_labels</span><span class="p">:</span>
+
+            <span class="n">pos_info</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter3d</span><span class="p">(</span>
+
+                <span class="c1"># Again, order matters here: this has to align with the `text` list below</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">xlo</span><span class="p">,</span> <span class="n">xlo</span><span class="p">,</span> <span class="n">xlo</span><span class="p">,</span> <span class="n">xlo</span><span class="p">,</span> <span class="n">xlo</span><span class="p">,</span> <span class="n">xhi</span><span class="p">],</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">ylo</span><span class="p">,</span> <span class="n">ylo</span><span class="p">,</span> <span class="n">ylo</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="n">yhi</span><span class="o">+</span><span class="mi">15</span><span class="p">,</span> <span class="n">yhi</span><span class="p">,</span> <span class="n">yhi</span><span class="p">],</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="n">zlo</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="n">zhi</span><span class="p">,</span> <span class="n">zlo</span><span class="p">,</span> <span class="n">zlo</span><span class="p">,</span> <span class="n">zlo</span><span class="p">,</span> <span class="n">zlo</span><span class="p">],</span>
+
+                <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Inferior&quot;</span><span class="p">,</span> <span class="s2">&quot;Superior&quot;</span><span class="p">,</span> <span class="s2">&quot;Posterior&quot;</span><span class="p">,</span> <span class="s2">&quot;Anterior&quot;</span><span class="p">,</span> <span class="s2">&quot;Left&quot;</span><span class="p">,</span> <span class="s2">&quot;Right&quot;</span><span class="p">],</span>
+                <span class="c1"># text = [&quot;&lt;i&gt;&quot;+posit+&quot;&lt;/i&gt;&quot; for posit in \</span>
+                <span class="c1"># [&quot;Inferior&quot;, &quot;Superior&quot;, &quot;Posterior&quot;, &quot;Anterior&quot;, &quot;Left&quot;, &quot;Right&quot;]],</span>
+                <span class="n">textfont</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">size</span> <span class="o">=</span> <span class="n">orientation_fsize</span><span class="p">,</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="n">orientation_fcolor</span><span class="p">,</span>
+                    <span class="p">),</span>
+
+                <span class="c1"># Disable mouse interactions and don&#39;t let this show up in the legend</span>
+                <span class="n">hoverinfo</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+                <span class="n">showlegend</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="n">ply_dict</span><span class="p">[</span><span class="s1">&#39;orientation_labels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pos_info</span>
+
+    <span class="c1"># ==========================================================================================</span>
+    <span class="c1">#                        3D CAMERA SETUP</span>
+    <span class="c1"># ==========================================================================================</span>
+    <span class="c1"># Set initial camera position (if `view == None` use default camera position)</span>
+    <span class="k">if</span> <span class="n">view</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># import ipdb</span>
+        <span class="c1"># ipdb.set_trace()</span>
+
+        <span class="c1"># Initialize `scene` dict if necessary</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">orientation_lines</span><span class="p">:</span>
+            <span class="n">scene</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Set up camera position</span>
+        <span class="k">if</span> <span class="n">view</span> <span class="o">==</span> <span class="s2">&quot;Axial&quot;</span><span class="p">:</span>
+            <span class="n">scene</span><span class="p">[</span><span class="s1">&#39;camera&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">eye</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1e-6</span><span class="p">,</span>
+                    <span class="n">z</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">view</span> <span class="o">==</span> <span class="s2">&quot;Sagittal&quot;</span><span class="p">:</span>
+            <span class="n">scene</span><span class="p">[</span><span class="s1">&#39;camera&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">eye</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">view</span> <span class="o">==</span> <span class="s2">&quot;Coronal&quot;</span><span class="p">:</span>
+            <span class="n">scene</span><span class="p">[</span><span class="s1">&#39;camera&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">eye</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">ply_dict</span><span class="p">[</span><span class="s1">&#39;scene&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scene</span>
+
+    <span class="c1"># Throw back the final dictionary</span>
+    <span class="k">return</span> <span class="n">ply_dict</span></div>
+    
+<span class="c1">##########################################################################################</span>
+<span class="k">def</span> <span class="nf">scalarcheck</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="n">varname</span><span class="p">,</span><span class="n">kind</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Local helper function performing sanity checks on scalars</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">plt</span><span class="o">.</span><span class="n">is_numlike</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isreal</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input `&quot;</span><span class="o">+</span><span class="n">varname</span><span class="o">+</span><span class="s2">&quot;` must be a real scalar!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input `&quot;</span><span class="o">+</span><span class="n">varname</span><span class="o">+</span><span class="s2">&quot;` must be finite!&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;int&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">!=</span> <span class="n">val</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input `&quot;</span><span class="o">+</span><span class="n">varname</span><span class="o">+</span><span class="s2">&quot;` must be an integer!&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">&lt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input scalar `&quot;</span><span class="o">+</span><span class="n">varname</span><span class="o">+</span><span class="s2">&quot;` must be between &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot; and &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+
+<span class="c1">##########################################################################################</span>
+<span class="k">def</span> <span class="nf">colorcheck</span><span class="p">(</span><span class="n">colname</span><span class="p">,</span><span class="n">varname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Local helper function performing sanity checks on Matplotlib color strings</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">colname</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">varname</span><span class="o">+</span><span class="s1">&#39; has to be a string!&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">colname</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cnames</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="n">colname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cnames</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Unsupported color `&quot;</span><span class="o">+</span><span class="n">varname</span><span class="o">+</span><span class="s2">&quot; = &quot;</span><span class="o">+</span><span class="n">colname</span><span class="o">+</span><span class="s2">&quot;`. Check `matplotlib.colors.cnames` for possible choices. &quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

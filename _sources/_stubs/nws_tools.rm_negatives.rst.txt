@@ -1,0 +1,6 @@
+nws\_tools\.rm\_negatives
+=========================
+
+.. currentmodule:: nws_tools
+
+.. autofunction:: rm_negatives

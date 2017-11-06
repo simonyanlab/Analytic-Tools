@@ -1,0 +1,6 @@
+nws\_tools\.generate\_randnws
+=============================
+
+.. currentmodule:: nws_tools
+
+.. autofunction:: generate_randnws

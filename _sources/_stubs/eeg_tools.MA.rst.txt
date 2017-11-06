@@ -1,0 +1,6 @@
+eeg\_tools\.MA
+==============
+
+.. currentmodule:: eeg_tools
+
+.. autofunction:: MA

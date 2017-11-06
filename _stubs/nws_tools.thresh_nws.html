@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>nws_tools.thresh_nws</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/myaddon.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nws_tools.generate_randnws" href="nws_tools.generate_randnws.html" />
+    <link rel="prev" title="nws_tools.get_meannw" href="nws_tools.get_meannw.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Analytic Tools Documentation</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="https://www.masseyeandear.org/research/otolaryngology/investigators/laboratories/simonyanlab">Dystonia and Motor Control Laboratory</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Browse <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.degrees_und.html">nws_tools.degrees_und</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.strengths_und.html">nws_tools.strengths_und</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.density_und.html">nws_tools.density_und</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.get_corr.html">nws_tools.get_corr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.mutual_info.html">nws_tools.mutual_info</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.corrcheck.html">nws_tools.corrcheck</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.rm_negatives.html">nws_tools.rm_negatives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.rm_selfies.html">nws_tools.rm_selfies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.issym.html">nws_tools.issym</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.get_meannw.html">nws_tools.get_meannw</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">nws_tools.thresh_nws</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.generate_randnws.html">nws_tools.generate_randnws</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.shownet.html">nws_tools.shownet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.show_nw.html">nws_tools.show_nw</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.csv2dict.html">nws_tools.csv2dict</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.normalize.html">nws_tools.normalize</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.nw_zip.html">nws_tools.nw_zip</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.hdfburp.html">nws_tools.hdfburp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.printdata.html">nws_tools.printdata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nws_tools.img2vid.html">nws_tools.img2vid</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="plotly_tools.cmap_plt2js.html">plotly_tools.cmap_plt2js</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotly_tools.make_brainsurf.html">plotly_tools.make_brainsurf</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eeg_tools.read_eeg.html">eeg_tools.read_eeg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eeg_tools.load_data.html">eeg_tools.load_data</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eeg_tools.bandpass_filter.html">eeg_tools.bandpass_filter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eeg_tools.MA.html">eeg_tools.MA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eeg_tools.time2ind.html">eeg_tools.time2ind</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="stats_tools.perm_test.html">stats_tools.perm_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stats_tools.printstats.html">stats_tools.printstats</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="recipes.natural_sort.html">recipes.natural_sort</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.regexfind.html">recipes.regexfind</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.query_yes_no.html">recipes.query_yes_no</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="recipes.myglob.html">recipes.myglob</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.get_numlines.html">recipes.get_numlines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recipes.moveit.html">recipes.moveit</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sim_tools.run_model.html">sim_tools.run_model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_tools.make_bold.html">sim_tools.make_bold</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_tools.plot_sim.html">sim_tools.plot_sim</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sim_tools.show_params.html">sim_tools.show_params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_tools.make_D.html">sim_tools.make_D</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Navigate <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">nws_tools.thresh_nws</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="nws-tools-thresh-nws">
+<h1>nws_tools.thresh_nws<a class="headerlink" href="#nws-tools-thresh-nws" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="nws_tools.thresh_nws">
+<code class="descclassname">nws_tools.</code><code class="descname">thresh_nws</code><span class="sig-paren">(</span><em>nws</em>, <em>userdens=None</em>, <em>percval=0.0</em>, <em>force_den=False</em>, <em>span_tree=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/nws_tools.html#thresh_nws"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#nws_tools.thresh_nws" title="Permalink to this definition">¶</a></dt>
+<dd><p>Threshold networks based on connection density</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>nws</strong> : NumPy 3darray</p>
+<blockquote>
+<div><p>Undirected <cite>N</cite>-by-<cite>N</cite> (un)weighted connection matrices of <cite>numsubs</cite> subjects. 
+Format is <cite>corrs.shape = (N,N,numsubs)</cite> such that <cite>corrs[:,:,i] = N x N</cite> 
+connection matrix of <cite>i</cite>-th subject</p>
+</div></blockquote>
+<p><strong>userdens</strong> : int</p>
+<blockquote>
+<div><p>By default, the input networks are thresholded down to the lowest common 
+connection density without disconnecting any nodes in the networks using 
+a relative thresholding strategy (<cite>force_den = False</cite> and <cite>span_tree = False</cite>). 
+If <cite>userdens</cite> is provided and <cite>span_tree = False</cite>, then <cite>userdens</cite>
+is used as target density in the relative thresholding strategy. However, 
+if <cite>userdens</cite> is below the minimum density before networks fragment, 
+it will not be used unless <cite>force_den = True</cite>. 
+If <cite>span_tree = True</cite> and <cite>userdens</cite> is <cite>None</cite>, then maximum spanning 
+trees will be returned for all input networks. If <cite>userdens</cite> is provided, 
+the spanning trees will be populated with the strongest connections 
+found in the original networks up to the desired edge density. 
+For both relative thresholding and maximum spanning tree density reduction, 
+<cite>userdens</cite> should be either <cite>None</cite> or an integer between 0 and 100. 
+See Notes below for more details.</p>
+</div></blockquote>
+<p><strong>percval</strong> : float</p>
+<blockquote>
+<div><p>Percentage value for computing mean network averaged across all thresholded 
+graphs, such that connections not present in at least <cite>percval</cite>
+percent of subjects are not considered (<cite>0 &lt;= percval &lt;= 1</cite>).
+Default setting is <cite>percval = 0.0</cite>. See <cite>get_meannw</cite> for details.</p>
+</div></blockquote>
+<p><strong>force_den</strong> : bool</p>
+<blockquote>
+<div><p>If <cite>force_den = True</cite> relative thresholding is applied to the networks 
+until all graphs hit the desired density level defined by the user 
+even if nodes get disconnected in the process. This argument has no 
+effect if <cite>span_tree = True</cite>. By default, <cite>force_den = False</cite>.</p>
+</div></blockquote>
+<p><strong>span_tree</strong> : bool</p>
+<blockquote>
+<div><p>If <cite>span_tree</cite> is <cite>True</cite> density reduction is performed by constructing maximum 
+spanning trees. If <cite>userdens</cite> is <cite>None</cite>, only spanning trees for all input networks
+will be returned. If <cite>userdens</cite> is provided, spanning trees will be populated 
+with the strongest connections found in the original networks up to the 
+desired edge density. Note that <cite>foce_den</cite> is ignored if <cite>span_tree</cite> is <cite>True</cite>.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Dictionary holding computed quantities. The fields of the dictionary depend upon</p>
+<p>the values of the optional keyword arguments <cite>userdens</cite> and <cite>span_tree</cite>.</p>
+<p><strong>res</strong> : dict</p>
+<blockquote class="last">
+<div><p>Dictionary with fields</p>
+<dl class="docutils">
+<dt>th_nws <span class="classifier-delimiter">:</span> <span class="classifier">NumPy 3darray</span></dt>
+<dd><p class="first last">Sparse networks. Format is the same as for <cite>nws</cite> 
+(Not returned if <cite>userdens</cite> is <cite>None</cite> and <cite>span_tree = True</cite>).</p>
+</dd>
+<dt>den_values <span class="classifier-delimiter">:</span> <span class="classifier">NumPy 1darray</span></dt>
+<dd><p class="first last">Density values of the networks stored in <cite>th_nws</cite>, such that <cite>den_values[i]</cite>
+is the edge density of the graph <cite>th_nws[:,:,i]</cite>
+(not returned if <cite>userdens</cite> is <cite>None</cite> and <cite>span_tree = True</cite>).</p>
+</dd>
+<dt>th_mnw <span class="classifier-delimiter">:</span> <span class="classifier">NumPy 2darray</span></dt>
+<dd><p class="first last">Mean network averaged across all sparse networks <cite>th_nws</cite> 
+(not returned if <cite>userdens</cite> is <cite>None</cite> and <cite>span_tree = True</cite>).</p>
+</dd>
+<dt>mnw_percval: float</dt>
+<dd><p class="first last">Percentage value used to compute <cite>th_mnw</cite> (see documentation of <cite>get_meannw</cite> for
+details, not returned if <cite>userdens</cite> is <cite>None</cite> and <cite>span_tree = True</cite>).</p>
+</dd>
+<dt>tau_levels <span class="classifier-delimiter">:</span> <span class="classifier">NumPy 1darray</span></dt>
+<dd><p class="first last">Cutoff values used in the relative thresholding strategy to compute 
+<cite>th_nws</cite>, i.e., <cite>tau_levels[i]</cite> is the threshold that generated 
+network <cite>th_nws[:,:,i]</cite> (only returned if <cite>span_tree = False</cite>).</p>
+</dd>
+<dt>nws_forest <span class="classifier-delimiter">:</span> <span class="classifier">NumPy 3darray</span></dt>
+<dd><p class="first last">Maximum spanning trees calculated for all input networks 
+(only returned if <cite>span_tree = True</cite>).</p>
+</dd>
+<dt>mean_tree <span class="classifier-delimiter">:</span> <span class="classifier">NumPy 2darray</span></dt>
+<dd><p class="first last">Mean spanning tree averaged across all spanning trees stored in 
+<cite>nws_forest</cite> (only returned if <cite>span_tree = True</cite>).</p>
+</dd>
+<dt>mtree_percval <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd><p class="first last">Percentage value used to compute <cite>mean_tree</cite> (see documentation of <cite>get_meannw</cite> for
+details, only returned if <cite>span_tree = True</cite>).</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference internal" href="nws_tools.get_meannw.html#nws_tools.get_meannw" title="nws_tools.get_meannw"><code class="xref py py-obj docutils literal"><span class="pre">get_meannw</span></code></a></dt>
+<dd>Helper function to compute group-averaged networks</dd>
+<dt><code class="xref py py-obj docutils literal"><span class="pre">backbone_wu</span></code></dt>
+<dd>in the Brain Connectivity Toolbox (BCT) for MATLAB, currently available <a class="reference external" href="https://sites.google.com/site/bctnet/">here</a></dd>
+</dl>
+</div>
+<p class="rubric">Notes</p>
+<p>This routine uses either a relative thresholding strategy or a maximum spanning tree 
+approach to decrease the density of a given set of input networks.</p>
+<p>During relative thresholding (<cite>span_tree = False</cite>) edges are discarded based on their value relative to the 
+maximum edge weight found across all networks beginning with the weakest links. By default, 
+the thresholding algorithm uses the lowest common connection density across all input networks 
+before a node is disconnected as target edge density. That means, if networks <cite>A</cite>, <cite>B</cite> and <cite>C</cite> 
+can be thresholded down to 40%, 50% and 60% density, respectively, without disconnecting any 
+nodes, then the lowest common density for thresholding <cite>A</cite>, <cite>B</cite> and <cite>C</cite> together is 60%. 
+In this case the raw network <cite>A</cite> already has a density of 60% or lower, which is thus excluded 
+from thresholding and the original network is copied into <cite>th_nws</cite>. If a density level 
+is provided by the user, then the code tries to use it unless it violates connectedness 
+of all thresholded networks - in this case the lowest common density of all networks is used, 
+unless <cite>force_den = True</cite> which causes the code to employ the user-provided density level 
+for thresholding, disconnecting nodes from the networks in the process.</p>
+<p>The maximum spanning tree approach (<cite>span_tree = True</cite>) can be interpreted as the inverse of relative 
+thresholding. Instead of chipping away weak edges in the input networks until a target density 
+is met (or nodes disconnect), a minimal backbone of the network is calculated and then 
+populated with the strongest connections found in the original network until a desired 
+edge density level is reached. The backbone of the network is calculated by computing the graph&#8217;s maximum
+spanning tree, that connects all nodes with the minimum number of maximum-weight edges. 
+Note, that unless each edge has a distinct unique weight value a graph has numerous different 
+maximum spanning trees. Thus, the spanning trees computed by this routine are usually <em>not</em> unique, 
+and consequently the thresholded networks may not be unique either (particularly for low 
+density levels, for which the computed populated networks are very similar to the underlying spanning trees). 
+Thus, in contrast to the more common relative thresholding strategy, this bottom-up approach 
+allows to reduce a given network&#8217;s density to an almost arbitrary level 
+(&gt;= density of the maximum spanning tree) without disconnecting nodes. However, unlike relative 
+thresholding, the computed sparse networks are not necessarily unique and strongly depend 
+on the intial maximum spanning tree. Note that if <cite>userdens</cite> is <cite>None</cite>, only maximum spanning 
+trees will be computed.</p>
+<p>The code below relies on the routine <cite>get_meannw</cite> in this module to compute the group-averaged
+network. Futher, maximum spanning trees are calculated using <cite>backbone_wu.m</cite> from the 
+Brain Connectivity Toolbox (BCT) for MATLAB via Octave. Thus, it requires Octave to be installed 
+with the BCT in its search path. Further, <cite>oct2py</cite> is needed to launch an Octave instance 
+from within Python.</p>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

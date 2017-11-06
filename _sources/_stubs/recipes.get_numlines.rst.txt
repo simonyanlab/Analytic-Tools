@@ -1,0 +1,6 @@
+recipes\.get\_numlines
+======================
+
+.. currentmodule:: recipes
+
+.. autofunction:: get_numlines

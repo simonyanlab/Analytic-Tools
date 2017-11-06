@@ -1,0 +1,6 @@
+nws\_tools\.hdfburp
+===================
+
+.. currentmodule:: nws_tools
+
+.. autofunction:: hdfburp

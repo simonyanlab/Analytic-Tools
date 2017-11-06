@@ -1,0 +1,6 @@
+stats\_tools\.printstats
+========================
+
+.. currentmodule:: stats_tools
+
+.. autofunction:: printstats

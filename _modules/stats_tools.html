@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>stats_tools</title>
+    
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/myaddon.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          Analytic Tools Documentation</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="https://www.masseyeandear.org/research/otolaryngology/investigators/laboratories/simonyanlab">Dystonia and Motor Control Laboratory</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Browse <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.degrees_und.html">nws_tools.degrees_und</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.strengths_und.html">nws_tools.strengths_und</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.density_und.html">nws_tools.density_und</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.get_corr.html">nws_tools.get_corr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.mutual_info.html">nws_tools.mutual_info</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.corrcheck.html">nws_tools.corrcheck</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.rm_negatives.html">nws_tools.rm_negatives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.rm_selfies.html">nws_tools.rm_selfies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.issym.html">nws_tools.issym</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.get_meannw.html">nws_tools.get_meannw</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.thresh_nws.html">nws_tools.thresh_nws</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.generate_randnws.html">nws_tools.generate_randnws</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.shownet.html">nws_tools.shownet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.show_nw.html">nws_tools.show_nw</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.csv2dict.html">nws_tools.csv2dict</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.normalize.html">nws_tools.normalize</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.nw_zip.html">nws_tools.nw_zip</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.hdfburp.html">nws_tools.hdfburp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.printdata.html">nws_tools.printdata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/nws_tools.img2vid.html">nws_tools.img2vid</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/plotly_tools.cmap_plt2js.html">plotly_tools.cmap_plt2js</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/plotly_tools.make_brainsurf.html">plotly_tools.make_brainsurf</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.read_eeg.html">eeg_tools.read_eeg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.load_data.html">eeg_tools.load_data</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.bandpass_filter.html">eeg_tools.bandpass_filter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.MA.html">eeg_tools.MA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/eeg_tools.time2ind.html">eeg_tools.time2ind</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/stats_tools.perm_test.html">stats_tools.perm_test</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/stats_tools.printstats.html">stats_tools.printstats</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.natural_sort.html">recipes.natural_sort</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.regexfind.html">recipes.regexfind</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.query_yes_no.html">recipes.query_yes_no</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.myglob.html">recipes.myglob</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.get_numlines.html">recipes.get_numlines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/recipes.moveit.html">recipes.moveit</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.run_model.html">sim_tools.run_model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.make_bold.html">sim_tools.make_bold</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.plot_sim.html">sim_tools.plot_sim</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.show_params.html">sim_tools.show_params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_stubs/sim_tools.make_D.html">sim_tools.make_D</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Navigate <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <h1>Source code for stats_tools</h1><div class="highlight"><pre>
+<span></span><span class="c1"># stats_tools.py - Tools to assess group-wise statistical inference</span>
+<span class="c1"># </span>
+<span class="c1"># Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]</span>
+<span class="c1"># Created: December 30 2014</span>
+<span class="c1"># Last modified: &lt;2017-10-19 15:55:56&gt;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">ipdb</span><span class="p">;</span> <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">texttable</span> <span class="k">import</span> <span class="n">Texttable</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1">##########################################################################################</span>
+<div class="viewcode-block" id="perm_test"><a class="viewcode-back" href="../_stubs/stats_tools.perm_test.html#stats_tools.perm_test">[docs]</a><span class="k">def</span> <span class="nf">perm_test</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">,</span><span class="n">paired</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">useR</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">nperms</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span><span class="n">tail</span><span class="o">=</span><span class="s1">&#39;two&#39;</span><span class="p">,</span><span class="n">correction</span><span class="o">=</span><span class="s2">&quot;maxT&quot;</span><span class="p">,</span><span class="n">get_dist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">mth</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span>\
+              <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">fname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="nb">vars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">g1str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">g2str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform permutation tests for paired/unpaired uni-/multi-variate two-sample problems</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : NumPy 2darray</span>
+<span class="sd">        An #samples-by-#variables array holding the data of the first group</span>
+<span class="sd">    X : NumPy 2darray</span>
+<span class="sd">        An #samples-by-#variables array holding the data of the second group</span>
+<span class="sd">    paired : bool</span>
+<span class="sd">        Switch to indicate whether the two data-sets `X` and `Y` represent paired </span>
+<span class="sd">        (`paired = True`) or unpaired data. </span>
+<span class="sd">    useR : bool</span>
+<span class="sd">        Switch that determines whether the `R` library `flip` is used for testing. </span>
+<span class="sd">        Note: unpaired data can only be tested in `R`!</span>
+<span class="sd">    nperms : int</span>
+<span class="sd">        Number of permutations for shuffling the input data</span>
+<span class="sd">    tail : str</span>
+<span class="sd">        The alternative hypothesis the data is tested against. If `tail = &#39;less&#39;`, then </span>
+<span class="sd">        the null is tested against the alternative that the mean of the first group is </span>
+<span class="sd">        less than the mean of the second group (&#39;lower tailed&#39;). Alternatively, </span>
+<span class="sd">        `tail = &#39;greater&#39;` indicates the alternative that the mean of the first group is </span>
+<span class="sd">        greater than the mean of the second group (&#39;upper tailed&#39;). For `tail = &#39;two&#39;` </span>
+<span class="sd">        the alternative hypothesis is that the means of the data are different (&#39;two tailed&#39;), </span>
+<span class="sd">    correction : str</span>
+<span class="sd">        Multiplicity correction method. If the `R` package `flip` is not used for testing (`useR = False`)</span>
+<span class="sd">        this option is ignored, since `MNE`&#39;s permutation t-test only supports `p`-value correction using </span>
+<span class="sd">        the maximal test statistic `Tmax` [2]_. </span>
+<span class="sd">        Otherwise (either if `paired = False` or `useR = True`) the `R` library `flip` is used which </span>
+<span class="sd">        supports the options</span>
+<span class="sd">        &quot;holm&quot;, &quot;hochberg&quot;, &quot;hommel&quot;, &quot;bonferroni&quot;, &quot;BH&quot;, &quot;BY&quot;, &quot;fdr&quot;, &quot;none&quot;, &quot;Fisher&quot;, &quot;Liptak&quot;, </span>
+<span class="sd">        &quot;Tippett&quot;, &quot;MahalanobisT&quot;, &quot;MahalanobisP&quot;, &quot;minP&quot;, &quot;maxT&quot;, &quot;maxTstd&quot;, &quot;sumT&quot;, &quot;Direct&quot;, </span>
+<span class="sd">        &quot;sumTstd&quot;, &quot;sumT2&quot; (see [1]_ for a detailed explanation). By default &quot;maxT&quot; </span>
+<span class="sd">        is used. </span>
+<span class="sd">    get_dist : bool</span>
+<span class="sd">        Switch that determines whether the sampling distribution used for testing is </span>
+<span class="sd">        returned (by default it is not returned). </span>
+<span class="sd">    mth : str</span>
+<span class="sd">        Only relevant if testing is done in `R` (`useR = True` or `paired = False`). If `mth` is </span>
+<span class="sd">        not specified a permutation t-test will be performed. Available (but completely untested!)</span>
+<span class="sd">        options are: &quot;t&quot;, &quot;F&quot;, &quot;ANOVA&quot;,&quot;Kruskal-Wallis&quot;, &quot;kruskal&quot;, &quot;Mann-Whitney&quot;, &quot;sum&quot;, </span>
+<span class="sd">        &quot;Wilcoxon&quot;, &quot;rank&quot;, &quot;Sign&quot; (see [1]_ for details). Note that by design this wrapper only </span>
+<span class="sd">        supports two-sample problems (`X` and `Y`). To analyze `k`-sample data using, e.g., an ANOVA,</span>
+<span class="sd">        please refer to the `flip` package directly. </span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        If `verbose = True` then intermediate results, progression messages and a table </span>
+<span class="sd">        holding the final statistical evaluation are printed to the prompt. </span>
+<span class="sd">    fname : str</span>
+<span class="sd">        If provided, testing results are saved to the csv file `fname`. The file-name </span>
+<span class="sd">        can be provided with or without the extension &#39;.csv&#39; </span>
+<span class="sd">        (WARNING: existing files will be overwritten!). By default, the output is not saved. </span>
+<span class="sd">    vars : list or NumPy 1darray</span>
+<span class="sd">        Names of the variables that are being tested. Only relevant </span>
+<span class="sd">        if `verbose = True` and/or `fname` is not `None`. If `vars` is `None` and output</span>
+<span class="sd">        is shown and/or saved, a generic list `[&#39;Variable 1&#39;,&#39;Variable 2&#39;,...]` will be used </span>
+<span class="sd">        in the table summarizing the final results. </span>
+<span class="sd">    g1str : str</span>
+<span class="sd">        Name of the first sample. Only relevant if `verbose = True` and/or `fname` is not `None`. </span>
+<span class="sd">        If `g1str = None` and output is shown/saved a generic group name (&#39;Group 1&#39;) will be used </span>
+<span class="sd">        in the table showing the final results. </span>
+<span class="sd">    g2str : str</span>
+<span class="sd">        Name of the second sample. Only relevant if `verbose = True` and/or `fname` is not `None`. </span>
+<span class="sd">        If `g2str = None` and output is shown/saved a generic group name (&#39;Group 2&#39;) will be used </span>
+<span class="sd">        in the table showing the final results. </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    stats_dict : dictionary</span>
+<span class="sd">        Test-results are saved in a Python dictionary. By default `stats_dict` has </span>
+<span class="sd">        the keys &#39;pvals&#39; (the adjusted `p`-values) and &#39;statvals&#39; (values of the test statistic</span>
+<span class="sd">        observed for all variables). If `get_dist = True` then an additional entry &#39;dist&#39; </span>
+<span class="sd">        is created for the employed sampling distribution. </span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This routine is merely a wrapper and does not do any heavy computational lifting.  </span>
+<span class="sd">    In case of paired data and `useR = False` the function `permutation_t_test` of </span>
+<span class="sd">    the `MNE` package [2]_ is called. </span>
+<span class="sd">    If the samples are independent (`paired = False`) or `useR = True` the `R` </span>
+<span class="sd">    library `flip` [1]_ is loaded. Thus, this routine has a </span>
+<span class="sd">    number of dependencies: for paired data at least the Python package `mne` is required, </span>
+<span class="sd">    unpaired samples can only be tested if `pandas` as well as `rpy2` (for `R`/Python conversion)</span>
+<span class="sd">    and, of course, `R` and the `R`-library `flip` are installed (and in the search path). </span>
+<span class="sd">    To show/save results the routine `printstats` (part of this module) is called.</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    printstats : routine to pretty-print results computed by a hypothesis test</span>
+<span class="sd">    flip : a `R` library for uni-variate and multivariate permutation (and rotation) tests,</span>
+<span class="sd">           currently available `here &lt;https://cran.r-project.org/web/packages/flip/index.html&gt;`_</span>
+<span class="sd">    mne : a software package for processing magnetoencephalography (MEG) and electroencephalography (EEG) data,</span>
+<span class="sd">          currently available at the Python Package Index `here &lt;https://pypi.python.org/pypi/mne/0.7.1&gt;`_</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Assume we want to analyze medical data of 200 healthy adult subjects collected before and after </span>
+<span class="sd">    physical exercise. For each subject, we have measurements of heart-rate (HR), blood pressure (BP) and</span>
+<span class="sd">    body temperature (BT) before and after exercise. Thus our data sets contain 200 observations of </span>
+<span class="sd">    3 variables. We want to test the data for a statistically significant difference in any of the </span>
+<span class="sd">    three observed quantities (HR, BP, BT) after physical exercise compared to the measurements </span>
+<span class="sd">    acquired before exercise. </span>
+
+<span class="sd">    Assume all samples are given as Python lists: `HR_before`, `BP_before`, `BT_before`, </span>
+<span class="sd">    `HR_after`, `BP_after`, `BT_after`. To be able to use `perm_test`, we collect the </span>
+<span class="sd">    data in NumPy arrays:</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; X = np.zeros((200,3))</span>
+<span class="sd">    &gt;&gt;&gt; X[:,0] = HR_before</span>
+<span class="sd">    &gt;&gt;&gt; X[:,1] = BP_before</span>
+<span class="sd">    &gt;&gt;&gt; X[:,2] = BT_before</span>
+<span class="sd">    &gt;&gt;&gt; Y = np.zeros((200,3))</span>
+<span class="sd">    &gt;&gt;&gt; Y[:,0] = HR_after</span>
+<span class="sd">    &gt;&gt;&gt; Y[:,1] = BP_after</span>
+<span class="sd">    &gt;&gt;&gt; Y[:,2] = BT_after</span>
+
+<span class="sd">    Our null-hypothesis is that physical exercise did not induce a significant change in </span>
+<span class="sd">    any of the observed variables. As an alternative hypothesis, we assume that </span>
+<span class="sd">    exercise induced an increase in heart rate, blood pressure and body temperature. </span>
+<span class="sd">    To test our hypotheses we use the following command</span>
+
+<span class="sd">    &gt;&gt;&gt; perm_test(X,Y,paired=True,nperms=20000,tail=&#39;less&#39;,fname=&#39;stats.csv&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;           vars=[&#39;Heart Rate&#39;,&#39;Blood Pressure&#39;,&#39;Body Temperature&#39;],</span>
+<span class="sd">    &gt;&gt;&gt;           g1str=&#39;Before Exercise&#39;,g2str=&#39;After Exercise&#39;)</span>
+
+<span class="sd">    which performs a lower-tailed paired permutation t-test with 20000 permutations, </span>
+<span class="sd">    prints the results to the prompt and also saves them in the file `stats.csv`. </span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] F. Pesarin. Multivariate Permutation Tests with Applications in Biostatistics.</span>
+<span class="sd">       Wiley, New York, 2001. </span>
+<span class="sd">    .. [2] A. Gramfort, M. Luessi, E. Larson, D. Engemann, D. Strohmeier, C. Brodbeck, L. Parkkonen, </span>
+<span class="sd">       M. Haemaelaeinen. MNE software for processing MEG and EEG data. NeuroImage 86, 446-460, 2014</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check mandatory inputs and make sure `X` and `Y` are tested for the same no. of variables</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="p">[</span><span class="n">nsamples_x</span><span class="p">,</span><span class="n">n_testsx</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;First input `X` has to be a NumPy 2darray!&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="p">[</span><span class="n">nsamples_y</span><span class="p">,</span><span class="n">n_testsy</span><span class="p">]</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;First input `Y` has to be a NumPy 2darray!&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n_testsx</span> <span class="o">!=</span> <span class="n">n_testsy</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of variables different in `X` and `Y`!&#39;</span><span class="p">)</span>
+    <span class="n">n_tests</span> <span class="o">=</span> <span class="n">n_testsx</span>
+
+    <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="p">[</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isreal</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Inputs `X` and `Y` must be real-valued NumPy 2darrays&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Inputs `X` and `Y` must be real-valued NumPy 2darrays without Infs or NaNs!&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">nsamples_x</span><span class="p">,</span><span class="n">nsamples_y</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">n_tests</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="s2">&quot;WARNING: Number of variables &gt; number of samples!&quot;</span>
+
+    <span class="c1"># Check `paired` and make sure that input arrays make sense in case we have paired data</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">paired</span><span class="p">,</span><span class="nb">bool</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The switch `paired` has to be Boolean!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nsamples_x</span> <span class="o">!=</span> <span class="n">nsamples_y</span> <span class="ow">and</span> <span class="n">paired</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot perform paired test with different number of samples!&#39;</span><span class="p">)</span>
+    <span class="n">pairlst</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;unpaired&quot;</span><span class="p">,</span><span class="s2">&quot;paired&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Check `useR`</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">useR</span><span class="p">,</span><span class="nb">bool</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The switch `useR` has to be Boolean!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">paired</span><span class="p">:</span>
+        <span class="n">useR</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="c1"># Check `get_dist`</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">get_dist</span><span class="p">,</span><span class="nb">bool</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The switch `get_dist` has to be Boolean!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check `nperms`</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">nperms</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">plt</span><span class="o">.</span><span class="n">is_numlike</span><span class="p">(</span><span class="n">nperms</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isreal</span><span class="p">(</span><span class="n">nperms</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The number of permutations has to be provided as scalar!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">nperms</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The number of permutations must be finite!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">nperms</span><span class="p">)</span> <span class="o">!=</span> <span class="n">nperms</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The number of permutations must be an integer!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check `mth` </span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mth</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The test-statistic has to be specified using a string, not &quot;</span><span class="o">+</span><span class="nb">type</span><span class="p">(</span><span class="n">mth</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">useR</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">paired</span><span class="p">:</span>
+            <span class="n">supported</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;Wilcoxon&quot;</span><span class="p">,</span> <span class="s2">&quot;rank&quot;</span><span class="p">,</span> <span class="s2">&quot;Sign&quot;</span><span class="p">,</span><span class="s2">&quot;sum&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">mth</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Unsupported method &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">mth</span><span class="p">)</span><span class="o">+</span>\
+                      <span class="s1">&#39;. Available options for PAIRED data are: &#39;</span><span class="o">+</span><span class="n">sp_str</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">supported</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="s2">&quot;ANOVA&quot;</span><span class="p">,</span><span class="s2">&quot;Kruskal-Wallis&quot;</span><span class="p">,</span> <span class="s2">&quot;kruskal&quot;</span><span class="p">,</span> <span class="s2">&quot;Mann-Whitney&quot;</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">mth</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Unsupported method &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">mth</span><span class="p">)</span><span class="o">+</span>\
+                      <span class="s1">&#39;. Available options for UNPAIRED data are: &#39;</span><span class="o">+</span><span class="n">sp_str</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">sp_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">supported</span><span class="p">)</span>
+            <span class="n">sp_str</span> <span class="o">=</span> <span class="n">sp_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">sp_str</span> <span class="o">=</span> <span class="n">sp_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mth</span> <span class="o">!=</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;WARNING: The optional argument `mth` will be ignored since R will not be used!&quot;</span>
+
+    <span class="c1"># Check `tail` if provided</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tail</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The alternative hypothesis has to be specified using a string, not &quot;</span><span class="o">+</span>\
+                        <span class="nb">type</span><span class="p">(</span><span class="n">tail</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+    <span class="n">supported</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;greater&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;less&#39;</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;two&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">}</span>
+    <span class="n">spl</span>       <span class="o">=</span> <span class="n">supported</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">tail</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spl</span><span class="p">:</span>
+        <span class="n">sp_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">spl</span><span class="p">)</span>
+        <span class="n">sp_str</span> <span class="o">=</span> <span class="n">sp_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">sp_str</span> <span class="o">=</span> <span class="n">sp_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The alternative hypothesis given by tail = &#39;&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">tail</span><span class="p">)</span><span class="o">+</span> <span class="s2">&quot;&#39; is invalid. &quot;</span><span class="o">+</span>\
+              <span class="s2">&quot;Available options are: &quot;</span><span class="o">+</span><span class="n">sp_str</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># Save tail selection for output before we convert it to an integer </span>
+    <span class="n">tail_dt1</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;less&quot;</span><span class="p">:</span><span class="s2">&quot;less than&quot;</span><span class="p">,</span><span class="s2">&quot;two&quot;</span><span class="p">:</span><span class="s2">&quot;different from&quot;</span><span class="p">,</span><span class="s2">&quot;greater&quot;</span><span class="p">:</span><span class="s2">&quot;greater than&quot;</span><span class="p">}</span>
+    <span class="n">tail_dt2</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;less&quot;</span><span class="p">:</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span><span class="s2">&quot;two&quot;</span><span class="p">:</span><span class="s2">&quot;two&quot;</span><span class="p">,</span><span class="s2">&quot;greater&quot;</span><span class="p">:</span><span class="s2">&quot;upper&quot;</span><span class="p">}</span>
+    <span class="n">tail_st1</span> <span class="o">=</span> <span class="n">tail_dt1</span><span class="p">[</span><span class="n">tail</span><span class="p">]</span>
+    <span class="n">tail_st2</span> <span class="o">=</span> <span class="n">tail_dt2</span><span class="p">[</span><span class="n">tail</span><span class="p">]</span>
+
+    <span class="c1"># Now convert string-tail to numeric value (lower, two, upper) -&gt; (-1, 0, +1)</span>
+    <span class="n">tail</span> <span class="o">=</span> <span class="n">supported</span><span class="p">[</span><span class="n">tail</span><span class="p">]</span>
+    
+    <span class="c1"># Check the setting for the p-value correction</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">correction</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The multiplicity correction scheme has to be specified using a string, not &quot;</span><span class="o">+</span>\
+                        <span class="nb">type</span><span class="p">(</span><span class="n">correction</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">useR</span><span class="p">:</span>
+        <span class="n">supported</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;holm&quot;</span><span class="p">,</span> <span class="s2">&quot;hochberg&quot;</span><span class="p">,</span> <span class="s2">&quot;hommel&quot;</span><span class="p">,</span> <span class="s2">&quot;bonferroni&quot;</span><span class="p">,</span> <span class="s2">&quot;BH&quot;</span><span class="p">,</span> <span class="s2">&quot;BY&quot;</span><span class="p">,</span> <span class="s2">&quot;fdr&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="s2">&quot;Fisher&quot;</span><span class="p">,</span>\
+                     <span class="s2">&quot;Liptak&quot;</span><span class="p">,</span> <span class="s2">&quot;Tippett&quot;</span><span class="p">,</span> <span class="s2">&quot;MahalanobisT&quot;</span><span class="p">,</span> <span class="s2">&quot;MahalanobisP&quot;</span><span class="p">,</span> <span class="s2">&quot;minP&quot;</span><span class="p">,</span> <span class="s2">&quot;maxT&quot;</span><span class="p">,</span> <span class="s2">&quot;maxTstd&quot;</span><span class="p">,</span>\
+                     <span class="s2">&quot;sumT&quot;</span><span class="p">,</span> <span class="s2">&quot;Direct&quot;</span><span class="p">,</span> <span class="s2">&quot;sumTstd&quot;</span><span class="p">,</span> <span class="s2">&quot;sumT2&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">correction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">supported</span><span class="p">:</span>
+            <span class="n">sp_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">supported</span><span class="p">)</span>
+            <span class="n">sp_str</span> <span class="o">=</span> <span class="n">sp_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">sp_str</span> <span class="o">=</span> <span class="n">sp_str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The multiplicity correction method given by correction = &#39;&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">correction</span><span class="p">)</span><span class="o">+</span>\
+                  <span class="s2">&quot;&#39; is invalid. Available options are: &quot;</span><span class="o">+</span><span class="n">sp_str</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">correction</span> <span class="o">!=</span> <span class="s2">&quot;maxT&quot;</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;WARNING: The stats toolbox in MNE only supports standard Tmax correction of p-values!&quot;</span>
+                            
+    <span class="c1"># Check if the user wants to see what&#39;s going on</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">verbose</span><span class="p">,</span><span class="nb">bool</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The switch `verbose` has to be Boolean!&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># If a file-name was provided make sure it&#39;s a string and check if the path exists</span>
+    <span class="k">if</span> <span class="n">fname</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fname</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Filename has to be provided as string, not &quot;</span><span class="o">+</span><span class="nb">type</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s2">&quot;!&quot;</span><span class="p">)</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">fname</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">slash</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">slash</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">fname</span><span class="p">[:</span><span class="n">fname</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid path for output file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Warn if output was turned off but labels were provided and assign default values to labels if necessary</span>
+    <span class="c1"># (Do error checking here to avoid a breakdown at the very end of the code...)</span>
+    <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">fname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">chk</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">vars</span><span class="p">,</span><span class="n">g1str</span><span class="p">,</span><span class="n">g2str</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">chk</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span> <span class="s2">&quot;WARNING: Output labels were provided but `verbose == False` and `fname == None`. &quot;</span><span class="o">+</span>\
+                      <span class="s2">&quot;The labels will be ignored and no output will be shown/saved!&quot;</span>
+                <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">vars</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">vars</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Variable &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">n_tests</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">vars</span><span class="p">,(</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Variable names have to be provided as Python list/NumPy 1darray, not &#39;</span><span class="o">+</span>\
+                                <span class="nb">type</span><span class="p">(</span><span class="nb">vars</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">vars</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="o">!=</span> <span class="n">n_tests</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Number of variable labels for output and number of tests do not match up!&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;All variables in the optional input `vars` must be strings!&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">g1str</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">g1str</span> <span class="o">=</span> <span class="s1">&#39;Group 1&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">g1str</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The optional column label `g1str` has to be a string!&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">g2str</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">g2str</span> <span class="o">=</span> <span class="s1">&#39;Group 2&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">g2str</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The optional column label `g2str` has to be a string!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Initialize the output dictionary</span>
+    <span class="n">stats_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            
+    <span class="c1"># Here we go: in case of paired samples and hatred for R, use Python&#39;s mne </span>
+    <span class="k">if</span> <span class="n">paired</span> <span class="o">==</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">useR</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+
+        <span class="c1"># Try to import/load everything we need below</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">mne</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;The Python module `mne` is not installed!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Just to double check with user, say what&#39;s about to happen</span>
+        <span class="nb">print</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Testing statistical mean-difference of paired samples using the permutation t-test from `mne`&quot;</span>
+
+        <span class="c1"># Perform the actual testing</span>
+        <span class="n">statvals</span><span class="p">,</span> <span class="n">pvals</span><span class="p">,</span> <span class="n">dist</span> <span class="o">=</span> <span class="n">mne</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">permutation_t_test</span><span class="p">(</span><span class="n">X</span><span class="o">-</span><span class="n">Y</span><span class="p">,</span><span class="n">n_permutations</span><span class="o">=</span><span class="n">nperms</span><span class="p">,</span>\
+                                                             <span class="n">tail</span><span class="o">=</span><span class="n">tail</span><span class="p">,</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Store result in output dictionary</span>
+        <span class="n">stats_dict</span><span class="p">[</span><span class="s1">&#39;pvals&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="n">pvals</span>
+        <span class="n">stats_dict</span><span class="p">[</span><span class="s1">&#39;statvals&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">statvals</span>
+        <span class="k">if</span> <span class="n">get_dist</span><span class="p">:</span>
+            <span class="n">stats_dict</span><span class="p">[</span><span class="s1">&#39;dist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist</span>
+
+    <span class="c1"># Otherwise fire up R and use `flip`</span>
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="c1"># Try to import/load everything we need below</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+            <span class="kn">import</span> <span class="nn">rpy2.robjects.numpy2ri</span>
+            <span class="n">rpy2</span><span class="o">.</span><span class="n">robjects</span><span class="o">.</span><span class="n">numpy2ri</span><span class="o">.</span><span class="n">activate</span><span class="p">()</span>
+            <span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="k">import</span> <span class="n">pandas2ri</span>
+            <span class="n">pandas2ri</span><span class="o">.</span><span class="n">activate</span><span class="p">()</span>
+            <span class="kn">from</span> <span class="nn">rpy2.robjects.packages</span> <span class="k">import</span> <span class="n">importr</span>
+            <span class="kn">from</span> <span class="nn">rpy2.robjects</span> <span class="k">import</span> <span class="n">Formula</span>
+
+            <span class="c1"># Set up our R name-spaces and see if `flip` is available</span>
+            <span class="n">R</span>    <span class="o">=</span> <span class="n">rpy2</span><span class="o">.</span><span class="n">robjects</span><span class="o">.</span><span class="n">r</span>
+            <span class="n">flip</span> <span class="o">=</span> <span class="n">importr</span><span class="p">(</span><span class="s1">&#39;flip&#39;</span><span class="p">)</span>
+
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Either the Python modules `pandas` and/or `rpy2` or &quot;</span><span class="o">+</span>\
+                  <span class="s2">&quot;the R package `flip` is/are not installed!&quot;</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+ 
+        <span class="c1"># Just to double check with user, say what&#39;s about to happen</span>
+        <span class="nb">print</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Performing a permutation &quot;</span><span class="o">+</span><span class="n">mth</span><span class="o">+</span><span class="s2">&quot;-test of &quot;</span><span class="o">+</span><span class="n">pairlst</span><span class="p">[</span><span class="n">paired</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot; samples using the `R` package `flip`&quot;</span>
+
+        <span class="c1"># Construct a list of strings of the form </span>
+        <span class="c1"># [&#39;a&#39;,&#39;b&#39;,&#39;c&#39;,...,&#39;z&#39;,&#39;aa&#39;,&#39;ab&#39;,&#39;ac&#39;,...,&#39;az&#39;,&#39;ba&#39;,&#39;bb&#39;,&#39;bc&#39;,...]</span>
+        <span class="n">abclist</span> <span class="o">=</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">lowercase</span><span class="p">)</span> <span class="o">+</span> \
+                  <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">lowercase</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">)])[:</span><span class="n">n_tests</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;group&#39;</span><span class="p">]</span>
+        
+        <span class="c1"># Use that list to build a string of the form &#39;a + b + c +...+ aa + ab + ... ~ group&#39; </span>
+        <span class="n">frm_str</span> <span class="o">=</span> <span class="n">abclist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">ltr</span> <span class="ow">in</span> <span class="n">abclist</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">frm_str</span> <span class="o">+=</span> <span class="s1">&#39; + &#39;</span> <span class="o">+</span> <span class="n">ltr</span>
+        <span class="n">frm_str</span> <span class="o">+=</span> <span class="s1">&#39; ~ group&#39;</span>
+        
+        <span class="c1"># Construct an array that will be our factor in the R dataframe below: </span>
+        <span class="c1"># all rows of `X` are assigned the factor-level 1, the rest is 2</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">nsamples_x</span> <span class="o">+</span> <span class="n">nsamples_y</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">group</span><span class="p">[:</span><span class="n">nsamples_x</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Stack `X` and `Y` on top of each other, with columns labeled by `abclist`</span>
+        <span class="c1"># in case of paired data, also append a stratification vector</span>
+        <span class="n">dfmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">]),</span><span class="n">group</span><span class="p">])</span>
+        <span class="n">stratarg</span> <span class="o">=</span> <span class="n">rpy2</span><span class="o">.</span><span class="n">rinterface</span><span class="o">.</span><span class="n">R_NilValue</span>
+        <span class="k">if</span> <span class="n">paired</span><span class="p">:</span>
+            <span class="n">abclist</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;pairing&#39;</span><span class="p">]</span>
+            <span class="n">dfmat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">dfmat</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">nsamples_x</span><span class="o">+</span><span class="mi">1</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">])</span>
+            <span class="n">stratarg</span> <span class="o">=</span> <span class="n">Formula</span><span class="p">(</span><span class="s2">&quot;~pairing&quot;</span><span class="p">)</span>
+            
+        <span class="c1"># Create a pandas dataframe with columns labeled by abclist, that we immediately convert to an R-dataframe</span>
+        <span class="n">r_dframe</span> <span class="o">=</span> <span class="n">pandas2ri</span><span class="o">.</span><span class="n">py2ri</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">dfmat</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="n">abclist</span><span class="p">))</span>
+
+        <span class="c1"># Convert the string to an R formula</span>
+        <span class="n">r_frm</span> <span class="o">=</span> <span class="n">Formula</span><span class="p">(</span><span class="n">frm_str</span><span class="p">)</span>
+
+        <span class="c1"># Do the actual testing in R</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">r_frm</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">r_dframe</span><span class="p">,</span> <span class="n">tail</span><span class="o">=</span><span class="n">tail</span><span class="p">,</span> <span class="n">perms</span><span class="o">=</span><span class="n">nperms</span><span class="p">,</span> <span class="n">statTest</span><span class="o">=</span><span class="n">mth</span><span class="p">,</span>\
+                        <span class="n">Strata</span><span class="o">=</span><span class="n">stratarg</span><span class="p">,</span> <span class="n">testType</span><span class="o">=</span><span class="s2">&quot;permutation&quot;</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">flip</span><span class="o">.</span><span class="n">flip_adjust</span><span class="p">(</span><span class="n">result</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="n">correction</span><span class="p">)</span>
+            
+        <span class="c1"># Extract values from this R nightmare</span>
+        <span class="n">stats_dict</span><span class="p">[</span><span class="s1">&#39;statvals&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pandas2ri</span><span class="o">.</span><span class="n">ri2py</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">slots</span><span class="p">[</span><span class="s1">&#39;res&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">stats_dict</span><span class="p">[</span><span class="s1">&#39;pvals&#39;</span><span class="p">]</span>    <span class="o">=</span> <span class="n">pandas2ri</span><span class="o">.</span><span class="n">ri2py</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">slots</span><span class="p">[</span><span class="s1">&#39;res&#39;</span><span class="p">][</span><span class="mi">4</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">get_dist</span><span class="p">:</span>
+            <span class="n">stats_dict</span><span class="p">[</span><span class="s1">&#39;dist&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pandas2ri</span><span class="o">.</span><span class="n">ri2py</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">slots</span><span class="p">[</span><span class="s1">&#39;permT&#39;</span><span class="p">])</span>
+
+        <span class="nb">print</span> <span class="s2">&quot;Done&quot;</span>
+
+    <span class="c1"># If wanted print/save the results</span>
+    <span class="k">if</span> <span class="n">verbose</span> <span class="ow">or</span> <span class="n">fname</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="c1"># Construct string to be used as footer for the output file/last line of command line output</span>
+        <span class="n">permstr</span> <span class="o">=</span> <span class="s2">&quot;using &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">nperms</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; permutations under the alternative hypothesis that &quot;</span><span class="o">+</span>\
+                  <span class="n">g1str</span><span class="o">+</span><span class="s2">&quot; is &quot;</span><span class="o">+</span><span class="n">tail_st1</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="n">g2str</span><span class="o">+</span><span class="s2">&quot; (&quot;</span><span class="o">+</span><span class="n">tail_st2</span><span class="o">+</span><span class="s2">&quot;-tailed) &quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">useR</span><span class="p">:</span>
+            <span class="n">ft</span> <span class="o">=</span> <span class="s2">&quot;Statistical significance of group differences between paired samples was assessed using the &quot;</span><span class="o">+</span>\
+                 <span class="s2">&quot;permutation t-test from the Python package MNE&quot;</span><span class="o">+</span>\
+                 <span class="s2">&quot; (see http://martinos.org/mne/stable/mne-python.html)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">+</span>\
+                 <span class="n">permstr</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">+</span>\
+                 <span class="s2">&quot;adjusted for multiple comparisons using the maximal test statistic Tmax. &quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ft</span> <span class="o">=</span> <span class="s2">&quot;Statistical significance of group-differences between &quot;</span><span class="o">+</span><span class="n">pairlst</span><span class="p">[</span><span class="n">paired</span><span class="p">]</span><span class="o">+</span>\
+                 <span class="s2">&quot; samples was assessed using a &quot;</span><span class="o">+</span><span class="n">mth</span><span class="o">+</span><span class="s2">&quot;-test&quot;</span>\
+                 <span class="s2">&quot; from the R library flip (https://cran.r-project.org/web/packages/flip/index.html)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">+</span>\
+                 <span class="n">permstr</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">+</span>\
+                 <span class="s2">&quot;adjusted for multiple comparisons based on a &quot;</span><span class="o">+</span><span class="n">correction</span><span class="o">+</span><span class="s2">&quot; approach. </span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Append an auto-gen message and add current date/time to the soon-to-be footer</span>
+        <span class="n">ft</span> <span class="o">+=</span> <span class="s2">&quot;Results were computed by stats_tools.py on &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
+
+        <span class="c1"># Call printstats to do the heavy lifting</span>
+        <span class="n">printstats</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span><span class="n">stats_dict</span><span class="p">[</span><span class="s1">&#39;pvals&#39;</span><span class="p">],</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">,</span><span class="n">g1str</span><span class="p">,</span><span class="n">g2str</span><span class="p">,</span><span class="n">foot</span><span class="o">=</span><span class="n">ft</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span><span class="n">fname</span><span class="o">=</span><span class="n">fname</span><span class="p">)</span>
+
+    <span class="c1"># Return the stocked dictionary</span>
+    <span class="k">return</span> <span class="n">stats_dict</span></div>
+
+<span class="c1">##########################################################################################</span>
+<div class="viewcode-block" id="printstats"><a class="viewcode-back" href="../_stubs/stats_tools.printstats.html#stats_tools.printstats">[docs]</a><span class="k">def</span> <span class="nf">printstats</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span><span class="n">pvals</span><span class="p">,</span><span class="n">group1</span><span class="p">,</span><span class="n">group2</span><span class="p">,</span><span class="n">g1str</span><span class="o">=</span><span class="s1">&#39;group1&#39;</span><span class="p">,</span><span class="n">g2str</span><span class="o">=</span><span class="s1">&#39;group2&#39;</span><span class="p">,</span><span class="n">foot</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">fname</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pretty-print previously computed statistical results </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variables : list or NumPy 1darray</span>
+<span class="sd">        Python list/NumPy array of strings representing variables that have been tested</span>
+<span class="sd">    pvals : Numpy 1darray</span>
+<span class="sd">        Aray of `p`-values (floats) of the same size as `variables`</span>
+<span class="sd">    group1 : NumPy 2darray</span>
+<span class="sd">        An #samples-by-#variables array holding the data of the first group sample used in the previously</span>
+<span class="sd">        performed statistical comparison</span>
+<span class="sd">    group2 : NumPy 2darray</span>
+<span class="sd">        An #samples-by-#variables array holding the data of the second group sample used in the previously</span>
+<span class="sd">        performed statistical comparison</span>
+<span class="sd">    g1str : string</span>
+<span class="sd">        Name of the first group that will be used in the generated table</span>
+<span class="sd">    g2str : string</span>
+<span class="sd">        Name of the first group that will be used in the generated table</span>
+<span class="sd">    fname : string</span>
+<span class="sd">        Name of a csv-file (with or without extension &#39;.csv&#39;) used to save the table </span>
+<span class="sd">        (WARNING: existing files will be overwritten!). Can also be a path + file-name </span>
+<span class="sd">        (e.g., `fname=&#39;path/to/file.csv&#39;`). By default output is not saved. </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Nothing : None</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Uses the `texttable` module to print results</span>
+
+<span class="sd">    See also</span>
+<span class="sd">    --------</span>
+<span class="sd">    texttable : a module for creating simple ASCII tables (currently available at the </span>
+<span class="sd">                `Python Package Index &lt;https://pypi.python.org/pypi/texttable/0.8.1&gt;`_)</span>
+<span class="sd">    printdata : a function that pretty-prints/-saves data given in an array (part of ``nws_tools.py``)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Make sure that the groups, p-values and tested variables have appropriate dimensions</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,(</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Input variables must be a Python list or NumPy 1d array of strings, not &#39;</span><span class="o">+</span>\
+                        <span class="nb">type</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;All variables must be strings!&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pvals</span><span class="p">,(</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The p-values must be provided as NumPy 1d array, not &#39;</span><span class="o">+</span><span class="nb">type</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+    <span class="n">pvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pvals</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">pvals</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">):</span> <span class="c1"># Don&#39;t check for NaNs and Infs - some tests might return that...</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Provided p-values must be real-valued!&#39;</span><span class="p">)</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">pvals</span><span class="o">.</span><span class="n">size</span>
+    <span class="k">if</span> <span class="n">M</span> <span class="o">!=</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No. of variables (=labels) and p-values do not match up!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Don&#39;t check for NaNs and Infs - just make sure we can compute mean and std</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">N</span><span class="p">,</span><span class="n">M</span> <span class="o">=</span> <span class="n">group1</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">except</span><span class="p">:</span> 
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Data-set 1 must be a NumPy 2d array, not &#39;</span><span class="o">+</span><span class="nb">type</span><span class="p">(</span><span class="n">group1</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">M</span> <span class="o">!=</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No. of variables (=labels) and dimension of group1 do not match up!&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">group1</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">):</span>       
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Provided p-values must be real-valued!&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">N</span><span class="p">,</span><span class="n">M</span> <span class="o">=</span> <span class="n">group2</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">except</span><span class="p">:</span> 
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Data-set 2 must be a NumPy 2d array, not &#39;</span><span class="o">+</span><span class="nb">type</span><span class="p">(</span><span class="n">group2</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">M</span> <span class="o">!=</span> <span class="n">m</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No. of variables (=labels) and dimension of group2 do not match up!&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">group2</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">):</span>       
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Provided p-values must be real-valued!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># If column labels were provided, make sure they are printable strings</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">g1str</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The optional column label `g1str` has to be a string!&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">g2str</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The optional column label `g2str` has to be a string!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># If a footer was provided, make sure it is a printable string</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">foot</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;The optional footer `foot` has to be a string!&#39;</span><span class="p">)</span>
+
+    <span class="c1"># See if we&#39;re supposed to print stuff to the terminal or just save everything to a csv file</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">verbose</span><span class="p">,</span><span class="nb">bool</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The switch `verbose` has to be Boolean!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># If a file-name was provided make sure it&#39;s a string and check if the path exists</span>
+    <span class="k">if</span> <span class="n">fname</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fname</span><span class="p">,(</span><span class="nb">str</span><span class="p">,</span><span class="n">unicode</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Input fname has to be a string specifying an output file-name, not &#39;</span>\
+                            <span class="o">+</span><span class="nb">type</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">fname</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">slash</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">slash</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">fname</span><span class="p">[:</span><span class="n">fname</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid path for output file: &#39;</span><span class="o">+</span><span class="n">fname</span><span class="o">+</span><span class="s1">&#39;!&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fname</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">::]</span> <span class="o">!=</span> <span class="s1">&#39;.csv&#39;</span><span class="p">:</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span>
+        <span class="n">save</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Construct table head</span>
+    <span class="n">head</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;p&quot;</span><span class="p">,</span><span class="s2">&quot;mean(&quot;</span><span class="o">+</span><span class="n">g1str</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">,</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;std(&quot;</span><span class="o">+</span><span class="n">g1str</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">,</span><span class="s2">&quot;&lt;/&gt;&quot;</span><span class="p">,</span>\
+            <span class="s2">&quot;mean(&quot;</span><span class="o">+</span><span class="n">g2str</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">,</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;std(&quot;</span><span class="o">+</span><span class="n">g2str</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Compute mean/std of input data</span>
+    <span class="n">g1mean</span> <span class="o">=</span> <span class="n">group1</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">g1std</span>  <span class="o">=</span> <span class="n">group1</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">g2mean</span> <span class="o">=</span> <span class="n">group2</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">g2std</span>  <span class="o">=</span> <span class="n">group2</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Put &quot;&lt;&quot; if mean(base) &lt; mean(test) and vice versa</span>
+    <span class="n">gtlt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s1">&#39;&lt;&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">g1mean</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">gtlt</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">g1mean</span> <span class="o">&gt;</span> <span class="n">g2mean</span><span class="p">)]</span> <span class="o">=</span> <span class="s1">&#39;&gt;&#39;</span>
+
+    <span class="c1"># Prettify table</span>
+    <span class="n">pmstr</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;+/-&quot;</span><span class="p">]</span><span class="o">*</span><span class="n">g1mean</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="c1"># Assemble data array</span>
+    <span class="n">Data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">variables</span><span class="p">,</span>\
+                            <span class="n">pvals</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">),</span>\
+                            <span class="n">g1mean</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">),</span>\
+                            <span class="n">pmstr</span><span class="p">,</span>\
+                            <span class="n">g1std</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">),</span>\
+                            <span class="n">gtlt</span><span class="p">,</span>\
+                            <span class="n">g2mean</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">),</span>\
+                            <span class="n">pmstr</span><span class="p">,</span>\
+                            <span class="n">g2std</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)))</span>
+
+    <span class="c1"># Construct texttable object</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">Texttable</span><span class="p">()</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">set_cols_align</span><span class="p">([</span><span class="s2">&quot;l&quot;</span><span class="p">,</span><span class="s2">&quot;l&quot;</span><span class="p">,</span><span class="s2">&quot;r&quot;</span><span class="p">,</span><span class="s2">&quot;c&quot;</span><span class="p">,</span><span class="s2">&quot;l&quot;</span><span class="p">,</span><span class="s2">&quot;c&quot;</span><span class="p">,</span><span class="s2">&quot;r&quot;</span><span class="p">,</span><span class="s2">&quot;c&quot;</span><span class="p">,</span><span class="s2">&quot;l&quot;</span><span class="p">])</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">set_cols_valign</span><span class="p">([</span><span class="s2">&quot;c&quot;</span><span class="p">]</span><span class="o">*</span><span class="mi">9</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">set_cols_dtype</span><span class="p">([</span><span class="s2">&quot;t&quot;</span><span class="p">]</span><span class="o">*</span><span class="mi">9</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">set_cols_width</span><span class="p">([</span><span class="mi">12</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">18</span><span class="p">])</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add_rows</span><span class="p">([</span><span class="n">head</span><span class="p">],</span><span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add_rows</span><span class="p">(</span><span class="n">Data</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span><span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">set_deco</span><span class="p">(</span><span class="n">Texttable</span><span class="o">.</span><span class="n">HEADER</span><span class="p">)</span>
+
+    <span class="c1"># Pump out table if wanted</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="s2">&quot;Summary of statistics:</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="nb">print</span> <span class="n">table</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="nb">print</span> <span class="n">foot</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="c1"># If wanted, save stuff in a csv file</span>
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">head</span><span class="p">)</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="n">head</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="n">head</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="n">head</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span><span class="n">Data</span><span class="p">,</span><span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">header</span><span class="o">=</span><span class="n">head</span><span class="p">,</span><span class="n">footer</span><span class="o">=</span><span class="n">foot</span><span class="p">,</span><span class="n">comments</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

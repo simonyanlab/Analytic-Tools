@@ -1,0 +1,6 @@
+sim\_tools\.make\_bold
+======================
+
+.. currentmodule:: sim_tools
+
+.. autofunction:: make_bold

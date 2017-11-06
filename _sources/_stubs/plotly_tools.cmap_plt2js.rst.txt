@@ -1,0 +1,6 @@
+plotly\_tools\.cmap\_plt2js
+===========================
+
+.. currentmodule:: plotly_tools
+
+.. autofunction:: cmap_plt2js
