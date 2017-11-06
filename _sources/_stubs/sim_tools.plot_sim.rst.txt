@@ -1,6 +1,0 @@
-sim\_tools\.plot\_sim
-=====================
-
-.. currentmodule:: sim_tools
-
-.. autofunction:: plot_sim

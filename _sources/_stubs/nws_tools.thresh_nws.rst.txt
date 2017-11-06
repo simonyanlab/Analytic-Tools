@@ -1,6 +1,0 @@
-nws\_tools\.thresh\_nws
-=======================
-
-.. currentmodule:: nws_tools
-
-.. autofunction:: thresh_nws

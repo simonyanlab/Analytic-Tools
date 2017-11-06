@@ -1,6 +1,0 @@
-nws\_tools\.img2vid
-===================
-
-.. currentmodule:: nws_tools
-
-.. autofunction:: img2vid

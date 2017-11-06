@@ -1,6 +1,0 @@
-recipes\.regexfind
-==================
-
-.. currentmodule:: recipes
-
-.. autofunction:: regexfind

@@ -1,6 +1,0 @@
-eeg\_tools\.time2ind
-====================
-
-.. currentmodule:: eeg_tools
-
-.. autofunction:: time2ind

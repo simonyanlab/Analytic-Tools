@@ -1,6 +1,0 @@
-nws\_tools\.degrees\_und
-========================
-
-.. currentmodule:: nws_tools
-
-.. autofunction:: degrees_und

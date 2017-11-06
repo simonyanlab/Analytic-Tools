@@ -1,6 +1,0 @@
-nws\_tools\.density\_und
-========================
-
-.. currentmodule:: nws_tools
-
-.. autofunction:: density_und

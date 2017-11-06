@@ -1,6 +1,0 @@
-nws\_tools\.get\_corr
-=====================
-
-.. currentmodule:: nws_tools
-
-.. autofunction:: get_corr

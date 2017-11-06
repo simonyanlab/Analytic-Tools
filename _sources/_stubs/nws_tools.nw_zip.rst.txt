@@ -1,6 +1,0 @@
-nws\_tools\.nw\_zip
-===================
-
-.. currentmodule:: nws_tools
-
-.. autofunction:: nw_zip

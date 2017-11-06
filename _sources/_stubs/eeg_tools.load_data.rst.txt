@@ -1,6 +1,0 @@
-eeg\_tools\.load\_data
-======================
-
-.. currentmodule:: eeg_tools
-
-.. autofunction:: load_data

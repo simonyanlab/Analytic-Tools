@@ -1,6 +1,0 @@
-sim\_tools\.run\_model
-======================
-
-.. currentmodule:: sim_tools
-
-.. autofunction:: run_model

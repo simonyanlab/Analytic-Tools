@@ -1,6 +1,0 @@
-eeg\_tools\.bandpass\_filter
-============================
-
-.. currentmodule:: eeg_tools
-
-.. autofunction:: bandpass_filter

@@ -1,6 +1,0 @@
-sim\_tools\.make\_D
-===================
-
-.. currentmodule:: sim_tools
-
-.. autofunction:: make_D

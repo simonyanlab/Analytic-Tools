@@ -1,6 +1,0 @@
-nws\_tools\.mutual\_info
-========================
-
-.. currentmodule:: nws_tools
-
-.. autofunction:: mutual_info

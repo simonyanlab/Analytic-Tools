@@ -1,6 +1,0 @@
-nws\_tools\.get\_meannw
-=======================
-
-.. currentmodule:: nws_tools
-
-.. autofunction:: get_meannw

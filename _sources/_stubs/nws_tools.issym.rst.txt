@@ -1,6 +1,0 @@
-nws\_tools\.issym
-=================
-
-.. currentmodule:: nws_tools
-
-.. autofunction:: issym

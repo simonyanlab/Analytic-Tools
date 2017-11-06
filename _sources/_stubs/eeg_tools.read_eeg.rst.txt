@@ -1,6 +1,0 @@
-eeg\_tools\.read\_eeg
-=====================
-
-.. currentmodule:: eeg_tools
-
-.. autofunction:: read_eeg

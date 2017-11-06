@@ -1,6 +1,0 @@
-nws\_tools\.normalize
-=====================
-
-.. currentmodule:: nws_tools
-
-.. autofunction:: normalize
