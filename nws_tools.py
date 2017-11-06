@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-11-03 12:37:30>
+# Last modified: <2017-11-06 12:49:28>
 
 from __future__ import division
 import numpy as np
@@ -1157,7 +1157,7 @@ def csv2dict(csvfile):
     Parameters
     ----------
     csvfile : str
-        File-name of (or full path to) the csv file holding the nodal coordinates.
+        File-name of (or full path to) the csv file holding nodal coordinates.
         The format of this file HAS to be 
 
                  `x, y, z` 
@@ -1204,21 +1204,23 @@ def csv2dict(csvfile):
     if csvfile.find("~") == 0:
         csvfile = os.path.expanduser('~') + csvfile[1:]
     if not os.path.isfile(csvfile):
-        raise ValueError('File: '+csvfile+' does not exist!')
+        raise ValueError('File: `'+csvfile+'` does not exist!')
     
     # Open `csvfile`
     fh = open(csvfile,'rU')
     fh.seek(0)
     
-    # Read nodal coordinates using csv module
+    # Read nodal coordinates
     reader = csv.reader(fh, dialect='excel',delimiter=',', quotechar='"')
     
-    # Iterate through rows and convert coordinates from string lists to float tuples
+    # Iterate over rows and convert coordinates from string lists to float tuples
     mydict = {}
     i = 0
-    for row in reader:
-        mydict[i] = tuple([float(r) for r in row])
-        i += 1
+    for i, row in enumerate(reader):
+        try:
+            mydict[i] = tuple([float(r) for r in row])
+        except ValueError as ve:
+            raise ValueError("Error reading file `"+str(csvfile)+"` on line "+str(i+1)+": "+ve.message)
     
     return mydict
 
@@ -1665,7 +1667,7 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
         Number of approximate rewirings per edge (default: 5). 
     rwr_max : int
         Maximal number of rewirings per edge to enforce randomization (default: 10). 
-        Note that `rwr_max` has to be greater or equals than `rwr`. 
+        Note that `rwr_max` has to be greater or equals `rwr`. 
 
     Returns
     -------

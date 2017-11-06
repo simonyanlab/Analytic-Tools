@@ -15,7 +15,7 @@ install:
 
 before_script:
   - wget -P /home/travis https://sites.google.com/site/bctnet/Home/functions/BCT.zip
-  - unzip /home/travis/BCT.zip -d /home/travis
+  - unzip -o /home/travis/BCT.zip -d /home/travis
   - export PATH=$PATH:/home/travis/BCT/
   - echo 'addpath(genpath("~/BCT"))' > /home/travis/.octaverc
 

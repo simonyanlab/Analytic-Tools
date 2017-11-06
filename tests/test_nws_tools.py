@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-11-03 12:36:55>
+# Last modified: <2017-11-06 12:44:56>
 
 from __future__ import division
 import pytest
@@ -237,7 +237,7 @@ class Test_scalarcheck(object):
 # ==========================================================================================
 #                                       get_corr
 # ==========================================================================================
-# A fixture that uses `pytest`'s builtin `tmpdir` to assemble some dummy time-series txt-files
+# A fixture that uses `pytest`'s builtin `tmpdir` fixture to assemble some dummy time-series txt-files
 @pytest.fixture(scope="class")
 def txt_files(tmpdir_factory):
 
@@ -789,6 +789,7 @@ def invalid_2darrs(request):
     return val
 
 # Only test array handling and methodology (scalar inputs are vetted by ``scalarcheck``)
+@skiplocal
 class Test_normalize(object):
     
     # Recycle ``check_nonarray`` to throw some invalid arguments at ``normalize``
@@ -868,5 +869,71 @@ class Test_normalize(object):
         msg = "Exemplary toy array was not normalized correctly!"
         assert np.all(ref_arr == res_arr), msg
 
+# ==========================================================================================
+#                                       csv2dict
+# ==========================================================================================
+# A fixture that uses `pytest`'s builtin `tmpdir` fixture to assemble two dummy csv files
+@pytest.fixture(scope="class")
+def csv_file(tmpdir_factory):
+
+    # Save an array of dummy nodal coordinates as invalid/regular csv-files
+    nroi = 20
+    coords = np.random.normal(size=(nroi,3))
+    rand_line = np.random.choice(nroi,1)[0]
+    csvpath = tmpdir_factory.mktemp("csv_files")
+    csvnormal = csvpath.join("normal.csv")
+    csvbroken = csvpath.join("broken.csv")
+    with open(str(csvnormal), "w") as cvnrm: 
+        for n in xrange(nroi):
+            cvnrm.write("".join(str(val)+"," for val in coords[n,:])[:-1]+"\n")
+    with open(str(csvbroken), "w") as cvbrk:
+        for n in xrange(nroi):
+            if n != rand_line:
+                cvbrk.write("".join(str(val)+"," for val in coords[n,:])[:-1]+"\n")
+            else:
+                cvbrk.write("a, b, c\n")
+    return {"csvnormal":csvnormal, "csvbroken":csvbroken, "coords":coords, "rand_line":rand_line}
+
+# Test if csv-files are read correctly (don't go full OCD over the single string input of ``csv2dict`` though...)
+class Test_csv2dict(object):
+    
+    # Test error-checking of `csvfile`
+    def test_csvfile(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Testing error handling of `csvfile`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.csv2dict(2)
+        assert "Name of csv-file has to be a string!" in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.csv2dict("invalid")
+        assert "File: `invalid` does not exist!" in str(excinfo.value)
+        
+    # Test actual csv-reading
+    def test_torture(self, capsys, csv_file):
+        with capsys.disabled():
+            sys.stdout.write("-> Start torture-testing ``csv2dict``: ")
+            sys.stdout.flush()
+
+        # Read a csv file that contains an invalid line
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Invalid csv-file... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.csv2dict(str(csv_file["csvbroken"]))
+        msg = "Error reading file `"+str(csv_file["csvbroken"])+"` on line "+str(csv_file["rand_line"]+1)
+        assert msg in str(excinfo.value)
+
+        # Make sure a valid csv-file is read correctly 
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Check correct read-out of csv-files... ")
+            sys.stdout.flush()
+        res_nwt = nwt.csv2dict(str(csv_file["csvnormal"]))
+        res_arr = np.zeros((len(res_nwt.keys()),3))
+        for k in res_nwt.keys():
+            res_arr[k,:] = res_nwt[k]
+        msg = "Exemplary csv file was not read correctly from disk!"
+        assert np.all(np.isclose(res_arr,csv_file["coords"])) == True, msg
+        
 # For MI try np.vstack([np.cos(xvec),np.sin(xvec)]).T
 
