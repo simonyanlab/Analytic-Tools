@@ -21,7 +21,7 @@ The implemented routines provide functionality to
 * simulate brain activity using a biological neural population model
 
 To get started clone or download the repository and visit the
-`documentation <https://pantaray.github.io/Analytic-Tools/>`_. 
+`documentation <https://simonyanlab.github.io/Analytic-Tools/>`_. 
 
 Contact
 =======
