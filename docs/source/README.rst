@@ -471,7 +471,7 @@ The functions below are not essential for using the model, but might come in han
 .. |sfemail| raw:: html
 
 	<script type="text/javascript">
-	      document.write('<a href=\"mailto:'+atob('c3RlZmFuLmZ1ZXJ0aW5nZXJAZXNpLWZyYW5rZnVydC5kZQ==')+'\">'+atob('c3RlZmFuLmZ1ZXJ0aW5nZXJAZXNpLWZyYW5rZnVydC5kZQ==')+'</a>');
+	  document.write('<a href=\"mailto:'+atob('c3RlZmFuLmZ1ZXJ0aW5nZXJAZ214LmF0')+'\">'+atob('c3RlZmFuLmZ1ZXJ0aW5nZXJAZ214LmF0')+'</a>');
 	</script>
 
 	
@@ -480,7 +480,7 @@ The functions below are not essential for using the model, but might come in han
    <br />
 
 
-.. _GitHub: https://github.com/pantaray/Analytic-Tools
+.. _GitHub: https://github.com/simonyanlab/Analytic-Tools
 
 .. _Python: https://www.python.org/
 
