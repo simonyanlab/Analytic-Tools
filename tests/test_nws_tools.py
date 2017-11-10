@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-11-06 12:44:56>
+# Last modified: <2017-11-10 16:28:16>
 
 from __future__ import division
 import pytest
@@ -13,6 +13,7 @@ import numpy as np
 import scipy as sp
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib
 module_pth = os.path.dirname(os.path.abspath(__file__))
 module_pth = module_pth[:module_pth.rfind(os.sep)]
 sys.path.insert(0, module_pth)
@@ -21,17 +22,49 @@ import nws_tools as nwt
 # Check if we're running locallly or on the Travis servers to avoid always going through
 # the entire thing while appending additional tests
 runninglocal = (os.environ["PWD"] == "/home/travis/analytic_tools")
+# runninglocal = False
 skiplocal = pytest.mark.skipif(runninglocal, reason="debugging new tests")
+
+# ==========================================================================================
+#    Collect some global fixtures that can be re-used throughout the entire module
+# ==========================================================================================
+# A random collection of some of the most used objects in ``nws_tools.py``
+kitchensink = [None, True, 2, [2,3], (2,3), np.empty((2,2)), {"2":2, "3": "three"}, pd.DataFrame([2,3]), "string", plt.cm.jet]
+
+# Fixture to check if non-array objects and array-likes can get past the gatekeeper
+@pytest.fixture(params=[ks for ks in kitchensink if type(ks) != np.ndarray])
+def check_notarray(request):
+    return request.param
+
+# A fixture that returns anything but a dictionary
+@pytest.fixture(params=[ks for ks in kitchensink if type(ks) != dict])
+def check_notdict(request):
+    return request.param
+
+# A fixture that returns anything but a matplotlib colormap
+@pytest.fixture(params=[ks for ks in kitchensink if type(ks) != matplotlib.colors.LinearSegmentedColormap])
+def check_notcmap(request):
+    return request.param
+
+# A fixture that returns anything but a Boolean value
+@pytest.fixture(params=[ks for ks in kitchensink if type(ks) != bool])
+def check_notbool(request):
+    return request.param
+
+# A fixture that returns anything but a string
+@pytest.fixture(params=[ks for ks in kitchensink if type(ks) != str])
+def check_notstring(request):
+    return request.param
+                
+# A fixture that returns anything but a list/ndarray
+@pytest.fixture(params=[ks for ks in kitchensink if type(ks) != list and type(ks) != np.ndarray])
+def check_notlistlike(request):
+    return request.param
 
 # ==========================================================================================
 #                                       arrcheck
 # ==========================================================================================
 # Assemble a bunch of fixtures to iterate over a plethora of obscure invalid inputs
-# Start by checking if non-array objects and array-likes can get past the gatekeeper
-@pytest.fixture(params=[2, [2,3], (2,3), pd.DataFrame([2,3]), "string", plt.cm.jet])
-def check_nonarray(request):
-    return request.param
-
 # Here come three separate fixtures for the tensor-, matrix- and vector-case. 
 # Note: defining an one-size-fits-all fixture that uses all of the below akin to
 #       ``invalid_dims(tensor_dimerr, matrix_dimerr, vector_dimerr, request)``
@@ -109,12 +142,12 @@ def invalid_range(bounds_maker, request):
 class Test_arrcheck(object):
 
     # See if non-NumPy arrays can get past `arrcheck`
-    def test_nonarrays(self, capsys, check_nonarray):
+    def test_nonarrays(self, capsys, check_notarray):
         with capsys.disabled():
             sys.stdout.write("-> Test if non-NumPy arrays can get through... ")
             sys.stdout.flush()
         with pytest.raises(TypeError) as excinfo:
-            nwt.arrcheck(check_nonarray, "tensor", "testname")
+            nwt.arrcheck(check_notarray, "tensor", "testname")
         assert "Input `testname` must be a NumPy array, not" in str(excinfo.value)
     
     # See if the tensor-specific dimension testing works
@@ -465,13 +498,13 @@ def invalid_mats(request):
 @skiplocal
 class Test_corrcheck(object):
 
-    # Recycle ``check_nonarray`` to throw some invalid arguments at ``corrcheck``
-    def test_nonarrays(self, capsys, check_nonarray):
+    # Recycle ``check_notarray`` to throw some invalid arguments at ``corrcheck``
+    def test_nonarrays(self, capsys, check_notarray):
         with capsys.disabled():
             sys.stdout.write("-> Test if non-NumPy arrays can get through... ")
             sys.stdout.flush()
         with pytest.raises(TypeError) as excinfo:
-            nwt.corrcheck(check_nonarray)
+            nwt.corrcheck(check_notarray)
         assert "Expected NumPy array(s) as input, found" in str(excinfo.value)
     
     # Screw around with labels
@@ -792,13 +825,13 @@ def invalid_2darrs(request):
 @skiplocal
 class Test_normalize(object):
     
-    # Recycle ``check_nonarray`` to throw some invalid arguments at ``normalize``
-    def test_nonarrays(self, capsys, check_nonarray):
+    # Recycle ``check_notarray`` to throw some invalid arguments at ``normalize``
+    def test_nonarrays(self, capsys, check_notarray):
         with capsys.disabled():
             sys.stdout.write("-> Test if non-NumPy arrays can get through... ")
             sys.stdout.flush()
         with pytest.raises(TypeError) as excinfo:
-            nwt.normalize(check_nonarray)
+            nwt.normalize(check_notarray)
         assert "Input `arr` has to be a NumPy ndarray" in str(excinfo.value)
         
     # Arrays with nonsense
@@ -895,6 +928,7 @@ def csv_file(tmpdir_factory):
     return {"csvnormal":csvnormal, "csvbroken":csvbroken, "coords":coords, "rand_line":rand_line}
 
 # Test if csv-files are read correctly (don't go full OCD over the single string input of ``csv2dict`` though...)
+@skiplocal
 class Test_csv2dict(object):
     
     # Test error-checking of `csvfile`
@@ -934,6 +968,218 @@ class Test_csv2dict(object):
             res_arr[k,:] = res_nwt[k]
         msg = "Exemplary csv file was not read correctly from disk!"
         assert np.all(np.isclose(res_arr,csv_file["coords"])) == True, msg
+
+# ==========================================================================================
+#                                       shownet
+# ==========================================================================================
+# Let's just not worry about Mayavi right now...
+def test_shownet():
+    pytest.skip("Let's not deal with Mayavi here. Skipping this...")
+
+# ==========================================================================================
+#                                       show_nw
+# ==========================================================================================
+# Modify the global `notlistlike` fixture by removing the `None` type
+@pytest.fixture(params=[ks for ks in kitchensink if type(ks) != list and type(ks) != np.ndarray and ks is not None])
+def check_notnonelistlike(request):
+    return request.param
+
+# Test if invalid inputs can slip by the input-checking in ``show_nw`` (however, most of the heavy lifting is done by
+# ``arrcheck`` and ``scalarcheck`` anyway...)
+@skiplocal
+class Test_show_nw(object):
+
+    # Construct a dummy connection matrix
+    N = 10
+    A = np.random.normal(loc=0.0, scale=1.0, size=((N,N)))
+    coords = {}
+    xyz = [1., 2., 3.]
+    for k in xrange(N):
+        coords[k] = xyz
+    global A, coords
+    
+    # See if we can sneak in non-dictionaries as coordinates
+    def test_nondicts(self, capsys, check_notdict):
+        with capsys.disabled():
+            sys.stdout.write("-> Test if non-dictionaries can get through... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.show_nw(A, check_notdict)
+        assert "Nodal coordinates have to be provided as dictionary!" in str(excinfo.value)
+
+    # Screw with the contents of `coords`
+    def test_nonlists(self, capsys, check_notlistlike):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid entries in `coords`... ")
+            sys.stdout.flush()
+        coords[0] = check_notlistlike
+        with pytest.raises(TypeError) as excinfo:
+            nwt.show_nw(A, coords)
+        assert "All elements of the coords dictionary have to be lists/arrays!" in str(excinfo.value)
         
+    # Fine-grained error-checking of `coords`
+    def test_coords(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid format of `coords`... ")
+            sys.stdout.flush()
+        coords.pop(0)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.show_nw(A, coords)
+        assert "The coordinate dictionary has to have `N` keys!" in str(excinfo.value)
+        coords[0] = np.ones((4,))
+        with pytest.raises(ValueError) as excinfo:
+            nwt.show_nw(A, coords)
+        assert "All elements of the coords dictionary have to be 3-dimensional!" in str(excinfo.value)
+        coords[0] = coords[1]
+
+    # Check color- and nodal size-vectors
+    def test_colsizvecs(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid color- and size-vectors... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.show_nw(A, coords, colorvec=np.zeros((A.shape[0]-1)))
+        assert "`colorvec` has to have length `N`!" in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.show_nw(A, coords, sizevec=np.zeros((A.shape[0]+1)))
+        assert "`sizevec` has to have length `N`!" in str(excinfo.value)
+        
+    # Screw with `labels`
+    def test_invalidlabels(self, capsys, check_notnonelistlike):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid `labels`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.show_nw(A, coords, labels=check_notnonelistlike)
+        assert "Nodal labels have to be provided as list/NumPy 1darray!" in str(excinfo.value)
+
+    # Fine-grained error-checking of `labels`
+    def test_labels(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid format of `labels`... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.show_nw(A, coords, labels=coords.keys()[:-1])
+        assert "Number of nodes and labels does not match up!" in str(excinfo.value)
+        with pytest.raises(TypeError) as excinfo:
+            nwt.show_nw(A, coords, labels=coords.keys())
+        assert "Each individual label has to be a string type!" in str(excinfo.value)
+
+    # See if anything but matplotlib colormaps can get in
+    def test_nodecmap(self, capsys, check_notcmap):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid colormaps... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.show_nw(A, coords, nodecmap=check_notcmap)
+        assert "Nodal colormap has to be a Matplotlib colormap!" in str(excinfo.value)
+    def test_edgecmap(self, capsys, check_notcmap):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid colormaps... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.show_nw(A, coords, edgecmap=check_notcmap)
+        assert "Edge colormap has to be a Matplotlib colormap!" in str(excinfo.value)
+        
+    # Screw with `nodes3d`
+    def test_invalidnodes3d(self, capsys, check_notbool):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid `nodes3d`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.show_nw(A, coords, nodes3d=check_notbool)
+        assert "The `nodes3d` flag has to be a Boolean variable!" in str(excinfo.value)
+
+    # Screw with `viewtype`
+    def test_invalidviewtype(self, capsys, check_notstring):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid `viewtype`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.show_nw(A, coords, viewtype=check_notstring)
+        msg = "The optional input `viewtype` must be 'axial(_{t/b})', 'sagittal(_{l/r})' or 'coronal(_{f/b})'"
+        assert msg in str(excinfo.value)
+                
+    # Check `linewidths`
+    def test_lwdths(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid format of `linewidths`... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.show_nw(A, coords, linewidths=np.ones((A.shape[0]+1,A.shape[0]+1)))
+        msg = "Linewidths must be provided as square array of the same dimension as the connection matrix!"
+        assert msg in str(excinfo.value)
+
+# ==========================================================================================
+#                                       generate_randnws
+# ==========================================================================================
+# Mainly test numerics of ``generate_randnws`` (main inputs are vetted by ``arrcheck`` and ``scalarcheck``)
+class Test_generate_randnws(object):
+
+    # Screw with `method`
+    def test_invalidmethod(self, capsys, check_notstring):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid `method`...")
+            sys.stdout.flush()
+        nw = np.ones((3,3))
+        with pytest.raises(TypeError) as excinfo:
+            nwt.generate_randnws(nw, 2, method=check_notstring)
+        assert "Randomization algorithm must be specified as string!" in str(excinfo.value)
+
+    # Here comes the actual torture-testing of the routine (we need to assess the command line output
+    # of ``generate_randnws`` here, so don't screw around with ``capsys`` in here
+    def test_torture(self, capsys):
+
+        # Construct directed and undirected dummy networks of size `N` and set no. of random networks to generate (`M`)
+        N = 10
+        M = 3
+        nw_dir = np.random.normal(loc=0.5,scale=0.2,size=((N,N)))
+        nw_dir[nw_dir < 0] = 0.0
+        nw_und = np.triu(nw_dir,1)
+        nw_und += nw_und.T
+
+        # Lower the density of both networks to `tgt_dens` so that they're shuffable with the ``randmio_*`` routines
+        tgt_dens = 0.5
+
+        # Start with the undirected graph
+        msk = np.triu(np.ones((N,N),dtype=bool),1)
+        all_eg = np.arange(msk.sum())
+        rm_no = int(np.round((1 - tgt_dens)*all_eg.size))
+        vals = nw_und[msk]
+        nw_und[:] = 0.0
+        rm_edg = np.random.choice(all_eg,size=(rm_no,),replace=False)
+        vals[rm_edg] = 0.0
+        nw_und[msk] = vals
+        nw_und += nw_und.T
+
+        # Now the directed network
+        msk = np.ones((N,N),dtype=bool) - np.eye(N,dtype=bool)
+        all_eg = np.arange(N**2-N)
+        rm_no = int(np.round((1 - tgt_dens)*all_eg.size))
+        vals = nw_dir[msk]
+        nw_dir[:] = 0.0
+        rm_edg = np.random.choice(all_eg,size=(rm_no,),replace=False)
+        vals[rm_edg] = 0.0
+        nw_dir[msk] = vals
+
+        # Make sure the correct randomization strategies are chosen
+        nwt.generate_randnws(nw_dir, M)
+        out, err = capsys.readouterr()
+        msg = "Directed network was not randomized properly!"
+        assert "randmio_dir" in out, msg
+        nwt.generate_randnws(nw_und, M)
+        out, err = capsys.readouterr()
+        msg = "Undirected network was not randomized properly!"
+        assert "randmio_und" in out, msg
+
+        # Randomize network using user-defined methods
+        res_nwt = nwt.generate_randnws(nw_dir, M, method="randmio_dir_connected")
+        msg = "Directed network was not properly randomized using ``randmio_dir_connected``!"
+        assert np.all([np.all(np.isclose(rnw, nw_dir)) for rnw in res_nwt.T]) == False, msg
+        
+        res_nwt = nwt.generate_randnws(nw_und, M, method="randmio_und_connected")
+        msg = "Directed network was not properly randomized using ``randmio_und_connected``!"
+        assert np.all([np.all(np.isclose(rnw, nw_und)) for rnw in res_nwt.T]) == False, msg
+
 # For MI try np.vstack([np.cos(xvec),np.sin(xvec)]).T
 

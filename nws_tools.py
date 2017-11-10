@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-11-06 12:49:28>
+# Last modified: <2017-11-10 16:25:41>
 
 from __future__ import division
 import numpy as np
@@ -1503,15 +1503,13 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
 
     # Check the graph's connection matrix
     arrcheck(A,'matrix','A')
-    (N,M) = A.shape
+    N = A.shape[0]
 
     # Check the coordinate dictionary
-    try:
-        bad = (coords.keys() != N)
-    except: 
-        raise TypeError("The coordinates have to be provided as dictionary!")
-    if bad: 
-        raise ValueError('The coordinate dictionary has to have N keys!')
+    if not isinstance(coords,dict):
+        raise TypeError("Nodal coordinates have to be provided as dictionary!")
+    if len(coords.keys()) != N: 
+        raise ValueError('The coordinate dictionary has to have `N` keys!')
     for val in coords.values():
         if not isinstance(val,(list,np.ndarray)):
             raise TypeError('All elements of the coords dictionary have to be lists/arrays!')
@@ -1537,28 +1535,25 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
 
     # Check labels (if any provided)
     if labels is not None:
-        try:
-            bad = (len(labels) != N)
-        except: 
+        if not isinstance(labels,(list,np.ndarray)):
             raise TypeError("Nodal labels have to be provided as list/NumPy 1darray!")
-        if bad: 
+        if len(labels) != N: 
             raise ValueError("Number of nodes and labels does not match up!")
         for lb in labels:
             if not isinstance(lb,(str,unicode)):
-                raise ValueError('Each individual label has to be a string type!')
+                raise TypeError('Each individual label has to be a string type!')
     else:
         labels = []
 
     # Check the colormaps
-    if type(nodecmap).__name__ != 'LinearSegmentedColormap':
+    if type(nodecmap).__name__.find('Colormap') < 0:
         raise TypeError('Nodal colormap has to be a Matplotlib colormap!')
-    if type(edgecmap).__name__ != 'LinearSegmentedColormap':
+    if type(edgecmap).__name__.find('Colormap') < 0:
         raise TypeError('Edge colormap has to be a Matplotlib colormap!')
 
-    # If no linewidths were provided, use the entries of `A` as to control edge thickness
+    # If no `linewidths` were provided, use the entries of `A` as to control edge thickness
     if linewidths is not None:
         arrcheck(linewidths,'matrix','linewidths')
-        (ln,lm) = linewidths.shape
         if linewidths.shape != A.shape:
             raise ValueError("Linewidths must be provided as square array of the same dimension as the connection matrix!")
     else:
@@ -1566,11 +1561,11 @@ def show_nw(A,coords,colorvec=None,sizevec=None,labels=None,nodecmap=plt.get_cma
 
     # Make sure `nodes3d` is Boolean
     if not isinstance(nodes3d,bool):
-        raise TypeError('The nodes3d flag has to be a Boolean variable!')
+        raise TypeError('The `nodes3d` flag has to be a Boolean variable!')
 
     # Check if `viewtype` is anything strange
     if not isinstance(viewtype,(str,unicode)):
-        raise TypeError("Viewtype must be 'axial(_{t/b})', 'sagittal(_{l/r})' or 'coronal(_{f/b})'")
+        raise TypeError("The optional input `viewtype` must be 'axial(_{t/b})', 'sagittal(_{l/r})' or 'coronal(_{f/b})'")
 
     # Turn on 3d projection
     ax = plt.gcf().gca(projection='3d')
@@ -1714,9 +1709,12 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
     # Check the two mandatory inputs
     arrcheck(nw,'matrix','nw')
     N = nw.shape[0]
+    np.fill_diagonal(nw,0.0)
     scalarcheck(M,'M',kind='int',bounds=[1,np.inf])
 
     # See if the string `method` is one of the supported randomization algorithms
+    if not isinstance(method,(str,unicode)):
+        raise TypeError("Randomization algorithm must be specified as string!")
     supported = ["auto","randmio_und_connected","randmio_und","null_model_und_sign",\
                  "randmio_dir_connected","randmio_dir","null_model_dir_sign",\
                  "randmio_und_signed","randmio_dir_signed"]
@@ -1771,6 +1769,8 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
                     randomizer = octave.randmio_dir
         print "Input network is "+drct+" and "+sgds+" with an edge-density of "+str(np.round(1e2*dns))+"%. "+\
             "Using `"+randomizer.__name__+"` for randomization..."
+    else:
+        randomizer = octave.get_pointer(method)
 
     # Depending on whether the chosen randomizer returns effective re-wiring numbers, a slightly different
     # while loop structure is necessary
@@ -1800,7 +1800,7 @@ def generate_randnws(nw,M,method="auto",rwr=5,rwr_max=10):
             rwr = rw
             eff = 0
             while rwr <= rwr_max and eff == 0:
-                rnw,eff = randomizer(nw,rwr)
+                rnw,eff = randomizer(nw,rwr,nout=2)
                 rwr += 1
             if eff == 0:
                 print "WARNING: network "+str(m)+" has not been randomized!"
