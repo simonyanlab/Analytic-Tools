@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-11-10 16:28:16>
+# Last modified: <2017-11-13 16:26:41>
 
 from __future__ import division
 import pytest
@@ -14,6 +14,7 @@ import scipy as sp
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
+import h5py
 module_pth = os.path.dirname(os.path.abspath(__file__))
 module_pth = module_pth[:module_pth.rfind(os.sep)]
 sys.path.insert(0, module_pth)
@@ -30,6 +31,11 @@ skiplocal = pytest.mark.skipif(runninglocal, reason="debugging new tests")
 # ==========================================================================================
 # A random collection of some of the most used objects in ``nws_tools.py``
 kitchensink = [None, True, 2, [2,3], (2,3), np.empty((2,2)), {"2":2, "3": "three"}, pd.DataFrame([2,3]), "string", plt.cm.jet]
+
+# Fixture to check if everything and the kitchensink are blocked
+@pytest.fixture(params=kitchensink)
+def check_kitchensink(request):
+    return request.param
 
 # Fixture to check if non-array objects and array-likes can get past the gatekeeper
 @pytest.fixture(params=[ks for ks in kitchensink if type(ks) != np.ndarray])
@@ -1114,6 +1120,7 @@ class Test_show_nw(object):
 #                                       generate_randnws
 # ==========================================================================================
 # Mainly test numerics of ``generate_randnws`` (main inputs are vetted by ``arrcheck`` and ``scalarcheck``)
+@skiplocal
 class Test_generate_randnws(object):
 
     # Screw with `method`
@@ -1181,5 +1188,87 @@ class Test_generate_randnws(object):
         msg = "Directed network was not properly randomized using ``randmio_und_connected``!"
         assert np.all([np.all(np.isclose(rnw, nw_und)) for rnw in res_nwt.T]) == False, msg
 
+# ==========================================================================================
+#                                       hdfburp
+# ==========================================================================================
+# Use `pytest`'s builtin `tmpdir` fixture to assemble a dummy HDF5 container
+@pytest.fixture(scope="class")
+def hdf_file(tmpdir_factory):
+
+    # Allocate some dummy quantities that will be written to/read from the container
+    flt = 2.0
+    it = int(3)
+    arr = np.array([[1,2,3],[4,5,6]])
+    st = "string"
+
+    # Prepare the container and dictionary holding its contents as it should appear
+    # in local workspace after calling ``hdfburp``
+    hdf_path = tmpdir_factory.mktemp("hdf_dymmy")
+    hdf_fle = str(hdf_path) + "dummy.h5"
+    h5f = h5py.File(hdf_fle)
+    val_dict = {}
+
+    # Save vars in the base-group
+    for var in ["flt", "arr", "st"]:
+        h5f.create_dataset(var,data=eval(var))
+        val_dict[var] = eval(var)
+    h5f.create_dataset("it",data=it,dtype=int)
+    val_dict["it"] = it
+
+    # Save vars in subgroups
+    g1name = "group1"
+    g2name = "group2"
+    group1 = h5f.create_group(g1name)
+    group1.create_dataset("flt",data=flt)
+    val_dict[g1name+"_flt"] = flt
+    group1.create_dataset("it",data=it,dtype=int)
+    val_dict[g1name+"_it"] = it
+    group2 = h5f.create_group(g2name)
+    for var in ["arr", "st"]:
+        group2.create_dataset(var,data=eval(var))
+        val_dict[g2name+"_"+var] = eval(var)
+    h5f.close()
+
+    return {"hdf_fle":hdf_fle, "val_dict":val_dict}
+
+# Test if variables are read correctly from previously generated HDF5 container
+class Test_hdfburp(object):
+
+    # Screw with the one mandatory input
+    def test_invalidhdf(self, capsys, check_kitchensink):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid HDF5 container...")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.hdfburp(check_kitchensink)
+        assert "Input must be a valid HDF5 file identifier!" in str(excinfo.value)
+
+    # Here comes the actual torture-testing
+    def test_torture(self, capsys, hdf_file):
+        with capsys.disabled():
+            sys.stdout.write("-> Start torture-testing ``hdfburp``: ")
+            sys.stdout.flush()
+
+        # Let ``hdfburp`` work its magic and assess local workspace afterwards
+        h5fle = h5py.File(hdf_file["hdf_fle"],"r")
+        nwt.hdfburp(h5fle)
+        h5fle.close()
+        loc_dict = locals()
+
+        # Make sure the entire contents of our dummy HDF5 container exists in the local workspace
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Entire contents of HDF5 container extracted... ")
+            sys.stdout.flush()
+        msg = "Not all data read from container!"
+        assert np.all([loc_dict.has_key(key) for key in hdf_file["val_dict"].keys()]) == True, msg
+
+        # Ascertain that local variables are identical to container contents
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Extracted quantities identical to HDF5 container contents... ")
+            sys.stdout.flush()
+        msg = "Data not correctly read from container!"
+        assert np.all([(np.all(loc_dict[key] == value) and isinstance(loc_dict[key],type(value)))\
+                       for key, value in hdf_file["val_dict"].items()]) == True, msg
+        
 # For MI try np.vstack([np.cos(xvec),np.sin(xvec)]).T
 

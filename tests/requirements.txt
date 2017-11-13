@@ -1,6 +1,7 @@
 numpy
 scipy
 matplotlib
+h5py
 pandas
 pytest
 natsort
