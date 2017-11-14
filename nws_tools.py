@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-11-10 16:25:41>
+# Last modified: <2017-11-14 16:41:21>
 
 from __future__ import division
 import numpy as np
@@ -2049,18 +2049,17 @@ def mutual_info(tsdata, n_bins=32, normalized=True, fast=True, norm_ts=True):
     """
 
     # Sanity checks (`tsdata` is probably not square, that's why we don't use `arrcheck` here)
-    try:
-        shtsdata = tsdata.shape
-    except:
+    if not isinstance(tsdata,np.ndarray):
         raise TypeError('Input must be a timepoint-by-index NumPy 2d array, not '+type(tsdata).__name__+'!')
+    shtsdata = tsdata.shape
     if len(shtsdata) != 2:
         raise ValueError('Input must be a timepoint-by-index NumPy 2d array')
     if (min(shtsdata)==1):
         raise ValueError('At least two time-series/two time-points are required to compute (N)MI!')
     if not np.issubdtype(tsdata.dtype, np.number) or not np.isreal(tsdata).all():
-        raise TypeError("Input must be real-valued!")
+        raise ValueError("Input must be real-valued!")
     if np.isfinite(tsdata).min() == False:
-        raise ValueError('Input must be a real valued NumPy 2d array without Infs or NaNs!')
+        raise ValueError('Input must be a real-valued NumPy 2d array without Infs or NaNs!')
 
     scalarcheck(n_bins,'n_bins',kind='int',bounds=[2,np.inf])
     n_bins = int(n_bins)

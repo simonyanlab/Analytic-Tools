@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-11-13 16:26:41>
+# Last modified: <2017-11-14 17:25:27>
 
 from __future__ import division
 import pytest
@@ -66,6 +66,18 @@ def check_notstring(request):
 @pytest.fixture(params=[ks for ks in kitchensink if type(ks) != list and type(ks) != np.ndarray])
 def check_notlistlike(request):
     return request.param
+
+# A fixture that returns anything but a 2darray
+@pytest.fixture(params=[np.empty(()), np.empty((0)), np.empty((1)), np.empty((3,)), np.empty((3,3,2,1))])
+def check_not2darray(request):
+    return request.param
+
+# A fixture that fills a NumPy 2-by-2 array with nonsense
+@pytest.fixture(params=[np.inf, np.nan, "string", plt.cm.jet])
+def invalid_mats(request):
+    val = np.empty((2,2)).astype(type(request.param))
+    val[:] = request.param
+    return val
 
 # ==========================================================================================
 #                                       arrcheck
@@ -474,11 +486,6 @@ class Test_get_corr(object):
 # ==========================================================================================
 #                                       corrcheck
 # ==========================================================================================
-# The usual fixtures to automate things
-@pytest.fixture(scope="class", params=[np.empty(()), np.empty((0)), np.empty((1)), np.empty((3,)), np.empty((3,3,2,1))])
-def corrcheck_typeerr(request):
-    return request.param
-
 # Use a list of lists here since ``corrcheck`` accepts multiple input args (use `*args` to invoke ``corrcheck`` below)
 @pytest.fixture(scope="class", params=[[np.empty((3,1))],
                                        [np.empty((1,3))],
@@ -493,12 +500,6 @@ def corrcheck_typeerr(request):
                                        [np.empty((3,2,3))]])
 def corrcheck_valerr(request):
     return request.param
-
-@pytest.fixture(scope="class", params=[np.inf, np.nan, "string", plt.cm.jet])
-def invalid_mats(request):
-    val = np.empty((2,2)).astype(type(request.param))
-    val[:] = request.param
-    return val
 
 # Perform the actual error checking
 @skiplocal
@@ -529,12 +530,12 @@ class Test_corrcheck(object):
         assert "Numbers of labels and matrices do not match up!" in str(excinfo.value)
         
     # Feed in invalid arrays (`TypeErrors` raise different messages, so we don't check for that here)
-    def test_types(self, capsys, corrcheck_typeerr):
+    def test_types(self, capsys, check_not2darray):
         with capsys.disabled():
             sys.stdout.write("-> Invalid arrays... ")
             sys.stdout.flush()
         with pytest.raises(TypeError):
-            nwt.corrcheck(corrcheck_typeerr)
+            nwt.corrcheck(check_not2darray)
     
     # Screw around with array input dimensions
     def test_values(self, capsys, corrcheck_valerr):
@@ -1123,7 +1124,7 @@ class Test_show_nw(object):
 @skiplocal
 class Test_generate_randnws(object):
 
-    # Screw with `method`
+    # Screw around with `method`
     def test_invalidmethod(self, capsys, check_notstring):
         with capsys.disabled():
             sys.stdout.write("-> Invalid `method`...")
@@ -1232,6 +1233,7 @@ def hdf_file(tmpdir_factory):
     return {"hdf_fle":hdf_fle, "val_dict":val_dict}
 
 # Test if variables are read correctly from previously generated HDF5 container
+@skiplocal
 class Test_hdfburp(object):
 
     # Screw with the one mandatory input
@@ -1270,5 +1272,108 @@ class Test_hdfburp(object):
         assert np.all([(np.all(loc_dict[key] == value) and isinstance(loc_dict[key],type(value)))\
                        for key, value in hdf_file["val_dict"].items()]) == True, msg
         
-# For MI try np.vstack([np.cos(xvec),np.sin(xvec)]).T
+# ==========================================================================================
+#                                       mutual_info
+# ==========================================================================================
+# Test numerics of (N)MI computation and consistency of C++/Python versions
+class Test_mutual_info(object):
 
+    # Construct two time-series that have zero linear correlation but are quadratically dependent:
+    # `x` and `x^2` on the interval [-1, +1]
+    N = 1000
+    nbins = int(np.ceil(np.sqrt(N)))
+    x = np.linspace(-1,1,N)
+    data = np.vstack([x,x**2]).T
+    global data, nbins
+
+    # See if non-NumPy arrays can get in
+    def test_nonarrays(self, capsys, check_notarray):
+        with capsys.disabled():
+            sys.stdout.write("-> Test if non-NumPy arrays can get through... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.mutual_info(check_notarray)
+        assert "Input must be a timepoint-by-index NumPy 2d array" in str(excinfo.value)
+
+    # See if non-2darrays can get in
+    def test_non2darrs(self, capsys, check_not2darray):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid array dimension... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.mutual_info(check_not2darray)
+        
+    # Fill input arrays with nonsense
+    def test_invalidarrs(self, capsys, invalid_mats):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid input arrays... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.mutual_info(invalid_mats)
+        assert "real-valued" in str(excinfo.value)
+        
+    # Screw with `normalized`, `fast` and `norm_ts` (`n_bins` is vetted by ``scalarcheck``)
+    def test_normalized(self, capsys, check_notbool):
+        with capsys.disabled():
+            sys.stdout.write("-> Make `normalized` invalid...")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.mutual_info(data, normalized=check_notbool)
+        assert "The flags `normalized`, `fast` and `norm_ts` must be Boolean!" in str(excinfo.value)
+    def test_fast(self, capsys, check_notbool):
+        with capsys.disabled():
+            sys.stdout.write("-> Make `fast` invalid...")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.mutual_info(data, fast=check_notbool)
+        assert "The flags `normalized`, `fast` and `norm_ts` must be Boolean!" in str(excinfo.value)
+    def test_norm_ts(self, capsys, check_notbool):
+        with capsys.disabled():
+            sys.stdout.write("-> Make `norm_ts` invalid...")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.mutual_info(data, norm_ts=check_notbool)
+        assert "The flags `normalized`, `fast` and `norm_ts` must be Boolean!" in str(excinfo.value)
+        
+    # Here comes the actual torture-testing
+    def test_torture(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Start torture-testing ``mutual_info``: ")
+            sys.stdout.flush()
+
+        # Start by checking if the time-series pre-processing is working as expected
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Checking time-series pre-processing... ")
+            sys.stdout.flush()
+        data_test = data.copy()
+        nwt.normalize_time_series(data_test)
+        msg = "De-meaning and unit-variance normalization incorrect!"
+        assert np.all(np.isclose(data_test.mean(axis=0),0.0)) and np.all(np.isclose(data_test.std(axis=0),1.0)), msg
+        
+        # Make sure MI and NMI computed in Python are correct
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> See if Python-based MI is computed correctly... ")
+            sys.stdout.flush()
+        py_mi = nwt.mutual_info(data, n_bins=nbins, fast=False, normalized=False)[0,1]
+        msg = "Python-based MI-calculation incorrect!"
+        assert py_mi > 1.79, msg
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> See if Python-based NMI is computed correctly... ")
+            sys.stdout.flush()
+        py_nmi = nwt.mutual_info(data, n_bins=nbins, fast=False, normalized=True)[0,1]
+        msg = "Python-based NMI-calculation incorrect!"
+        assert py_nmi > 0.65, msg
+
+        # Compute (N)MI in C++ and make sure we get identical results
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> See if C++-based MI is computed correctly... ")
+            sys.stdout.flush()
+        cp_mi = nwt.mutual_info(data, n_bins=nbins, fast=True, normalized=False)[0,1]
+        msg = "C++-based MI-calculation incorrect!"
+        assert np.isclose(py_mi, cp_mi), msg
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> See if C++-based NMI is computed correctly... ")
+            sys.stdout.flush()
+        cp_nmi = nwt.mutual_info(data, n_bins=nbins, fast=True, normalized=True)[0,1]
+        msg = "C++-based NMI-calculation incorrect!"
+        assert np.isclose(py_nmi, cp_nmi), msg
