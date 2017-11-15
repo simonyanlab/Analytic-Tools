@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-11-14 17:25:27>
+# Last modified: <2017-11-15 12:04:35>
 
 from __future__ import division
 import pytest
@@ -1276,6 +1276,7 @@ class Test_hdfburp(object):
 #                                       mutual_info
 # ==========================================================================================
 # Test numerics of (N)MI computation and consistency of C++/Python versions
+@skiplocal
 class Test_mutual_info(object):
 
     # Construct two time-series that have zero linear correlation but are quadratically dependent:
@@ -1377,3 +1378,53 @@ class Test_mutual_info(object):
         cp_nmi = nwt.mutual_info(data, n_bins=nbins, fast=True, normalized=True)[0,1]
         msg = "C++-based NMI-calculation incorrect!"
         assert np.isclose(py_nmi, cp_nmi), msg
+
+# ==========================================================================================
+#                                       issym
+# ==========================================================================================
+# The entire routine is essentially one "<=" expression that lives inside a ``try``-``except``
+# statement, so we don't really need to bombard ``issym`` with invalid inputs
+class Test_issym(object):
+        
+    # Here we go...
+    def test_torture(self, capsys):
+        with capsys.disabled():
+            sys.stdout.write("-> Start torture-testing ``issym``: ")
+            sys.stdout.flush()
+
+        # Assemble a random non-symmetric square matrix
+        N = 10
+        A = np.random.normal(loc=0.5,scale=0.2,size=((N,N)))
+
+        # Make sure ``issym`` recognizes that `A` is not symmetric
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Checking non-symmetric matrix... ")
+            sys.stdout.flush()
+        msg = "Non-symmetric matrix not correctly classified!"
+        assert nwt.issym(A) == False, msg
+
+        # Symmetrize `A`
+        A = np.triu(A,1)
+        A += A.T
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Checking symmetric matrix... ")
+            sys.stdout.flush()
+        msg = "Symmetric matrix not correctly classified!"
+        assert nwt.issym(A) == True, msg
+
+        # `A` is constructed to be *exactly* symmetric
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Checking for exact symmetry... ")
+            sys.stdout.flush()
+        msg = "Exact symmetry not recognized!"
+        assert nwt.issym(A, tol=0.0) == True, msg
+
+        # Introduce a small perturbation 
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Checking for numerical symmetry... ")
+            sys.stdout.flush()
+        tol = 1e-6
+        A[0,1] += tol
+        msg = "Numerical symmetry not recognized!"
+        assert nwt.issym(A, tol=tol) == True, msg
+        assert nwt.issym(A, tol=0.0) == False, msg

@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-11-14 16:41:21>
+# Last modified: <2017-11-15 12:05:05>
 
 from __future__ import division
 import numpy as np
@@ -16,7 +16,6 @@ try:
     from scipy import weave
 except:
     import weave
-from numpy.linalg import norm
 from mpl_toolkits.mplot3d import Axes3D, proj3d
 from matplotlib.patches import FancyArrowPatch, Circle
 from matplotlib.colors import Normalize, colorConverter, LightSource
@@ -2375,7 +2374,7 @@ def issym(A,tol=1e-9):
 
     # Check if Frobenius norm of `A - A.T` is sufficiently small (respecting round-off errors)
     try:
-        is_sym = (norm(A-A.T,ord='fro') <= tol*norm(A,ord='fro'))
+        is_sym = (np.linalg.norm(A-A.T,ord='fro') <= tol*np.linalg.norm(A,ord='fro'))
     except:
         raise TypeError('Input argument has to be a square matrix/array and a scalar tol (optional)!')
 
@@ -2444,7 +2443,8 @@ def printdata(data,leadrow,leadcol,fname=None):
     """
 
     # Try to import Texttable object
-    try: from texttable import Texttable
+    try:
+        from texttable import Texttable
     except: 
         raise ImportError("Could not import texttable! Consider installing it using pip install texttable")
 
