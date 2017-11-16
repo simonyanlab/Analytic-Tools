@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-11-15 12:04:35>
+# Last modified: <2017-11-16 17:25:03>
 
 from __future__ import division
 import pytest
@@ -15,6 +15,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
 import h5py
+import csv
 module_pth = os.path.dirname(os.path.abspath(__file__))
 module_pth = module_pth[:module_pth.rfind(os.sep)]
 sys.path.insert(0, module_pth)
@@ -72,6 +73,11 @@ def check_notlistlike(request):
 def check_not2darray(request):
     return request.param
 
+# A fixture that returns anything but a 1darray
+@pytest.fixture(params=[np.empty(()), np.empty((1,1)), np.empty((2,2)), np.empty((3,3,2,1))])
+def check_not1darray(request):
+    return request.param
+
 # A fixture that fills a NumPy 2-by-2 array with nonsense
 @pytest.fixture(params=[np.inf, np.nan, "string", plt.cm.jet])
 def invalid_mats(request):
@@ -91,6 +97,7 @@ def invalid_mats(request):
                                        np.empty((0)),
                                        np.empty((1)),
                                        np.empty((3,)),
+                                       np.empty((1,1)),
                                        np.empty((3,1)),
                                        np.empty((1,3)),
                                        np.empty((3,3)),
@@ -106,6 +113,7 @@ def tensor_dimerr(request):
                                        np.empty((0)),
                                        np.empty((1)),
                                        np.empty((3,)),
+                                       np.empty((1,1)),
                                        np.empty((3,1)),
                                        np.empty((1,3)),
                                        np.empty((2,3)),
@@ -117,6 +125,7 @@ def matrix_dimerr(request):
 @pytest.fixture(scope="class", params=[np.empty(()),
                                        np.empty((0)),
                                        np.empty((1)),
+                                       np.empty((1,1)),
                                        np.empty((2,3)),
                                        np.empty((3,2)),
                                        np.empty((3,3)),
@@ -986,11 +995,6 @@ def test_shownet():
 # ==========================================================================================
 #                                       show_nw
 # ==========================================================================================
-# Modify the global `notlistlike` fixture by removing the `None` type
-@pytest.fixture(params=[ks for ks in kitchensink if type(ks) != list and type(ks) != np.ndarray and ks is not None])
-def check_notnonelistlike(request):
-    return request.param
-
 # Test if invalid inputs can slip by the input-checking in ``show_nw`` (however, most of the heavy lifting is done by
 # ``arrcheck`` and ``scalarcheck`` anyway...)
 @skiplocal
@@ -1052,13 +1056,14 @@ class Test_show_nw(object):
         assert "`sizevec` has to have length `N`!" in str(excinfo.value)
         
     # Screw with `labels`
-    def test_invalidlabels(self, capsys, check_notnonelistlike):
+    def test_invalidlabels(self, capsys, check_notlistlike):
         with capsys.disabled():
             sys.stdout.write("-> Invalid `labels`... ")
             sys.stdout.flush()
-        with pytest.raises(TypeError) as excinfo:
-            nwt.show_nw(A, coords, labels=check_notnonelistlike)
-        assert "Nodal labels have to be provided as list/NumPy 1darray!" in str(excinfo.value)
+        if check_notlistlike is not None:
+            with pytest.raises(TypeError) as excinfo:
+                nwt.show_nw(A, coords, labels=check_notlistlike)
+            assert "Nodal labels have to be provided as list/NumPy 1darray!" in str(excinfo.value)
 
     # Fine-grained error-checking of `labels`
     def test_labels(self, capsys):
@@ -1135,7 +1140,7 @@ class Test_generate_randnws(object):
         assert "Randomization algorithm must be specified as string!" in str(excinfo.value)
 
     # Here comes the actual torture-testing of the routine (we need to assess the command line output
-    # of ``generate_randnws`` here, so don't screw around with ``capsys`` in here
+    # of ``generate_randnws`` here, so don't screw around with ``capsys`` in here)
     def test_torture(self, capsys):
 
         # Construct directed and undirected dummy networks of size `N` and set no. of random networks to generate (`M`)
@@ -1284,8 +1289,8 @@ class Test_mutual_info(object):
     N = 1000
     nbins = int(np.ceil(np.sqrt(N)))
     x = np.linspace(-1,1,N)
-    data = np.vstack([x,x**2]).T
-    global data, nbins
+    tsdata = np.vstack([x,x**2]).T
+    global tsdata, nbins
 
     # See if non-NumPy arrays can get in
     def test_nonarrays(self, capsys, check_notarray):
@@ -1319,21 +1324,21 @@ class Test_mutual_info(object):
             sys.stdout.write("-> Make `normalized` invalid...")
             sys.stdout.flush()
         with pytest.raises(TypeError) as excinfo:
-            nwt.mutual_info(data, normalized=check_notbool)
+            nwt.mutual_info(tsdata, normalized=check_notbool)
         assert "The flags `normalized`, `fast` and `norm_ts` must be Boolean!" in str(excinfo.value)
     def test_fast(self, capsys, check_notbool):
         with capsys.disabled():
             sys.stdout.write("-> Make `fast` invalid...")
             sys.stdout.flush()
         with pytest.raises(TypeError) as excinfo:
-            nwt.mutual_info(data, fast=check_notbool)
+            nwt.mutual_info(tsdata, fast=check_notbool)
         assert "The flags `normalized`, `fast` and `norm_ts` must be Boolean!" in str(excinfo.value)
     def test_norm_ts(self, capsys, check_notbool):
         with capsys.disabled():
             sys.stdout.write("-> Make `norm_ts` invalid...")
             sys.stdout.flush()
         with pytest.raises(TypeError) as excinfo:
-            nwt.mutual_info(data, norm_ts=check_notbool)
+            nwt.mutual_info(tsdata, norm_ts=check_notbool)
         assert "The flags `normalized`, `fast` and `norm_ts` must be Boolean!" in str(excinfo.value)
         
     # Here comes the actual torture-testing
@@ -1346,22 +1351,22 @@ class Test_mutual_info(object):
         with capsys.disabled():
             sys.stdout.write("\n\t-> Checking time-series pre-processing... ")
             sys.stdout.flush()
-        data_test = data.copy()
-        nwt.normalize_time_series(data_test)
+        tsdata_test = tsdata.copy()
+        nwt.normalize_time_series(tsdata_test)
         msg = "De-meaning and unit-variance normalization incorrect!"
-        assert np.all(np.isclose(data_test.mean(axis=0),0.0)) and np.all(np.isclose(data_test.std(axis=0),1.0)), msg
+        assert np.all(np.isclose(tsdata_test.mean(axis=0),0.0)) and np.all(np.isclose(tsdata_test.std(axis=0),1.0)), msg
         
         # Make sure MI and NMI computed in Python are correct
         with capsys.disabled():
             sys.stdout.write("\n\t-> See if Python-based MI is computed correctly... ")
             sys.stdout.flush()
-        py_mi = nwt.mutual_info(data, n_bins=nbins, fast=False, normalized=False)[0,1]
+        py_mi = nwt.mutual_info(tsdata, n_bins=nbins, fast=False, normalized=False)[0,1]
         msg = "Python-based MI-calculation incorrect!"
         assert py_mi > 1.79, msg
         with capsys.disabled():
             sys.stdout.write("\n\t-> See if Python-based NMI is computed correctly... ")
             sys.stdout.flush()
-        py_nmi = nwt.mutual_info(data, n_bins=nbins, fast=False, normalized=True)[0,1]
+        py_nmi = nwt.mutual_info(tsdata, n_bins=nbins, fast=False, normalized=True)[0,1]
         msg = "Python-based NMI-calculation incorrect!"
         assert py_nmi > 0.65, msg
 
@@ -1369,13 +1374,13 @@ class Test_mutual_info(object):
         with capsys.disabled():
             sys.stdout.write("\n\t-> See if C++-based MI is computed correctly... ")
             sys.stdout.flush()
-        cp_mi = nwt.mutual_info(data, n_bins=nbins, fast=True, normalized=False)[0,1]
+        cp_mi = nwt.mutual_info(tsdata, n_bins=nbins, fast=True, normalized=False)[0,1]
         msg = "C++-based MI-calculation incorrect!"
         assert np.isclose(py_mi, cp_mi), msg
         with capsys.disabled():
             sys.stdout.write("\n\t-> See if C++-based NMI is computed correctly... ")
             sys.stdout.flush()
-        cp_nmi = nwt.mutual_info(data, n_bins=nbins, fast=True, normalized=True)[0,1]
+        cp_nmi = nwt.mutual_info(tsdata, n_bins=nbins, fast=True, normalized=True)[0,1]
         msg = "C++-based NMI-calculation incorrect!"
         assert np.isclose(py_nmi, cp_nmi), msg
 
@@ -1384,6 +1389,7 @@ class Test_mutual_info(object):
 # ==========================================================================================
 # The entire routine is essentially one "<=" expression that lives inside a ``try``-``except``
 # statement, so we don't really need to bombard ``issym`` with invalid inputs
+@skiplocal
 class Test_issym(object):
         
     # Here we go...
@@ -1394,7 +1400,7 @@ class Test_issym(object):
 
         # Assemble a random non-symmetric square matrix
         N = 10
-        A = np.random.normal(loc=0.5,scale=0.2,size=((N,N)))
+        A = np.random.normal(size=((N,N)))
 
         # Make sure ``issym`` recognizes that `A` is not symmetric
         with capsys.disabled():
@@ -1428,3 +1434,134 @@ class Test_issym(object):
         msg = "Numerical symmetry not recognized!"
         assert nwt.issym(A, tol=tol) == True, msg
         assert nwt.issym(A, tol=0.0) == False, msg
+
+# ==========================================================================================
+#                                       printdata
+# ==========================================================================================
+# A fixture that returns arrays that cannot be reasonably represented in a table
+@pytest.fixture(params=[np.empty(()), np.empty((3,3,2,1))])
+def check_nottable(request):
+    return request.param
+
+# Do a little bit of input meddling since ``printdata`` doesn't use ``arrcheck``
+class Test_printdata(object):
+
+    # Construct dummy array to pretty-print/save using ``printdata``
+    M = 5
+    N = 10
+    pdata = np.random.normal(size=((M,N)))
+    head_r = ["Column#"+str(n+1) for n in xrange(N)]
+    head_c = ["Row#"+str(m+1) for m in xrange(M)]
+    global pdata, head_r, head_c
+        
+    # Non-NumPy arrays as `data`
+    def test_nonarrdata(self, capsys, check_notarray):
+        with capsys.disabled():
+            sys.stdout.write("-> Try non-NumPy arrays as `data`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.printdata(check_notarray, head_r, head_c)
+        assert "Input must be a M-by-N NumPy array" in str(excinfo.value)
+
+    # Non-2darrays as `data`
+    def test_non2ddata(self, capsys, check_nottable):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid array dimension for `data`... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.printdata(check_nottable, head_r, head_c)
+        assert "Input must be a M-by-N NumPy array" in str(excinfo.value)
+
+    # Non-NumPy arrays/lists as `leadrow`
+    def test_nonarrleadrow(self, capsys, check_notlistlike):
+        with capsys.disabled():
+            sys.stdout.write("-> Try non-NumPy arrays as `leadrow`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.printdata(pdata, check_notlistlike, head_c)
+        assert "The inputs `leadcol` and `leadrow` must by Python lists or Numpy 1d arrays!" in str(excinfo.value)
+
+    # Non-1darrays as `leadrow`
+    def test_non1dleadrow(self, capsys, check_not1darray):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid array dimension for `leadrow`... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.printdata(pdata, check_not1darray, head_c)
+        assert "The inputs `leadcol` and `leadrow` must 1-d lists/arrays!" in str(excinfo.value)
+        
+    # Non-NumPy arrays/lists as `leadcol`
+    def test_nonarrleadcol(self, capsys, check_notlistlike):
+        with capsys.disabled():
+            sys.stdout.write("-> Try non-NumPy arrays as `leadcol`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.printdata(pdata, head_r, check_notlistlike)
+        assert "The inputs `leadcol` and `leadrow` must by Python lists or Numpy 1d arrays!" in str(excinfo.value)
+        
+    # Non-1darrays as `leadcol`
+    def test_non1dleadcol(self, capsys, check_not1darray):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid array dimension for `leadcol`... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.printdata(pdata, head_r, check_not1darray)
+        assert "The inputs `leadcol` and `leadrow` must 1-d lists/arrays!" in str(excinfo.value)
+
+    # Non-strings as `fname`
+    def test_non1dleadcol(self, capsys, check_notstring):
+        with capsys.disabled():
+            sys.stdout.write("-> Try non-strings as `fname`... ")
+            sys.stdout.flush()
+        if check_notstring is not None:
+            with pytest.raises(TypeError) as excinfo:
+                nwt.printdata(pdata, head_r, head_c, fname=check_notstring)
+            assert "Optional output filename has to be a string!" in str(excinfo.value)
+        
+    # Here we go...
+    def test_torture(self, capsys, tmpdir_factory):
+        with capsys.disabled():
+            sys.stdout.write("-> Start torture-testing ``printdata``: ")
+            sys.stdout.flush()
+
+        # Provoke a bunch of dimension mismatches...
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Invalid data/header dimensions... ")
+            sys.stdout.flush()
+        with pytest.raises(ValueError) as excinfo:
+            nwt.printdata(pdata[0,:], head_c, head_c)
+        assert "Number of elements in heading column/row and data do not match up!" in str(excinfo.value)
+        head = pdata.size*["dummy"]
+        with pytest.raises(ValueError) as excinfo:
+            nwt.printdata(pdata[:,0], head, head)
+        assert "Number of elements in heading column/row and data do not match up!" in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.printdata(pdata, head_r, head_r)
+        assert "Number of rows and no. of elements leading column do not match up!" in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.printdata(pdata, head_c, head_c)
+        assert "Number of columns and no. of elements in head row do not match up!" in str(excinfo.value)
+
+        # Save `pdata` and re-load it to see if it was written to disk correctly
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Save and re-load input data... ")
+            sys.stdout.flush()
+        fle = tmpdir_factory.mktemp("printdata").join("out.csv")
+        head_r_fle = ["R\C"] + head_r
+        nwt.printdata(pdata, head_r_fle, head_c, fname=str(fle))
+        fle_h = open(str(fle), "rU")
+        reader = csv.reader(fle_h, delimiter=",")
+        msg = "Output csv file was not saved correctly!"
+        for m, row in enumerate(reader):
+            if m == 0:
+                assert np.all(row == head_r_fle), "Leading row not saved correctly!"
+            else:
+                try:
+                    pdata_r = pdata[m-1,:]
+                except:
+                    raise ValueError("Wrong number of rows in output csv file!")
+                msg = "Found "+str(len(row))+" columns in Row#"+str(m)+", expected "+str(pdata_r.size)+"!"
+                assert pdata_r.size == len(row)-1, msg
+                assert row[0] == head_c[m-1], "Label of Row#"+str(m)+" not saved correctly!"
+                row_v = [float(r) for r in row[1:]]
+                assert np.all(np.isclose(row_v,pdata_r)), "Data in Row#"+str(m)+" not saved correctly!"

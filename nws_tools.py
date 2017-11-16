@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-11-15 12:05:05>
+# Last modified: <2017-11-16 17:18:08>
 
 from __future__ import division
 import numpy as np
@@ -2449,12 +2449,14 @@ def printdata(data,leadrow,leadcol,fname=None):
         raise ImportError("Could not import texttable! Consider installing it using pip install texttable")
 
     # Check dimensions of input
-    try:
-        ds = data.shape
-    except:
+    if not isinstance(data,np.ndarray):
         raise TypeError('Input must be a M-by-N NumPy array, not ' + type(data).__name__+'!')
-    if len(ds) > 2:
+    ds = data.shape
+    if len(ds) < 1 or len(ds) > 2 :
         raise ValueError('Input must be a M-by-N NumPy array!')
+    if len(ds) == 1:
+        if ds[0] == 1:
+            raise ValueError('Input array must have at least two entries!')
     for lvar in [leadcol,leadrow]:
         if not isinstance(lvar,(list,np.ndarray)):
             raise TypeError("The inputs `leadcol` and `leadrow` must by Python lists or Numpy 1d arrays!")
@@ -2476,7 +2478,8 @@ def printdata(data,leadrow,leadcol,fname=None):
         if fname[-4::] != '.csv':
             fname = fname + '.csv'
         save = True
-    else: save = False
+    else:
+        save = False
 
     # Get dimension of data and corresponding leading column/row
     if len(ds) == 1: 
@@ -2486,7 +2489,7 @@ def printdata(data,leadrow,leadcol,fname=None):
         elif K == n or K == (n-1):
             M = 1; N = K
         else: 
-            raise ValueError('Number of elements in heading column/row and data don not match up!')
+            raise ValueError('Number of elements in heading column/row and data do not match up!')
         data = data.reshape((M,N))
     else:
         M,N = ds
@@ -2517,7 +2520,7 @@ def printdata(data,leadrow,leadcol,fname=None):
 
     # If wanted, save stuff in a csv file
     if save:
-        np.savetxt(fname,Data,delimiter=",",fmt="%s",header="".join(str(hd)+", " for hd in head)[:-2],comments="")
+        np.savetxt(fname,Data,delimiter=",",fmt="%s",header="".join(str(hd)+"," for hd in head)[:-1],comments="")
 
     return
 
