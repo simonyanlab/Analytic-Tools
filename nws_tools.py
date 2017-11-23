@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: December 22 2014
-# Last modified: <2017-11-16 17:18:08>
+# Last modified: <2017-11-23 16:45:52>
 
 from __future__ import division
 import numpy as np
@@ -2607,12 +2607,14 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
     dot    = imgfmt.rfind('.')
     fmt    = imgfmt[:dot]
     imtype = imgfmt[dot+1:]
-    if fmt.find('%') < 0: raise ValueError('Invalid image format specifier: `'+fmt+'`!')
+    if fmt.find('%') < 0:
+        raise ValueError('Invalid image format specifier: `'+imgfmt+'`!')
     
     # Check if image directory actually contains any images of the given type
     imgs     = natsort.natsorted(myglob(imgpth,'*.'+imtype), key=lambda y: y.lower())
     num_imgs = len(imgs)
-    if num_imgs < 2: raise ValueError('Directory '+imgpth+' contains fewer than 2 `'+imtype+'` files!')
+    if num_imgs < 2:
+        raise ValueError('Directory '+imgpth+' contains fewer than 2 `'+imtype+'` files!')
 
     # Check validity of `outfile`
     if not isinstance(outfile,(str,unicode)):
@@ -2627,7 +2629,8 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
     # Check format specifier for the movie: the if loop separates filename from extension
     # (use split here to prevent the user from creating abominations like `my.movie.mp4`)
     dot = outfile.rfind('.')
-    if dot == 0: raise ValueError(outfile+' is not a valid filename!')          # e.g., outfile = '.name'
+    if dot == 0:
+        raise ValueError(outfile+' is not a valid filename!')          # e.g., outfile = '.name'
     if dot == len(outfile) - 1:                                                 # e.g., outfile = 'name.'
         outfile = outfile[:dot]
         dot     = -1
@@ -2641,10 +2644,11 @@ def img2vid(imgpth,imgfmt,outfile,fps,filesize=None,ext='mp4',preset='veryslow')
             print "WARNING: Using extension `"+out_split[1]+"` of output filename, not `"+str(ext)+"`!"
         ext = out_split[1]
     else:                                                                       # e.g., outfile = 'name'
-        if str(ext) != ext:
+        if not isinstance(ext,(str,unicode)):
             raise TypeError('Filename extension for movie has to be a string!')
         exl = str(ext).split('.')
-        if len(exl) > 1: raise ValueError(ext+' is not a valid extension for a video file!')
+        if len(exl) > 1:
+            raise ValueError(ext+' is not a valid extension for a video file!')
         ext = exl[0]
 
     # Make sure `fps` is a positive integer

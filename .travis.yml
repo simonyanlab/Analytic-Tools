@@ -18,6 +18,9 @@ before_script:
   - unzip -o /home/travis/BCT.zip -d /home/travis
   - export PATH=$PATH:/home/travis/BCT/
   - echo 'addpath(genpath("~/BCT"))' > /home/travis/.octaverc
+  - wget -P /home/travis/ https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
+  - tar xf /home/travis/ffmpeg-git-64bit-static.tar.xz -C /home/travis
+  - sudo cp /home/travis/ffmpeg-git-*/ff* /home/travis/ffmpeg-git-*/qt-faststart /usr/local/bin/
 
 script:
   - pytest --tb=short -v

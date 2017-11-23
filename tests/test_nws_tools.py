@@ -2,7 +2,7 @@
 # 
 # Author: Stefan Fuertinger [stefan.fuertinger@esi-frankfurt.de]
 # Created: October  5 2017
-# Last modified: <2017-11-16 17:25:03>
+# Last modified: <2017-11-23 17:51:15>
 
 from __future__ import division
 import pytest
@@ -12,10 +12,13 @@ import pdb
 import numpy as np
 import scipy as sp
 import pandas as pd
-import matplotlib.pyplot as plt
 import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import h5py
 import csv
+from glob import glob
 module_pth = os.path.dirname(os.path.abspath(__file__))
 module_pth = module_pth[:module_pth.rfind(os.sep)]
 sys.path.insert(0, module_pth)
@@ -1444,6 +1447,7 @@ def check_nottable(request):
     return request.param
 
 # Do a little bit of input meddling since ``printdata`` doesn't use ``arrcheck``
+@skiplocal
 class Test_printdata(object):
 
     # Construct dummy array to pretty-print/save using ``printdata``
@@ -1565,3 +1569,158 @@ class Test_printdata(object):
                 assert row[0] == head_c[m-1], "Label of Row#"+str(m)+" not saved correctly!"
                 row_v = [float(r) for r in row[1:]]
                 assert np.all(np.isclose(row_v,pdata_r)), "Data in Row#"+str(m)+" not saved correctly!"
+
+# ==========================================================================================
+#                                       img2vid
+# ==========================================================================================
+# Use `pytest`'s builtin `tmpdir` fixture to create an animation, save the underlying image sequence,
+# and render a corresponding video file
+@pytest.fixture(scope="class")
+def img_files(tmpdir_factory):
+
+    # Create a dummy directory to dump everything into
+    imgpath = tmpdir_factory.mktemp("img_files")
+
+    # Set image dimension and count
+    xdim = 120
+    ydim = 100
+    ndim = 60
+
+    # Create a Matplotlib figure, draw `ndim` trigonometric functions and save each frame as `png` image
+    # using the naming format specified by `imgfmt`
+    imgfmt = "im_%02d.png"
+    fig = plt.figure()
+    x = np.linspace(0, 2*np.pi, xdim)
+    y = np.linspace(0, 2*np.pi, ydim).reshape(-1, 1)
+    ims = []
+    for i in range(ndim):
+        x += np.pi/15.
+        y += np.pi/20.
+        im = plt.imshow(np.sin(x) + np.cos(y), animated=True)
+        imfile = imgpath.join(imgfmt%i)
+        # imfile = imgpath.join("im_"+str(i)+".png")
+        fig.savefig(str(imfile), dpi=fig.get_dpi(), format="png")
+        ims.append([im])
+    
+    # Use the created list of lists `ims` to set up an animation
+    ani = animation.ArtistAnimation(fig, ims, interval=50, blit=True,repeat=False)
+
+    # Save the animation as mp4 file and calculate the bitrate based on wanted frame-rate and video file-size
+    fps = 15
+    fsize = 10
+    brate = int(np.floor(fsize*8192/np.ceil(ndim/fps)))
+    mp4file = str(imgpath.join("img_video.mp4"))
+    ani.save(mp4file, writer="ffmpeg", fps=fps, bitrate=brate)
+
+    return {"imgpath":str(imgpath), "mp4file":mp4file, "fps":fps , "fsize":fsize, "imgfmt":imgfmt}
+
+# Perform the actual error checking
+class Test_img2vid(object):
+
+    # Screw with `imgpth`
+    def test_invalidimgpth(self, capsys, check_notstring):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid `imgpth`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.img2vid(check_notstring, "frmt", "outfile", 15)
+        msg = "Path to image directory has to be a string!"
+        assert msg in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.img2vid("   ", "frmt", "outfile", 15)
+        msg = "Invalid path to image directory"
+        assert msg in str(excinfo.value)
+    
+    # Screw with `imgfmt`
+    def test_invalidimgfmt(self, capsys, check_notstring, img_files):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid `imgfmt`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.img2vid(img_files["imgpath"], check_notstring, "outfile", 15)
+        msg = "Format specifier for images has to be a string!"
+        assert msg in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.img2vid(img_files["imgpath"], "frmt", "outfile", 15)
+        msg = "Invalid image format specifier: `frmt`!"
+        assert msg in str(excinfo.value)
+
+    # Screw with `outfile`
+    def test_invalidoutfile(self, capsys, check_notstring, img_files):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid `outfile`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.img2vid(img_files["imgpath"], img_files["imgfmt"], check_notstring, 15)
+        msg = "Output filename has to be a string!"
+        assert msg in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.img2vid(img_files["imgpath"], img_files["imgfmt"], "/asdf", 15)
+        msg = "Invalid path to save movie: /asdf!"
+        assert msg in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.img2vid(img_files["imgpath"], img_files["imgfmt"], ".vid", 15)
+        msg = ".vid is not a valid filename!"
+        assert msg in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.img2vid(img_files["imgpath"], img_files["imgfmt"], "vid.vid.vid", 15)
+        msg = "vid.vid.vid is not a valid filename!"
+        assert msg in str(excinfo.value)
+
+    # Screw with `ext` (note: `fps` and `filesize` are vetted by ``scalarcheck``)
+    def test_invalidext(self, capsys, check_notstring, img_files):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid `ext`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.img2vid(img_files["imgpath"], img_files["imgfmt"], "outfile", 15, ext=check_notstring)
+        msg = "Filename extension for movie has to be a string!"
+        assert msg in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.img2vid(img_files["imgpath"], img_files["imgfmt"], "outfile", 15, ext="m.p4")
+        msg = "m.p4 is not a valid extension for a video file!"
+        assert msg in str(excinfo.value)
+
+    # Screw with `preset`
+    def test_invalidpreset(self, capsys, check_notstring, img_files):
+        with capsys.disabled():
+            sys.stdout.write("-> Invalid `preset`... ")
+            sys.stdout.flush()
+        with pytest.raises(TypeError) as excinfo:
+            nwt.img2vid(img_files["imgpath"], img_files["imgfmt"], "outfile", 15, preset=check_notstring)
+        msg = "Preset specifier for video encoding has to be a string!"
+        assert msg in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            nwt.img2vid(img_files["imgpath"], img_files["imgfmt"], "outfile", 15, preset="invalid")
+        msg = "Preset `invalid` not supported by ffmpeg"
+        assert msg in str(excinfo.value)
+        
+    # Here comes the actual torture-testing of the routine.... 
+    def test_torture(self, capsys, img_files):
+        with capsys.disabled():
+            sys.stdout.write("-> Start torture-testing ``img2vid``: ")
+            sys.stdout.flush()
+
+        # Fire up ``img2vid`` to convert the image sequence in `img_files["imgpath"]` to a video
+        nwt_vid = img_files["imgpath"] + os.sep + "vid.mp4"
+        nwt.img2vid(img_files["imgpath"], img_files["imgfmt"], nwt_vid,
+                    fps=img_files["fps"], filesize=img_files["fsize"])
+
+        # Ensure that a video has been actually generated
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Checking proper video rendering... ")
+            sys.stdout.flush()
+        msg = "Video was not rendered!"
+        assert nwt_vid in glob(img_files["imgpath"]+os.sep+"*.mp4"), msg
+
+        # Compare file-sizes of videos encoded by Matplotlib's ``animate`` and ``img2vid``
+        with capsys.disabled():
+            sys.stdout.write("\n\t-> Testing encoding pipeline... ")
+            sys.stdout.flush()
+        MB_fact = 1024.0**2
+        nwt_sz = os.path.getsize(nwt_vid)/MB_fact
+        plt_sz = os.path.getsize(img_files["mp4file"])/MB_fact
+        msg = "Video was not encoded correctly!"
+        assert np.abs(nwt_sz - plt_sz) < 0.5, msg
+        
+            
